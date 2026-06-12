@@ -10,7 +10,7 @@ from .models import Streak
 logger = logging.getLogger(__name__)
 
 
-@shared_task(name="achievements.evaluate_workout", ignore_result=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
+@shared_task(ignore_result=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
 def evaluate_workout_achievements(workout_id: int):
     """Re-evaluate achievements + streak for a workout's owner.
 
@@ -29,7 +29,7 @@ def evaluate_workout_achievements(workout_id: int):
     services.evaluate_after_workout(workout)
 
 
-@shared_task(name="achievements.decay_inactive_streaks", ignore_result=True)
+@shared_task(ignore_result=True)
 def decay_inactive_streaks():
     """Reset streaks for users who didn't train yesterday OR today.
 

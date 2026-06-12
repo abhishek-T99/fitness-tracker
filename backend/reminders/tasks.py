@@ -23,7 +23,7 @@ def _user_now(reminder: Reminder) -> datetime:
     return timezone.now().astimezone(tz)
 
 
-@shared_task(name="reminders.dispatch_due_reminders", ignore_result=True)
+@shared_task(ignore_result=True)
 def dispatch_due_reminders():
     """Find reminders whose local trigger time matches now (per user TZ) and fire them.
 
@@ -48,7 +48,7 @@ def dispatch_due_reminders():
     return fired
 
 
-@shared_task(name="reminders.deliver_reminder", ignore_result=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
+@shared_task(ignore_result=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
 def deliver_reminder(reminder_id: int):
     """Single-reminder delivery. Swap in push/email/webhook here."""
     try:

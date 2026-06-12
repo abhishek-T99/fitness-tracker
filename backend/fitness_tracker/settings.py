@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "django_celery_beat",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     # Local apps
     "accounts",
     "exercises",
@@ -86,8 +88,13 @@ WSGI_APPLICATION = "fitness_tracker.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", "fittrack"),
+        "USER": os.getenv("DB_USER", "fittrack"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "fittrack"),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", "5432"),
+        "CONN_MAX_AGE": 60,
     }
 }
 
@@ -126,6 +133,40 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# ---------------------------------------------------------------------------
+# drf-spectacular (OpenAPI 3 schema + Swagger / ReDoc UI)
+# ---------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    "TITLE": "FitTrack API",
+    "DESCRIPTION": (
+        "REST API for the FitTrack fitness tracker application.\n\n"
+        "All endpoints except **`/api/v1/auth/register/`**, "
+        "**`/api/v1/auth/login/`**, and **`/api/v1/auth/refresh/`** "
+        "require an `Authorization: Bearer <access_token>` header."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Separate request/response schemas where they differ (e.g. MeView GET vs PATCH).
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": r"/api/v1/",
+    # Serve Swagger/ReDoc assets from the sidecar package — no CDN required.
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "TAGS": [
+        {"name": "Auth", "description": "Registration, login, and profile management."},
+        {"name": "Exercises", "description": "Read-only exercise catalog (cached 24 h)."},
+        {"name": "Workouts", "description": "Workout sessions and reusable routines."},
+        {"name": "Nutrition", "description": "Food database, meal logging, water intake, and daily macro summaries."},
+        {"name": "Measurements", "description": "Body measurements and weight-history charts."},
+        {"name": "Goals", "description": "Personal fitness goals with deadline and progress tracking."},
+        {"name": "Social", "description": "Friend connections and activity feed."},
+        {"name": "Achievements", "description": "Achievement catalog, unlocked badges, and workout streaks."},
+        {"name": "Reminders", "description": "Scheduled workout and nutrition reminders."},
+    ],
 }
 
 SIMPLE_JWT = {

@@ -1,9 +1,11 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 
 from .models import Reminder
 from .serializers import ReminderSerializer
 
 
+@extend_schema(tags=["Reminders"])
 class ReminderViewSet(viewsets.ModelViewSet):
     serializer_class = ReminderSerializer
     filterset_fields = ["reminder_type", "is_active"]

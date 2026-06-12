@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +14,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Achievements"])
 class AchievementCatalogViewSet(viewsets.ReadOnlyModelViewSet):
     """Static catalog — cached for 24h, invalidated on Achievement save."""
 
@@ -28,6 +30,7 @@ class AchievementCatalogViewSet(viewsets.ReadOnlyModelViewSet):
         return response
 
 
+@extend_schema(tags=["Achievements"])
 class UserAchievementViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserAchievementSerializer
 
@@ -35,6 +38,7 @@ class UserAchievementViewSet(viewsets.ReadOnlyModelViewSet):
         return UserAchievement.objects.filter(user=self.request.user).select_related("achievement")
 
 
+@extend_schema(tags=["Achievements"], responses=StreakSerializer)
 class StreakView(APIView):
     def get(self, request):
         key = cache_keys.streak(request.user.id)

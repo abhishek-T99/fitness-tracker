@@ -3,7 +3,8 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.db.models import Count, Sum
 from django.utils import timezone
-from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -13,6 +14,27 @@ from .models import Routine, Workout
 from .serializers import RoutineSerializer, WorkoutSerializer
 
 
+@extend_schema(tags=["Workouts"])
+@extend_schema_view(
+    stats=extend_schema(
+        summary="Aggregated workout statistics",
+        responses=inline_serializer(
+            name="WorkoutStats",
+            fields={
+                "this_week": inline_serializer(
+                    name="WorkoutWeeklyStats",
+                    fields={
+                        "workouts": serializers.IntegerField(),
+                        "minutes": serializers.IntegerField(),
+                        "calories": serializers.IntegerField(),
+                    },
+                ),
+                "last_30_days": serializers.IntegerField(),
+                "daily_counts": serializers.DictField(child=serializers.IntegerField()),
+            },
+        ),
+    ),
+)
 class WorkoutViewSet(viewsets.ModelViewSet):
     serializer_class = WorkoutSerializer
     filterset_fields = ["status", "routine"]
@@ -71,6 +93,7 @@ class WorkoutViewSet(viewsets.ModelViewSet):
         return Response(payload)
 
 
+@extend_schema(tags=["Workouts"])
 class RoutineViewSet(viewsets.ModelViewSet):
     serializer_class = RoutineSerializer
     filterset_fields = ["is_public"]

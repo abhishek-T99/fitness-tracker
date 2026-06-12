@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer, OpenApiParameter
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -9,6 +10,31 @@ from .models import BodyMeasurement
 from .serializers import BodyMeasurementSerializer
 
 
+@extend_schema(tags=["Measurements"])
+@extend_schema_view(
+    weight_history=extend_schema(
+        summary="Weight readings over time",
+        parameters=[
+            OpenApiParameter(
+                name="days",
+                type=int,
+                description="Look-back window in days (default: 90).",
+            ),
+        ],
+        responses=inline_serializer(
+            name="WeightHistoryEntry",
+            fields={
+                "recorded_at": serializers.DateField(),
+                "weight_kg": serializers.FloatField(),
+            },
+            many=True,
+        ),
+    ),
+    latest=extend_schema(
+        summary="Most recent measurement snapshot",
+        responses={200: BodyMeasurementSerializer},
+    ),
+)
 class BodyMeasurementViewSet(viewsets.ModelViewSet):
     serializer_class = BodyMeasurementSerializer
     ordering_fields = ["recorded_at"]

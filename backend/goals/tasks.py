@@ -9,7 +9,7 @@ from .models import Goal
 logger = logging.getLogger(__name__)
 
 
-@shared_task(name="goals.mark_expired_goals", ignore_result=True)
+@shared_task(ignore_result=True)
 def mark_expired_goals():
     """Auto-mark active goals whose deadline has passed.
 

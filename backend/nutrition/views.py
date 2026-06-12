@@ -3,7 +3,8 @@ from datetime import datetime, time
 from django.core.cache import cache
 from django.db.models import Q, Sum
 from django.utils import timezone
-from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer, OpenApiParameter
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -13,6 +14,7 @@ from .models import Food, Meal, WaterLog
 from .serializers import FoodSerializer, MealSerializer, WaterLogSerializer
 
 
+@extend_schema(tags=["Nutrition"])
 class FoodViewSet(viewsets.ModelViewSet):
     serializer_class = FoodSerializer
     filterset_fields = ["is_public"]
@@ -26,6 +28,40 @@ class FoodViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user, is_public=False)
 
 
+@extend_schema(tags=["Nutrition"])
+@extend_schema_view(
+    daily_summary=extend_schema(
+        summary="Daily macro and water totals",
+        parameters=[
+            OpenApiParameter(
+                name="date",
+                type=str,
+                description="ISO 8601 date (YYYY-MM-DD). Defaults to today in the user's timezone.",
+            ),
+        ],
+        responses=inline_serializer(
+            name="DailySummary",
+            fields={
+                "date": serializers.DateField(),
+                "totals": inline_serializer(
+                    name="MacroTotals",
+                    fields={
+                        "calories": serializers.FloatField(),
+                        "protein_g": serializers.FloatField(),
+                        "carbs_g": serializers.FloatField(),
+                        "fat_g": serializers.FloatField(),
+                    },
+                ),
+                "by_meal": serializers.DictField(
+                    child=serializers.DictField(child=serializers.FloatField()),
+                    help_text="Macro breakdown keyed by meal_type.",
+                ),
+                "water_ml": serializers.IntegerField(),
+                "calorie_goal": serializers.IntegerField(allow_null=True),
+            },
+        ),
+    ),
+)
 class MealViewSet(viewsets.ModelViewSet):
     serializer_class = MealSerializer
     filterset_fields = ["meal_type"]
@@ -88,6 +124,7 @@ class MealViewSet(viewsets.ModelViewSet):
         return Response(payload)
 
 
+@extend_schema(tags=["Nutrition"])
 class WaterLogViewSet(viewsets.ModelViewSet):
     serializer_class = WaterLogSerializer
 

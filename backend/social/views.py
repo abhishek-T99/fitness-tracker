@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -16,6 +17,21 @@ from .serializers import (
 User = get_user_model()
 
 
+@extend_schema(tags=["Social"])
+@extend_schema_view(
+    accept=extend_schema(
+        summary="Accept a friend request",
+        responses=FriendshipSerializer,
+    ),
+    decline=extend_schema(
+        summary="Decline / cancel a friend request",
+        responses={204: None},
+    ),
+    friends=extend_schema(
+        summary="List accepted friends",
+        responses=PublicUserSerializer(many=True),
+    ),
+)
 class FriendshipViewSet(viewsets.ModelViewSet):
     serializer_class = FriendshipSerializer
 
@@ -70,6 +86,7 @@ class FriendshipViewSet(viewsets.ModelViewSet):
         return Response(PublicUserSerializer(friend_users, many=True).data)
 
 
+@extend_schema(tags=["Social"])
 class UserSearchViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PublicUserSerializer
     search_fields = ["username", "first_name", "last_name"]
@@ -78,6 +95,27 @@ class UserSearchViewSet(viewsets.ReadOnlyModelViewSet):
         return User.objects.exclude(id=self.request.user.id)
 
 
+@extend_schema(tags=["Social"])
+@extend_schema_view(
+    like=extend_schema(
+        summary="Toggle like on a post",
+        responses=inline_serializer(
+            name="LikeToggleResponse",
+            fields={
+                "liked": serializers.BooleanField(),
+                "likes_count": serializers.IntegerField(),
+            },
+        ),
+    ),
+    comment=extend_schema(
+        summary="Add a comment to a post",
+        request=inline_serializer(
+            name="CommentRequest",
+            fields={"body": serializers.CharField()},
+        ),
+        responses={201: CommentSerializer},
+    ),
+)
 class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
 

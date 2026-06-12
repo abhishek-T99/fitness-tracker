@@ -1,6 +1,7 @@
 import hashlib
 
 from django.core.cache import cache
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -18,6 +19,7 @@ def _list_cache_key(request) -> str:
     return f"{LIST_CACHE_PREFIX}{digest}"
 
 
+@extend_schema(tags=["Exercises"])
 class ExerciseViewSet(viewsets.ReadOnlyModelViewSet):
     """Read-only exercise library.
 

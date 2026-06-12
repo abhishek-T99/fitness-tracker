@@ -21,7 +21,7 @@ def weekly_summary_cache_key(user_id: int) -> str:
     return f"weekly_summary:{user_id}"
 
 
-@shared_task(name="accounts.build_weekly_summaries", ignore_result=True)
+@shared_task(ignore_result=True)
 def build_weekly_summaries():
     """Build last-week stats for every active user and cache them."""
     from workouts.models import Workout

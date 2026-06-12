@@ -1,9 +1,11 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 
 from .models import Goal
 from .serializers import GoalSerializer
 
 
+@extend_schema(tags=["Goals"])
 class GoalViewSet(viewsets.ModelViewSet):
     serializer_class = GoalSerializer
     filterset_fields = ["status", "goal_type"]
