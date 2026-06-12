@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       host: true, // bind 0.0.0.0 so docker exposes us on the host
+      allowedHosts: ["fitnesstracker.local"],
       port: 5173,
       strictPort: true,
       watch: {
@@ -22,6 +23,12 @@ export default defineConfig(({ mode }) => {
         "/api": { target: proxyTarget, changeOrigin: true },
         "/media": { target: proxyTarget, changeOrigin: true },
       },
+      // When behind Nginx (https://fitnesstracker.local), the HMR WebSocket
+      // must connect back on port 443, not the internal Vite port 5173.
+      // Set VITE_HMR_CLIENT_PORT=443 in .env for the Docker/Nginx setup.
+      hmr: env.VITE_HMR_CLIENT_PORT
+        ? { clientPort: parseInt(env.VITE_HMR_CLIENT_PORT) }
+        : true,
     },
   };
 });
