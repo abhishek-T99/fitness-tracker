@@ -16,22 +16,24 @@ import {
   Menu,
   X,
   Settings,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import clsx from "clsx";
 
 import { useAuth } from "../contexts/AuthContext.jsx";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/workouts", label: "Workouts", icon: Dumbbell },
-  { to: "/routines", label: "Routines", icon: ListChecks },
-  { to: "/exercises", label: "Exercise Library", icon: CalendarDays },
-  { to: "/nutrition", label: "Nutrition", icon: Apple },
-  { to: "/measurements", label: "Measurements", icon: Ruler },
-  { to: "/goals", label: "Goals", icon: Target },
-  { to: "/social", label: "Social", icon: Users },
-  { to: "/achievements", label: "Achievements", icon: Trophy },
-  { to: "/reminders", label: "Reminders", icon: Bell },
+  { to: "/dashboard",    label: "Dashboard",       icon: LayoutDashboard },
+  { to: "/workouts",     label: "Workouts",         icon: Dumbbell },
+  { to: "/routines",     label: "Routines",         icon: ListChecks },
+  { to: "/exercises",    label: "Exercise Library", icon: CalendarDays },
+  { to: "/nutrition",    label: "Nutrition",        icon: Apple },
+  { to: "/measurements", label: "Measurements",     icon: Ruler },
+  { to: "/goals",        label: "Goals",            icon: Target },
+  { to: "/social",       label: "Social",           icon: Users },
+  { to: "/achievements", label: "Achievements",     icon: Trophy },
+  { to: "/reminders",    label: "Reminders",        icon: Bell },
 ];
 
 function UserAvatar({ user, size = "md" }) {
@@ -60,9 +62,20 @@ function UserAvatar({ user, size = "md" }) {
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);   // mobile overlay
+  const [collapsed, setCollapsed] = useState(              // desktop collapse
+    () => localStorage.getItem("sidebar-collapsed") === "true"
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  function toggleCollapsed() {
+    setCollapsed((v) => {
+      localStorage.setItem("sidebar-collapsed", String(!v));
+      return !v;
+    });
+  }
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -74,11 +87,6 @@ export default function AppLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function handleEditProfile() {
-    setDropdownOpen(false);
-    navigate("/profile");
-  }
-
   function handleLogout() {
     setDropdownOpen(false);
     logout();
@@ -86,50 +94,114 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen flex bg-slate-50">
-      {/* Sidebar */}
+
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar ── */}
       <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-30 w-64 transform bg-slate-900 text-slate-100 transition-transform lg:static lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-30 flex flex-col bg-slate-900 text-slate-100 overflow-x-hidden",
+          "transform transition-[width,transform] duration-300 ease-in-out",
+          "lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
+          // mobile: always full width, slides in/out
+          sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full w-64",
+          // desktop: full or icon-only width
+          collapsed ? "lg:w-16" : "lg:w-64"
         )}
       >
-        <div className="flex h-16 items-center justify-between px-6 border-b border-slate-800">
-          <span className="text-xl font-bold text-white">
-            Fit<span className="text-brand-400">Track</span>
-          </span>
+        {/* Logo row */}
+        <div
+          className={clsx(
+            "flex h-16 shrink-0 items-center border-b border-slate-800",
+            "transition-all duration-300",
+            collapsed ? "lg:justify-center px-0" : "justify-between px-4"
+          )}
+        >
+          {/* Logo mark + wordmark */}
+          <div className={clsx("flex items-center gap-2.5 overflow-hidden")}>
+            <img
+              src="/favicon.svg"
+              alt="FitTrack"
+              className="h-8 w-8 rounded-lg shrink-0"
+            />
+            <span
+              className={clsx(
+                "text-xl font-bold text-white tracking-tight whitespace-nowrap",
+                "transition-all duration-300 overflow-hidden",
+                collapsed ? "lg:w-0 lg:opacity-0" : "w-auto opacity-100"
+              )}
+            >
+              Fit<span className="text-brand-400">Track</span>
+            </span>
+          </div>
+
+          {/* Mobile close */}
           <button
-            className="lg:hidden text-slate-300"
+            className="lg:hidden text-slate-400 hover:text-white ml-auto"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+
+        {/* Nav items */}
+        <nav className="flex-1 overflow-y-auto overflow-x-visible py-4 space-y-0.5 px-2">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
+              title={collapsed ? label : undefined}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
+                  "flex items-center rounded-lg py-2 text-sm font-medium transition-colors duration-150",
+                  collapsed ? "lg:justify-center lg:px-0 px-3 gap-3" : "gap-3 px-3",
                   isActive
                     ? "bg-brand-600 text-white"
                     : "text-slate-300 hover:bg-slate-800 hover:text-white"
                 )
               }
             >
-              <Icon className="w-5 h-5" />
-              {label}
+              <Icon className="w-5 h-5 shrink-0" />
+              <span
+                className={clsx(
+                  "whitespace-nowrap transition-all duration-300 overflow-hidden",
+                  collapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "w-auto opacity-100"
+                )}
+              >
+                {label}
+              </span>
             </NavLink>
           ))}
         </nav>
+
+        {/* Collapse toggle — desktop only */}
+        <div className="hidden lg:flex shrink-0 border-t border-slate-800 p-2 justify-end">
+          <button
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="flex items-center justify-center h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          >
+            {collapsed ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronLeft className="w-4 h-4" />
+            )}
+          </button>
+        </div>
       </aside>
 
-      {/* Main */}
+      {/* ── Main ── */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8">
+          {/* Mobile hamburger */}
           <button
             className="lg:hidden text-slate-700"
             onClick={() => setSidebarOpen(true)}
@@ -153,7 +225,6 @@ export default function AppLayout() {
 
             {dropdownOpen && (
               <div className="absolute right-4 lg:right-8 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-50">
-                {/* User info header */}
                 <div className="px-4 py-3 border-b border-slate-100">
                   <p className="text-sm font-semibold text-slate-900 truncate">
                     {user?.first_name
@@ -164,7 +235,7 @@ export default function AppLayout() {
                 </div>
 
                 <button
-                  onClick={handleEditProfile}
+                  onClick={() => { setDropdownOpen(false); navigate("/profile"); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"
                 >
                   <UserCircle2 className="w-4 h-4 text-slate-500" />
