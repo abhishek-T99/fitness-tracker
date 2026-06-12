@@ -1,0 +1,91 @@
+name: fittrack
+
+x-backend-base: &backend-base
+  build:
+    context: ./backend
+  image: fittrack-backend:latest
+  environment:
+    SECRET_KEY: ${SECRET_KEY:-dev-insecure-key-change-me}
+    DEBUG: ${DEBUG:-True}
+    ALLOWED_HOSTS: localhost,127.0.0.1,backend
+    CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    REDIS_URL: redis://redis:6379/0
+    CELERY_BROKER_URL: redis://redis:6379/1
+    CELERY_RESULT_BACKEND: redis://redis:6379/2
+  volumes:
+    # Bind-mount source for hot-reload. SQLite file (db.sqlite3) lives at the
+    # repo root so it persists between `docker compose down/up` on the host.
+    - ./backend:/app
+    - media:/app/media
+  depends_on:
+    redis:
+      condition: service_healthy
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    <<: *backend-base
+    container_name: fittrack-backend
+    command: ["bash", "/usr/local/bin/entrypoint.sh", "web"]
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/admin/login/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  worker:
+    <<: *backend-base
+    container_name: fittrack-worker
+    command: ["bash", "/usr/local/bin/entrypoint.sh", "worker"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
+  beat:
+    <<: *backend-base
+    container_name: fittrack-beat
+    command: ["bash", "/usr/local/bin/entrypoint.sh", "beat"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+    image: fittrack-frontend:latest
+    container_name: fittrack-frontend
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      # Anonymous volume keeps the image's installed node_modules from being
+      # shadowed by the host bind mount.
+      - /app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  redis-data:
+  media:

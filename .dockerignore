@@ -1,0 +1,7 @@
+# Root-level .dockerignore (per-service ones live in backend/ and frontend/).
+.git
+.gitignore
+*.md
+docker-compose.yml
+.env
+.env.local

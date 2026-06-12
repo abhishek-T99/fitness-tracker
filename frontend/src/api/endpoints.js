@@ -1,0 +1,112 @@
+import { api } from "./client.js";
+
+// Auth
+export const authApi = {
+  login: (data) => api.post("/auth/login/", data).then((r) => r.data),
+  register: (data) => api.post("/auth/register/", data).then((r) => r.data),
+  me: () => api.get("/auth/me/").then((r) => r.data),
+  updateMe: (data) => api.patch("/auth/me/", data).then((r) => r.data),
+  changePassword: (data) =>
+    api.post("/auth/change-password/", data).then((r) => r.data),
+};
+
+// Exercises
+export const exercisesApi = {
+  list: (params) =>
+    api.get("/exercises/", { params }).then((r) => r.data),
+  retrieve: (slug) => api.get(`/exercises/${slug}/`).then((r) => r.data),
+};
+
+// Workouts
+export const workoutsApi = {
+  list: (params) => api.get("/workouts/", { params }).then((r) => r.data),
+  retrieve: (id) => api.get(`/workouts/${id}/`).then((r) => r.data),
+  create: (data) => api.post("/workouts/", data).then((r) => r.data),
+  update: (id, data) => api.put(`/workouts/${id}/`, data).then((r) => r.data),
+  remove: (id) => api.delete(`/workouts/${id}/`).then((r) => r.data),
+  stats: () => api.get("/workouts/stats/").then((r) => r.data),
+};
+
+// Routines
+export const routinesApi = {
+  list: () => api.get("/workouts/routines/").then((r) => r.data),
+  retrieve: (id) => api.get(`/workouts/routines/${id}/`).then((r) => r.data),
+  create: (data) => api.post("/workouts/routines/", data).then((r) => r.data),
+  update: (id, data) =>
+    api.put(`/workouts/routines/${id}/`, data).then((r) => r.data),
+  remove: (id) =>
+    api.delete(`/workouts/routines/${id}/`).then((r) => r.data),
+};
+
+// Nutrition
+export const foodsApi = {
+  list: (params) => api.get("/nutrition/foods/", { params }).then((r) => r.data),
+  create: (data) => api.post("/nutrition/foods/", data).then((r) => r.data),
+};
+export const mealsApi = {
+  list: (params) => api.get("/nutrition/meals/", { params }).then((r) => r.data),
+  create: (data) => api.post("/nutrition/meals/", data).then((r) => r.data),
+  remove: (id) => api.delete(`/nutrition/meals/${id}/`).then((r) => r.data),
+  dailySummary: (date) =>
+    api
+      .get("/nutrition/meals/daily_summary/", { params: { date } })
+      .then((r) => r.data),
+};
+export const waterApi = {
+  list: () => api.get("/nutrition/water/").then((r) => r.data),
+  create: (data) => api.post("/nutrition/water/", data).then((r) => r.data),
+};
+
+// Measurements
+export const measurementsApi = {
+  list: () => api.get("/measurements/").then((r) => r.data),
+  create: (data) => api.post("/measurements/", data).then((r) => r.data),
+  remove: (id) => api.delete(`/measurements/${id}/`).then((r) => r.data),
+  weightHistory: (days = 90) =>
+    api
+      .get("/measurements/weight_history/", { params: { days } })
+      .then((r) => r.data),
+  latest: () => api.get("/measurements/latest/").then((r) => r.data),
+};
+
+// Goals
+export const goalsApi = {
+  list: () => api.get("/goals/").then((r) => r.data),
+  create: (data) => api.post("/goals/", data).then((r) => r.data),
+  update: (id, data) => api.patch(`/goals/${id}/`, data).then((r) => r.data),
+  remove: (id) => api.delete(`/goals/${id}/`).then((r) => r.data),
+};
+
+// Social
+export const socialApi = {
+  feed: () => api.get("/social/posts/").then((r) => r.data),
+  createPost: (data) => api.post("/social/posts/", data).then((r) => r.data),
+  likePost: (id) => api.post(`/social/posts/${id}/like/`).then((r) => r.data),
+  commentOnPost: (id, body) =>
+    api.post(`/social/posts/${id}/comment/`, { body }).then((r) => r.data),
+  searchUsers: (q) =>
+    api.get("/social/users/", { params: { search: q } }).then((r) => r.data),
+  friendships: () => api.get("/social/friendships/").then((r) => r.data),
+  sendRequest: (addressee) =>
+    api.post("/social/friendships/", { addressee }).then((r) => r.data),
+  acceptRequest: (id) =>
+    api.post(`/social/friendships/${id}/accept/`).then((r) => r.data),
+  declineRequest: (id) =>
+    api.post(`/social/friendships/${id}/decline/`).then((r) => r.data),
+  friends: () => api.get("/social/friendships/friends/").then((r) => r.data),
+};
+
+// Achievements
+export const achievementsApi = {
+  catalog: () => api.get("/achievements/catalog/").then((r) => r.data),
+  unlocked: () => api.get("/achievements/unlocked/").then((r) => r.data),
+  streak: () => api.get("/achievements/streak/").then((r) => r.data),
+};
+
+// Reminders
+export const remindersApi = {
+  list: () => api.get("/reminders/").then((r) => r.data),
+  create: (data) => api.post("/reminders/", data).then((r) => r.data),
+  update: (id, data) => api.patch(`/reminders/${id}/`, data).then((r) => r.data),
+  remove: (id) => api.delete(`/reminders/${id}/`).then((r) => r.data),
+};

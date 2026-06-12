@@ -1,0 +1,4 @@
+"""Project root — exposes the Celery app so @shared_task can find it."""
+from .celery import app as celery_app
+
+__all__ = ("celery_app",)
