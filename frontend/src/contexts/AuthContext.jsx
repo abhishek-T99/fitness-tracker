@@ -14,6 +14,8 @@ export function AuthProvider({ children }) {
       const me = await authApi.me();
       setUser(me);
     } catch {
+      // Clear any stale / invalid tokens so they don't poison future requests.
+      clearTokens();
       setUser(null);
     } finally {
       setLoading(false);
