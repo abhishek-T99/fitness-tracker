@@ -23,12 +23,11 @@ export default defineConfig(({ mode }) => {
         "/api": { target: proxyTarget, changeOrigin: true },
         "/media": { target: proxyTarget, changeOrigin: true },
       },
-      // When behind Nginx (https://fitnesstracker.local), the HMR WebSocket
-      // must connect back on port 443, not the internal Vite port 5173.
-      // Set VITE_HMR_CLIENT_PORT=443 in .env for the Docker/Nginx setup.
-      hmr: env.VITE_HMR_CLIENT_PORT
-        ? { clientPort: parseInt(env.VITE_HMR_CLIENT_PORT) }
-        : true,
+      // No clientPort override: with hmr=true Vite's client connects back on
+      // whatever host:port the page was loaded from. That makes HMR work both
+      // directly (http://localhost:5173) and behind Nginx
+      // (https://fitnesstracker.local → wss on 443), with no env switching.
+      hmr: true,
     },
   };
 });

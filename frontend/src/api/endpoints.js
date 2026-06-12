@@ -3,6 +3,8 @@ import { api } from "./client.js";
 // Auth
 export const authApi = {
   login: (data) => api.post("/auth/login/", data).then((r) => r.data),
+  googleLogin: (token) => api.post("/auth/google/", { token }).then((r) => r.data),
+  facebookLogin: (token) => api.post("/auth/facebook/", { token }).then((r) => r.data),
   register: (data) => api.post("/auth/register/", data).then((r) => r.data),
   verifyEmail: (token) =>
     api.post("/auth/verify-email/", { token }).then((r) => r.data),

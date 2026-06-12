@@ -20,6 +20,7 @@ from .serializers import (
     UserSerializer,
     UserUpdateSerializer,
 )
+from .social import SocialAuthError, verify_facebook_token, verify_google_token
 from .tasks import send_password_reset_email, send_verification_email
 from .tokens import (
     make_email_verify_token,
@@ -257,6 +258,112 @@ class MeView(generics.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(UserSerializer(instance).data)
+
+
+# ---------------------------------------------------------------------------
+# Social auth
+# ---------------------------------------------------------------------------
+
+def _unique_username(email: str) -> str:
+    """Derive a unique username from the email local part."""
+    base = email.split("@")[0][:140] or "user"
+    username = base
+    suffix = 1
+    while User.objects.filter(username__iexact=username).exists():
+        suffix += 1
+        username = f"{base}{suffix}"
+    return username
+
+
+def _get_or_create_social_user(info: dict) -> User:
+    """Link by verified email, or provision a new active account.
+
+    The provider has verified ownership of the email, so:
+      - an existing unverified (inactive) account with the same address is
+        safe to activate, and
+      - new accounts skip the email-verification flow entirely.
+    """
+    user = User.objects.filter(email__iexact=info["email"]).first()
+    if user:
+        if not user.is_active:
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+        return user
+    user = User(
+        username=_unique_username(info["email"]),
+        email=info["email"],
+        first_name=info.get("first_name", ""),
+        last_name=info.get("last_name", ""),
+        is_active=True,
+    )
+    user.set_unusable_password()  # social-only account — no password login
+    user.save()
+    return user
+
+
+class SocialLoginView(APIView):
+    """Base: POST {token} → verify with provider → respond {user, tokens}."""
+
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def verify(self, token: str) -> dict:  # pragma: no cover — overridden
+        raise NotImplementedError
+
+    def post(self, request):
+        token = request.data.get("token", "")
+        if not token:
+            return Response(
+                {"detail": "Token is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            info = self.verify(token)
+        except SocialAuthError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_401_UNAUTHORIZED)
+        user = _get_or_create_social_user(info)
+        return Response({"user": UserSerializer(user).data, "tokens": tokens_for(user)})
+
+
+_SOCIAL_SCHEMA = dict(
+    tags=["Auth"],
+    auth=[],
+    request=inline_serializer(
+        name="SocialLoginRequest",
+        fields={"token": serializers.CharField()},
+    ),
+    responses={
+        200: inline_serializer(
+            name="SocialLoginResponse",
+            fields={
+                "user": UserSerializer(),
+                "tokens": inline_serializer(
+                    name="SocialTokenPair",
+                    fields={
+                        "access": serializers.CharField(),
+                        "refresh": serializers.CharField(),
+                    },
+                ),
+            },
+        ),
+        401: inline_serializer(
+            name="SocialLoginError",
+            fields={"detail": serializers.CharField()},
+        ),
+    },
+)
+
+
+@extend_schema(summary="Sign in with a Google ID token", **_SOCIAL_SCHEMA)
+class GoogleLoginView(SocialLoginView):
+    def verify(self, token):
+        # Resolved at call time so tests can patch accounts.views.verify_google_token
+        return verify_google_token(token)
+
+
+@extend_schema(summary="Sign in with a Facebook access token", **_SOCIAL_SCHEMA)
+class FacebookLoginView(SocialLoginView):
+    def verify(self, token):
+        return verify_facebook_token(token)
 
 
 @extend_schema(

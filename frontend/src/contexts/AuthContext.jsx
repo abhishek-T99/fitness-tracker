@@ -45,8 +45,10 @@ export function AuthProvider({ children }) {
     return await authApi.register(payload);
   };
 
-  // Called by VerifyEmail page after the backend returns tokens on success.
+  // Called after the backend returns tokens directly (email verification,
+  // social login) instead of via the username/password flow.
   const loginWithTokens = ({ access, refresh }) => {
+    queryClient.clear();
     setTokens({ access, refresh });
     return fetchMe();
   };
