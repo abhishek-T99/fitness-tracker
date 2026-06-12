@@ -125,3 +125,11 @@ export const remindersApi = {
   update: (id, data) => api.patch(`/reminders/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/reminders/${id}/`).then((r) => r.data),
 };
+
+// Notifications
+export const notificationsApi = {
+  list: (params) => api.get("/notifications/", { params }).then((r) => r.data),
+  unreadCount: () => api.get("/notifications/unread_count/").then((r) => r.data),
+  markRead: (id) => api.patch(`/notifications/${id}/`, { read: true }).then((r) => r.data),
+  markAllRead: () => api.post("/notifications/mark_all_read/").then((r) => r.data),
+};

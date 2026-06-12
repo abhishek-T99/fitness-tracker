@@ -22,6 +22,7 @@ import {
 import clsx from "clsx";
 
 import { useAuth } from "../contexts/AuthContext.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 const navItems = [
   { to: "/dashboard",    label: "Dashboard",       icon: LayoutDashboard },
@@ -210,8 +211,14 @@ export default function AppLayout() {
             <Menu className="w-6 h-6" />
           </button>
 
+          {/* Right-side controls: bell + profile */}
+          <div className="ml-auto flex items-center gap-2">
+
+          {/* Notification bell */}
+          <NotificationBell />
+
           {/* Profile dropdown */}
-          <div className="ml-auto" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen((v) => !v)}
               className="flex items-center gap-2.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
@@ -224,7 +231,7 @@ export default function AppLayout() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-4 lg:right-8 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-50">
+              <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-50">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <p className="text-sm font-semibold text-slate-900 truncate">
                     {user?.first_name
@@ -262,6 +269,7 @@ export default function AppLayout() {
               </div>
             )}
           </div>
+          </div>{/* end right-side controls */}
         </header>
 
         <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">

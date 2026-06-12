@@ -274,3 +274,19 @@ class ReminderFactory(DjangoModelFactory):
     time_of_day = time(8, 0)
     days_of_week = []
     is_active = True
+
+
+# ---------------------------------------------------------------------------
+# Notifications
+# ---------------------------------------------------------------------------
+
+class NotificationFactory(DjangoModelFactory):
+    class Meta:
+        model = "notifications.Notification"
+
+    recipient = factory.SubFactory(UserFactory)
+    actor = factory.SubFactory(UserFactory)
+    notif_type = "like"
+    message = factory.Sequence(lambda n: f"Notification {n}")
+    target_url = ""
+    read = False

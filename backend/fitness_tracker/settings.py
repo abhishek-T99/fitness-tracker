@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "social",
     "achievements",
     "reminders",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -394,5 +395,13 @@ CELERY_BEAT_SCHEDULE = {
     "weekly-progress-summary": {
         "task": "accounts.tasks.build_weekly_summaries",
         "schedule": crontab(hour=8, minute=0, day_of_week="mon"),  # Mon 08:00 UTC
+    },
+    "notify-streak-at-risk-daily": {
+        "task": "notifications.tasks.notify_streak_at_risk",
+        "schedule": crontab(hour=20, minute=0),  # 20:00 UTC — evening check
+    },
+    "notify-goal-deadlines-daily": {
+        "task": "notifications.tasks.notify_goal_deadlines",
+        "schedule": crontab(hour=9, minute=0),  # 09:00 UTC — morning nudge
     },
 }

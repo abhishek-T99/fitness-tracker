@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { authApi } from "../api/endpoints.js";
 import { clearTokens, getAccess, setTokens } from "../api/client.js";
@@ -8,6 +9,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const fetchMe = useCallback(async () => {
     try {
@@ -31,6 +33,7 @@ export function AuthProvider({ children }) {
   }, [fetchMe]);
 
   const login = async ({ username, password }) => {
+    queryClient.clear();   // wipe any previous user's cached data before fetching new user
     const res = await authApi.login({ username, password });
     setTokens({ access: res.access, refresh: res.refresh });
     await fetchMe();
@@ -51,6 +54,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     clearTokens();
     setUser(null);
+    queryClient.clear();   // drop every cached query so the next user starts clean
   };
 
   const refreshUser = fetchMe;

@@ -50,7 +50,7 @@ def dispatch_due_reminders():
 
 @shared_task(ignore_result=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
 def deliver_reminder(reminder_id: int):
-    """Single-reminder delivery. Swap in push/email/webhook here."""
+    """Single-reminder delivery. Creates an in-app notification; swap in push/email/webhook here."""
     try:
         reminder = Reminder.objects.select_related("user").get(pk=reminder_id, is_active=True)
     except Reminder.DoesNotExist:
@@ -60,4 +60,11 @@ def deliver_reminder(reminder_id: int):
         reminder.user.username,
         reminder.reminder_type,
         reminder.title,
+    )
+    from notifications.models import Notification
+    Notification.objects.create(
+        recipient=reminder.user,
+        notif_type=Notification.Type.REMINDER,
+        message=reminder.title,
+        target_url="/reminders",
     )
