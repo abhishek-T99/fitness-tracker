@@ -5,6 +5,10 @@ import AppLayout from "./components/AppLayout.jsx";
 
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import CheckEmail from "./pages/CheckEmail.jsx";
+import VerifyEmail from "./pages/VerifyEmail.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Workouts from "./pages/Workouts.jsx";
 import WorkoutDetail from "./pages/WorkoutDetail.jsx";
@@ -23,8 +27,13 @@ import Profile from "./pages/Profile.jsx";
 export default function App() {
   return (
     <Routes>
+      {/* Public auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/check-email" element={<CheckEmail />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>

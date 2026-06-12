@@ -4,6 +4,14 @@ import { api } from "./client.js";
 export const authApi = {
   login: (data) => api.post("/auth/login/", data).then((r) => r.data),
   register: (data) => api.post("/auth/register/", data).then((r) => r.data),
+  verifyEmail: (token) =>
+    api.post("/auth/verify-email/", { token }).then((r) => r.data),
+  resendVerification: (email) =>
+    api.post("/auth/resend-verification/", { email }).then((r) => r.data),
+  forgotPassword: (email) =>
+    api.post("/auth/forgot-password/", { email }).then((r) => r.data),
+  resetPassword: (token, new_password) =>
+    api.post("/auth/reset-password/", { token, new_password }).then((r) => r.data),
   me: () => api.get("/auth/me/").then((r) => r.data),
   updateMe: (data) => api.patch("/auth/me/", data).then((r) => r.data),
   changePassword: (data) =>

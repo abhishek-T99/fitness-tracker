@@ -19,12 +19,14 @@ export default function Register() {
     setSubmitting(true);
     try {
       await registerUser(data);
-      toast.success("Account created — welcome!");
-      navigate("/dashboard", { replace: true });
+      navigate(
+        `/check-email?type=verify&email=${encodeURIComponent(data.email)}`,
+        { replace: true }
+      );
     } catch (err) {
-      const data = err?.response?.data;
-      const msg = data
-        ? Object.entries(data)
+      const body = err?.response?.data;
+      const msg = body
+        ? Object.entries(body)
             .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
             .join(" | ")
         : "Registration failed.";

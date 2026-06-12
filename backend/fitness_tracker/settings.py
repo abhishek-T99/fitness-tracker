@@ -216,6 +216,22 @@ CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
+# ---------------------------------------------------------------------------
+# Email
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "FitTrack <noreply@fittrack.app>")
+
+# Public URL of the frontend — used to build links inside outgoing emails.
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 # Static schedule (in addition to whatever lives in the DB scheduler).
 CELERY_BEAT_SCHEDULE = {
     "dispatch-due-reminders-every-minute": {

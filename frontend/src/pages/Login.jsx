@@ -70,6 +70,14 @@ export default function Login() {
               <p className="text-rose-600 text-xs mt-1">{errors.password.message}</p>
             )}
           </div>
+          <div className="text-right">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-brand-600 font-semibold hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <button type="submit" disabled={submitting} className="btn-primary w-full">
             {submitting ? "Signing in…" : "Sign in"}
           </button>

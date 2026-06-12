@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.core import signing
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
@@ -11,9 +13,19 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import (
     ChangePasswordSerializer,
+    ForgotPasswordSerializer,
     RegisterSerializer,
+    ResendVerificationSerializer,
+    ResetPasswordSerializer,
     UserSerializer,
     UserUpdateSerializer,
+)
+from .tasks import send_password_reset_email, send_verification_email
+from .tokens import (
+    make_email_verify_token,
+    make_password_reset_token,
+    read_email_verify_token,
+    read_password_reset_token,
 )
 
 User = get_user_model()
@@ -46,16 +58,7 @@ class TokenRefreshView(_TokenRefreshView):
     responses={
         201: inline_serializer(
             name="RegisterResponse",
-            fields={
-                "user": UserSerializer(),
-                "tokens": inline_serializer(
-                    name="TokenPair",
-                    fields={
-                        "access": serializers.CharField(),
-                        "refresh": serializers.CharField(),
-                    },
-                ),
-            },
+            fields={"detail": serializers.CharField()},
         ),
     },
 )
@@ -69,10 +72,168 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        token = make_email_verify_token(user.pk)
+        send_verification_email.delay(user.pk, token)
         return Response(
-            {"user": UserSerializer(user).data, "tokens": tokens_for(user)},
+            {"detail": "Account created. Check your email to verify your account."},
             status=status.HTTP_201_CREATED,
         )
+
+
+@extend_schema(
+    tags=["Auth"],
+    auth=[],
+    request=inline_serializer(
+        name="VerifyEmailRequest",
+        fields={"token": serializers.CharField()},
+    ),
+    responses={
+        200: inline_serializer(
+            name="VerifyEmailResponse",
+            fields={
+                "user": UserSerializer(),
+                "tokens": inline_serializer(
+                    name="TokenPair",
+                    fields={
+                        "access": serializers.CharField(),
+                        "refresh": serializers.CharField(),
+                    },
+                ),
+            },
+        ),
+        400: inline_serializer(
+            name="VerifyEmailError",
+            fields={"detail": serializers.CharField()},
+        ),
+    },
+)
+class VerifyEmailView(APIView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        token = request.data.get("token", "")
+        if not token:
+            return Response({"detail": "Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user_id = read_email_verify_token(token)
+        except signing.SignatureExpired:
+            return Response(
+                {"detail": "Verification link has expired. Request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except signing.BadSignature:
+            return Response(
+                {"detail": "Invalid verification token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = get_object_or_404(User, pk=user_id)
+        if not user.is_active:
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+        return Response({"user": UserSerializer(user).data, "tokens": tokens_for(user)})
+
+
+@extend_schema(
+    tags=["Auth"],
+    auth=[],
+    request=ResendVerificationSerializer,
+    responses={
+        200: inline_serializer(
+            name="ResendVerificationResponse",
+            fields={"detail": serializers.CharField()},
+        ),
+    },
+)
+class ResendVerificationView(APIView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResendVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        try:
+            user = User.objects.get(email__iexact=email, is_active=False)
+            token = make_email_verify_token(user.pk)
+            send_verification_email.delay(user.pk, token)
+        except User.DoesNotExist:
+            pass  # don't reveal whether address exists or is already verified
+        return Response(
+            {"detail": "If that email is pending verification, a new link is on its way."}
+        )
+
+
+@extend_schema(
+    tags=["Auth"],
+    auth=[],
+    request=ForgotPasswordSerializer,
+    responses={
+        200: inline_serializer(
+            name="ForgotPasswordResponse",
+            fields={"detail": serializers.CharField()},
+        ),
+    },
+)
+class ForgotPasswordView(APIView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        try:
+            user = User.objects.get(email__iexact=email, is_active=True)
+            token = make_password_reset_token(user.pk)
+            send_password_reset_email.delay(user.pk, token)
+        except User.DoesNotExist:
+            pass  # don't reveal whether email is registered
+        return Response(
+            {"detail": "If that email is registered, a reset link is on its way."}
+        )
+
+
+@extend_schema(
+    tags=["Auth"],
+    auth=[],
+    request=ResetPasswordSerializer,
+    responses={
+        200: inline_serializer(
+            name="ResetPasswordResponse",
+            fields={"detail": serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="ResetPasswordError",
+            fields={"detail": serializers.CharField()},
+        ),
+    },
+)
+class ResetPasswordView(APIView):
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+        try:
+            user_id = read_password_reset_token(token)
+        except signing.SignatureExpired:
+            return Response(
+                {"detail": "Reset link has expired. Request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except signing.BadSignature:
+            return Response(
+                {"detail": "Invalid reset token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = get_object_or_404(User, pk=user_id, is_active=True)
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Password updated. You can now sign in."})
 
 
 @extend_schema_view(

@@ -36,10 +36,16 @@ export function AuthProvider({ children }) {
     await fetchMe();
   };
 
+  // register no longer auto-logs the user in — account requires email
+  // verification first. Returns the {detail} response for the caller to handle.
   const register = async (payload) => {
-    const res = await authApi.register(payload);
-    setTokens(res.tokens);
-    setUser(res.user);
+    return await authApi.register(payload);
+  };
+
+  // Called by VerifyEmail page after the backend returns tokens on success.
+  const loginWithTokens = ({ access, refresh }) => {
+    setTokens({ access, refresh });
+    return fetchMe();
   };
 
   const logout = () => {
@@ -51,7 +57,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refreshUser }}
+      value={{ user, loading, login, register, loginWithTokens, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>
