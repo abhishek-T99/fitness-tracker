@@ -29,6 +29,7 @@ DEBUG = env_bool("DEBUG", True)
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
 INSTALLED_APPS = [
+    "jazzmin",           # must be before django.contrib.admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -112,6 +113,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -167,6 +169,139 @@ SPECTACULAR_SETTINGS = {
         {"name": "Achievements", "description": "Achievement catalog, unlocked badges, and workout streaks."},
         {"name": "Reminders", "description": "Scheduled workout and nutrition reminders."},
     ],
+}
+
+# ---------------------------------------------------------------------------
+# django-jazzmin — custom admin UI
+# ---------------------------------------------------------------------------
+JAZZMIN_SETTINGS = {
+    "site_title": "FitTrack Admin",
+    "site_header": "FitTrack",
+    "site_brand": "FitTrack",
+    "site_logo": None,
+    "site_icon": None,
+    "welcome_sign": "Welcome to FitTrack Admin",
+    "copyright": "FitTrack",
+    "search_model": ["accounts.User", "workouts.Workout", "exercises.Exercise"],
+    "user_avatar": "avatar",
+
+    # Top navigation bar
+    "topmenu_links": [
+        {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "API Docs", "url": "/api/docs/", "new_window": True},
+{"model": "accounts.User"},
+        {"app": "workouts"},
+    ],
+
+    # Sidebar settings
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    # Sidebar app/model ordering
+    "order_with_respect_to": [
+        "accounts",
+        "workouts",
+        "exercises",
+        "nutrition",
+        "measurements",
+        "goals",
+        "achievements",
+        "social",
+        "reminders",
+        "django_celery_beat",
+        "auth",
+    ],
+
+    # FontAwesome icons per model
+    "icons": {
+        "accounts": "fas fa-users-cog",
+        "accounts.user": "fas fa-user",
+        "accounts.profile": "fas fa-id-card",
+        "exercises": "fas fa-dumbbell",
+        "exercises.exercise": "fas fa-dumbbell",
+        "workouts": "fas fa-fire",
+        "workouts.workout": "fas fa-fire",
+        "workouts.workoutexercise": "fas fa-list-ul",
+        "workouts.routine": "fas fa-calendar-check",
+        "nutrition": "fas fa-utensils",
+        "nutrition.food": "fas fa-apple-alt",
+        "nutrition.meal": "fas fa-bowl-food",
+        "nutrition.waterlog": "fas fa-droplet",
+        "measurements": "fas fa-weight-scale",
+        "measurements.bodymeasurement": "fas fa-weight-scale",
+        "goals": "fas fa-bullseye",
+        "goals.goal": "fas fa-bullseye",
+        "achievements": "fas fa-trophy",
+        "achievements.achievement": "fas fa-trophy",
+        "achievements.userachievement": "fas fa-medal",
+        "achievements.streak": "fas fa-fire-flame-curved",
+        "social": "fas fa-users",
+        "social.post": "fas fa-newspaper",
+        "social.friendship": "fas fa-user-group",
+        "social.comment": "fas fa-comment",
+        "social.like": "fas fa-heart",
+        "reminders": "fas fa-bell",
+        "reminders.reminder": "fas fa-bell",
+        "django_celery_beat": "fas fa-clock",
+        "django_celery_beat.periodictask": "fas fa-tasks",
+        "django_celery_beat.crontabschedule": "fas fa-calendar-alt",
+        "django_celery_beat.intervalschedule": "fas fa-redo",
+        "auth": "fas fa-shield-halved",
+        "auth.group": "fas fa-users-gear",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    # Open related model in a modal instead of a new page
+    "related_modal_active": True,
+
+    # Custom static assets
+    "custom_css": "admin/css/jazzmin-fittrack.css",
+    "custom_js": None,
+
+    # Disable the theme builder UI — we control the theme via settings
+    "show_ui_builder": False,
+
+    # Change-form layout
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "accounts.user": "collapsible",
+    },
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": True,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": False,
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": True,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "darkly",
+    "dark_mode_theme": "darkly",
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-outline-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
 }
 
 SIMPLE_JWT = {

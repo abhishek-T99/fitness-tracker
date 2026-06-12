@@ -1,0 +1,223 @@
+/*
+ * FitTrack admin theme — sky-blue palette (#0ea5e9) on dark slate background.
+ * Targets AdminLTE 3 + Bootstrap 4 (darkly base from Jazzmin).
+ */
+
+/* ── Brand / sidebar ─────────────────────────────────────────────────────── */
+
+.main-sidebar,
+.main-sidebar::before {
+  background-color: #0f172a !important;    /* slate-900 */
+}
+
+.brand-link {
+  background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%) !important;
+  border-bottom: 1px solid #0369a1 !important;
+  color: #f0f9ff !important;
+}
+
+.brand-link:hover {
+  background: linear-gradient(135deg, #075985 0%, #0284c7 100%) !important;
+  color: #fff !important;
+}
+
+.brand-link .brand-text {
+  color: #f0f9ff !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Top navigation bar ──────────────────────────────────────────────────── */
+
+.main-header.navbar {
+  background: linear-gradient(90deg, #0c4a6e 0%, #0369a1 100%) !important;
+  border-bottom: none !important;
+}
+
+.main-header .navbar-nav .nav-link,
+.main-header .navbar-nav .nav-link:hover {
+  color: #e0f2fe !important;
+}
+
+/* Search bar in navbar */
+.main-header .form-control {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+}
+
+.main-header .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ── Sidebar navigation links ────────────────────────────────────────────── */
+
+.sidebar .nav-sidebar > .nav-item > .nav-link {
+  color: #94a3b8 !important;
+  border-radius: 6px;
+  margin: 1px 8px;
+  transition: all 0.15s ease;
+}
+
+.sidebar .nav-sidebar > .nav-item > .nav-link:hover {
+  background-color: rgba(14, 165, 233, 0.12) !important;
+  color: #38bdf8 !important;
+}
+
+.sidebar .nav-sidebar > .nav-item > .nav-link.active,
+.sidebar .nav-sidebar > .nav-item.menu-open > .nav-link {
+  background-color: #0ea5e9 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
+}
+
+/* Child nav items */
+.sidebar .nav-treeview .nav-link {
+  color: #64748b !important;
+  padding-left: 2rem !important;
+}
+
+.sidebar .nav-treeview .nav-link:hover,
+.sidebar .nav-treeview .nav-link.active {
+  color: #38bdf8 !important;
+  background-color: rgba(14, 165, 233, 0.08) !important;
+}
+
+/* Nav header labels */
+.nav-header {
+  color: #475569 !important;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btn-primary {
+  background-color: #0ea5e9 !important;
+  border-color: #0ea5e9 !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.3) !important;
+}
+
+.btn-primary:active {
+  background-color: #0369a1 !important;
+  border-color: #0369a1 !important;
+}
+
+/* ── Links ───────────────────────────────────────────────────────────────── */
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link):not(.page-link) {
+  color: #38bdf8;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.brand-link):not(.page-link):hover {
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+/* ── Login page ──────────────────────────────────────────────────────────── */
+
+.login-page {
+  background: linear-gradient(135deg, #0f172a 0%, #0c4a6e 60%, #075985 100%) !important;
+}
+
+.login-box-msg,
+.login-box a {
+  color: #38bdf8 !important;
+}
+
+.login-card-body {
+  border-top: 3px solid #0ea5e9 !important;
+}
+
+/* ── Cards & info boxes ──────────────────────────────────────────────────── */
+
+.card-primary:not(.card-outline) > .card-header {
+  background-color: #0ea5e9 !important;
+  border-color: #0ea5e9 !important;
+}
+
+.card-primary.card-outline {
+  border-top: 3px solid #0ea5e9 !important;
+}
+
+.info-box .info-box-icon {
+  background-color: #0ea5e9 !important;
+}
+
+/* ── Tabs (horizontal_tabs changeform) ───────────────────────────────────── */
+
+.nav-tabs .nav-item .nav-link.active {
+  border-top: 3px solid #0ea5e9 !important;
+  color: #38bdf8 !important;
+}
+
+.nav-tabs .nav-item .nav-link:hover:not(.active) {
+  color: #7dd3fc !important;
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+
+.page-item.active .page-link {
+  background-color: #0ea5e9 !important;
+  border-color: #0ea5e9 !important;
+}
+
+.page-link {
+  color: #38bdf8 !important;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+
+.badge-primary,
+.badge.bg-primary {
+  background-color: #0ea5e9 !important;
+}
+
+/* ── Content wrapper ─────────────────────────────────────────────────────── */
+
+.content-wrapper {
+  background-color: #141e2e !important;   /* just slightly lighter than sidebar */
+}
+
+.content-header h1 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #e0f2fe !important;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+
+#result_list thead th {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#result_list tbody tr:hover td {
+  background-color: rgba(14, 165, 233, 0.06) !important;
+}
+
+#result_list .selected td {
+  background-color: rgba(14, 165, 233, 0.15) !important;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+.main-footer {
+  background-color: #0f172a !important;
+  border-top: 1px solid #1e293b !important;
+  color: #475569 !important;
+  font-size: 0.78rem;
+}

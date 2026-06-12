@@ -21,13 +21,11 @@ api_v1 = [
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include(api_v1)),
-    # OpenAPI schema (machine-readable)
     path(
         "api/schema/",
         SpectacularAPIView.as_view(permission_classes=[AllowAny]),
         name="schema",
     ),
-    # Interactive docs
     path(
         "api/docs/",
         SpectacularSwaggerView.as_view(url_name="schema", permission_classes=[AllowAny]),
