@@ -144,8 +144,8 @@ class PostViewSet(viewsets.ModelViewSet):
         like, created = Like.objects.get_or_create(post=post, user=request.user)
         if not created:
             like.delete()
-            return Response({"liked": False, "likes_count": post.likes.count()})
-        return Response({"liked": True, "likes_count": post.likes.count()})
+            return Response({"liked": False, "likes_count": Like.objects.filter(post=post).count()})
+        return Response({"liked": True, "likes_count": Like.objects.filter(post=post).count()})
 
     @action(detail=True, methods=["post"])
     def comment(self, request, pk=None):

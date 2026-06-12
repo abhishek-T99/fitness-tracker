@@ -124,6 +124,16 @@ class RoutineSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "updated_at"]
 
+    def validate(self, attrs):
+        request = self.context.get("request")
+        if request and "name" in attrs:
+            qs = Routine.objects.filter(user=request.user, name=attrs["name"])
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError({"name": "You already have a routine with this name."})
+        return attrs
+
     def _write_items(self, routine, items_data):
         for idx, item in enumerate(items_data):
             RoutineExercise.objects.create(
