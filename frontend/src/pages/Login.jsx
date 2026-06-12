@@ -5,6 +5,7 @@ import { Dumbbell } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../contexts/AuthContext.jsx";
+import SocialLoginButtons from "../components/SocialLoginButtons.jsx";
 
 export default function Login() {
   const { login, user } = useAuth();
@@ -81,6 +82,9 @@ export default function Login() {
           <button type="submit" disabled={submitting} className="btn-primary w-full">
             {submitting ? "Signing in…" : "Sign in"}
           </button>
+
+          <SocialLoginButtons />
+
           <p className="text-center text-sm text-slate-500">
             Don't have an account?{" "}
             <Link to="/register" className="text-brand-600 font-semibold hover:underline">

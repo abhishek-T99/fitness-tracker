@@ -378,6 +378,13 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "FitTrack <noreply@fittrack
 # Public URL of the frontend — used to build links inside outgoing emails.
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
+# ---------------------------------------------------------------------------
+# Social auth (Google + Facebook)
+# ---------------------------------------------------------------------------
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID", "")
+FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "")
+
 # Static schedule (in addition to whatever lives in the DB scheduler).
 CELERY_BEAT_SCHEDULE = {
     "dispatch-due-reminders-every-minute": {

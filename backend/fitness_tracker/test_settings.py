@@ -21,3 +21,8 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 # Keep media uploads in a temp directory so test runs don't pollute the repo
 import tempfile  # noqa: E402
 MEDIA_ROOT = tempfile.mkdtemp()
+
+# Deterministic social-auth credentials for verifier tests
+GOOGLE_OAUTH_CLIENT_ID = "test-google-client-id"
+FACEBOOK_APP_ID = "test-app-id"
+FACEBOOK_APP_SECRET = "test-app-secret"
