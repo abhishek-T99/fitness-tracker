@@ -180,6 +180,20 @@ class TestMeView:
         user.profile.refresh_from_db()
         assert user.profile.bio == "Gym rat"
 
+    def test_patch_uploads_avatar(self, auth_client, user):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        # Minimal valid 1×1 GIF — no Pillow needed
+        gif = (
+            b"GIF89a\x01\x00\x01\x00\x00\xff\x00,"
+            b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;"
+        )
+        image = SimpleUploadedFile("avatar.gif", gif, content_type="image/gif")
+        res = auth_client.patch(ME_URL, {"avatar": image}, format="multipart")
+        assert res.status_code == 200
+        assert res.data["avatar"] is not None
+        user.refresh_from_db()
+        assert user.avatar.name  # file was saved to storage
+
 
 @pytest.mark.django_db
 class TestChangePassword:

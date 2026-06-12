@@ -26,7 +26,10 @@ RUN cp entrypoint.sh /usr/local/bin/entrypoint.sh \
  && chmod +x /usr/local/bin/entrypoint.sh
 
 # Non-root user is good hygiene; SQLite + media live under /app and we own it.
+# Pre-create media subdirs here so the named volume inherits appuser ownership
+# on first initialization (Docker copies image content into an empty volume).
 RUN useradd --create-home --shell /bin/bash appuser \
+ && mkdir -p /app/media/avatars /app/media/post_images \
  && chown -R appuser:appuser /app
 USER appuser
 
