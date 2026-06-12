@@ -126,7 +126,7 @@ export default function NotificationBell() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 mt-2 w-[400px] rounded-2xl border border-slate-200 bg-white shadow-2xl z-50 flex flex-col overflow-hidden max-h-[560px]">
+        <div className="absolute right-0 mt-2 w-[400px] rounded-2xl border border-slate-200 bg-surface shadow-2xl z-50 flex flex-col overflow-hidden max-h-[560px]">
 
           {/* Header */}
           <div className="flex items-center px-5 pt-4 pb-2 shrink-0">

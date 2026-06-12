@@ -88,7 +88,7 @@ export default function WorkoutDetail() {
                   {we.sets.map((s) => (
                     <tr key={s.id} className="border-t border-slate-100">
                       <td className="py-2">
-                        {s.is_warmup ? <span className="badge bg-amber-50 text-amber-700">W</span> : s.set_number}
+                        {s.is_warmup ? <span className="badge bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">W</span> : s.set_number}
                       </td>
                       <td className="py-2">{s.reps ?? "—"}</td>
                       <td className="py-2">{s.weight ? `${s.weight} kg` : "—"}</td>

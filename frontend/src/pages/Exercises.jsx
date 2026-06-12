@@ -79,7 +79,7 @@ export default function Exercises() {
               <div className="flex items-start justify-between mb-2">
                 <h3 className="font-semibold">{ex.name}</h3>
                 {ex.is_compound && (
-                  <span className="badge bg-brand-50 text-brand-700">compound</span>
+                  <span className="badge bg-brand-50 text-brand-700 dark:text-brand-300">compound</span>
                 )}
               </div>
               <div className="flex flex-wrap gap-2 mb-3">

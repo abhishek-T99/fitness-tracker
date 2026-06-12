@@ -71,7 +71,7 @@ export default function Routines() {
                 </button>
               </div>
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <span className="badge bg-brand-50 text-brand-700">
+                <span className="badge bg-brand-50 text-brand-700 dark:text-brand-300">
                   {r.items?.length || 0} exercises
                 </span>
                 {r.estimated_duration_min && (

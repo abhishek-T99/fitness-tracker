@@ -35,18 +35,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-ink-900 via-ink-800 to-brand-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 text-white mb-3">
             <Dumbbell className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-bold text-white">FitTrack</h1>
-          <p className="text-slate-300 mt-1">Sign in to your account</p>
+          <p className="text-ink-300 mt-1">Sign in to your account</p>
         </div>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white rounded-2xl shadow-xl p-8 space-y-4"
+          className="bg-surface rounded-2xl shadow-xl p-8 space-y-4"
         >
           <div>
             <label className="label">Username</label>

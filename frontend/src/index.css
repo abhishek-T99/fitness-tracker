@@ -2,6 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme tokens ───────────────────────────────────────────────────────
+   RGB triplets so Tailwind's <alpha-value> opacity modifiers keep working
+   (e.g. bg-slate-900/40). `:root` is the original light palette verbatim;
+   `.dark` remaps the same roles onto a deep blue-black scale. */
+:root {
+  color-scheme: light;
+
+  --c-surface: 255 255 255;
+
+  --c-slate-50: 248 250 252;
+  --c-slate-100: 241 245 249;
+  --c-slate-200: 226 232 240;
+  --c-slate-300: 203 213 225;
+  --c-slate-400: 148 163 184;
+  --c-slate-500: 100 116 139;
+  --c-slate-600: 71 85 105;
+  --c-slate-700: 51 65 85;
+  --c-slate-800: 30 41 59;
+  --c-slate-900: 15 23 42;
+
+  --c-brand-50: 240 249 255;
+  --c-brand-100: 224 242 254;
+  --c-brand-200: 186 230 253;
+  --c-brand-300: 125 211 252;
+  --c-brand-400: 56 189 248;
+  --c-brand-500: 14 165 233;
+  --c-brand-600: 2 132 199;
+  --c-brand-700: 3 105 161;
+  --c-brand-800: 7 89 133;
+  --c-brand-900: 12 74 110;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Elevated card surface — one step above the app background */
+  --c-surface: 17 27 46; /* #111B2E */
+
+  /* slate inverted onto a rich navy ramp: 50 = app bg, 900 = headings */
+  --c-slate-50: 11 18 32; /* #0B1220 app background */
+  --c-slate-100: 30 42 66; /* #1E2A42 subtle fills / hovers */
+  --c-slate-200: 38 52 78; /* #26344E borders */
+  --c-slate-300: 56 72 102; /* #384866 strong borders */
+  --c-slate-400: 124 139 165; /* #7C8BA5 muted text */
+  --c-slate-500: 148 163 191; /* #94A3BF secondary text */
+  --c-slate-600: 178 191 214; /* #B2BFD6 */
+  --c-slate-700: 203 213 232; /* #CBD5E8 labels */
+  --c-slate-800: 222 230 243; /* #DEE6F3 */
+  --c-slate-900: 230 237 247; /* #E6EDF7 headings */
+
+  /* brand: 50/100/200 become dark tints, 600/700/800 shift one stop
+     brighter so buttons and links stay vibrant on dark backgrounds */
+  --c-brand-50: 12 42 64; /* tinted backgrounds (badges, unread rows) */
+  --c-brand-100: 12 58 88;
+  --c-brand-200: 7 89 133;
+  --c-brand-300: 125 211 252;
+  --c-brand-400: 56 189 248;
+  --c-brand-500: 14 165 233;
+  --c-brand-600: 14 165 233; /* buttons / links pop */
+  --c-brand-700: 2 132 199; /* btn-primary hover stays darker than 600 */
+  --c-brand-800: 3 105 161;
+  --c-brand-900: 12 74 110;
+}
+
 html,
 body,
 #root {
@@ -14,13 +78,13 @@ body {
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-50 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500;
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500 dark:shadow-[0_0_16px_-4px_rgba(14,165,233,0.5)];
   }
   .btn-secondary {
-    @apply btn bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus:ring-brand-500;
+    @apply btn bg-surface text-slate-700 border border-slate-200 hover:bg-slate-100 focus:ring-brand-500;
   }
   .btn-danger {
     @apply btn bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500;
@@ -29,13 +93,13 @@ body {
     @apply btn text-slate-600 hover:bg-slate-100;
   }
   .input {
-    @apply block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm placeholder-slate-400 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+    @apply block w-full rounded-lg border border-slate-200 bg-surface px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
   }
   .label {
     @apply block text-sm font-medium text-slate-700 mb-1;
   }
   .card {
-    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-xl border border-slate-200 bg-surface shadow-sm dark:shadow-lg dark:shadow-black/20;
   }
   .card-header {
     @apply border-b border-slate-200 px-6 py-4 flex items-center justify-between;
@@ -46,4 +110,23 @@ body {
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
+}
+
+/* ── Recharts theming ───────────────────────────────────────────────────
+   CSS rules beat SVG presentation attributes, so the hardcoded light-grid
+   stroke in the chart components is overridden here for dark mode. */
+.dark .recharts-cartesian-grid line {
+  stroke: rgb(var(--c-slate-200));
+}
+.recharts-cartesian-axis-tick text {
+  fill: rgb(var(--c-slate-500));
+}
+.dark .recharts-default-tooltip {
+  background-color: rgb(var(--c-surface)) !important;
+  border-color: rgb(var(--c-slate-200)) !important;
+  border-radius: 0.5rem;
+}
+.dark .recharts-default-tooltip .recharts-tooltip-label,
+.dark .recharts-default-tooltip .recharts-tooltip-item {
+  color: rgb(var(--c-slate-900)) !important;
 }
