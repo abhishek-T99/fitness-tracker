@@ -14,6 +14,13 @@ export const authApi = {
     api.post("/auth/reset-password/", { token, new_password }).then((r) => r.data),
   me: () => api.get("/auth/me/").then((r) => r.data),
   updateMe: (data) => api.patch("/auth/me/", data).then((r) => r.data),
+  uploadAvatar: (file) => {
+    const fd = new FormData();
+    fd.append("avatar", file);
+    return api.patch("/auth/me/", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data);
+  },
   changePassword: (data) =>
     api.post("/auth/change-password/", data).then((r) => r.data),
 };
