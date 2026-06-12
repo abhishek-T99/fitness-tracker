@@ -12,16 +12,36 @@ x-backend-base: &backend-base
     REDIS_URL: redis://redis:6379/0
     CELERY_BROKER_URL: redis://redis:6379/1
     CELERY_RESULT_BACKEND: redis://redis:6379/2
+    DB_NAME: ${DB_NAME:-fittrack}
+    DB_USER: ${DB_USER:-fittrack}
+    DB_PASSWORD: ${DB_PASSWORD:-fittrack}
+    DB_HOST: postgres
+    DB_PORT: "5432"
   volumes:
-    # Bind-mount source for hot-reload. SQLite file (db.sqlite3) lives at the
-    # repo root so it persists between `docker compose down/up` on the host.
     - ./backend:/app
     - media:/app/media
   depends_on:
     redis:
       condition: service_healthy
+    postgres:
+      condition: service_healthy
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fittrack}
+      POSTGRES_USER: ${DB_USER:-fittrack}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fittrack}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fittrack} -d ${DB_NAME:-fittrack}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -55,6 +75,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
       backend:
         condition: service_started
 
@@ -64,6 +86,8 @@ services:
     command: ["bash", "/usr/local/bin/entrypoint.sh", "beat"]
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       backend:
         condition: service_started
@@ -87,5 +111,6 @@ services:
         condition: service_started
 
 volumes:
+  postgres-data:
   redis-data:
   media:
