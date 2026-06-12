@@ -47,6 +47,8 @@ services:
     <<: *backend-base
     container_name: fittrack-backend
     command: ["bash", "/usr/local/bin/entrypoint.sh", "web"]
+    # Port 8000 remains accessible on the host for direct API access / debugging.
+    # All browser traffic should go through Nginx on 80/443.
     ports:
       - "8000:8000"
     healthcheck:
@@ -86,6 +88,8 @@ services:
     image: fittrack-frontend:latest
     container_name: fittrack-frontend
     env_file: .env
+    # Port 5173 remains accessible on the host for direct dev access.
+    # Nginx proxies the same Vite server at https://fitnesstracker.local.
     ports:
       - "5173:5173"
     volumes:
@@ -96,6 +100,27 @@ services:
     depends_on:
       backend:
         condition: service_started
+
+  nginx:
+    build:
+      context: ./nginx
+    image: fittrack-nginx:latest
+    container_name: fittrack-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Bind-mount the mkcert-generated certs from the host.
+      # Generate them once with: mkcert -key-file nginx/certs/fitnesstracker.local.key
+      #                                  -cert-file nginx/certs/fitnesstracker.local.crt
+      #                                  fitnesstracker.local localhost
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   postgres-data:

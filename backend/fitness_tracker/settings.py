@@ -26,7 +26,7 @@ def env_list(name: str, default: list[str]) -> list[str]:
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-key-change-me")
 DEBUG = env_bool("DEBUG", True)
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "fitnesstracker.local"])
 
 INSTALLED_APPS = [
     "jazzmin",           # must be before django.contrib.admin
@@ -314,9 +314,19 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
-    ["http://localhost:5173", "http://127.0.0.1:5173"],
+    ["https://fitnesstracker.local", "http://localhost:5173", "http://127.0.0.1:5173"],
 )
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    ["https://fitnesstracker.local", "http://localhost:5173", "http://127.0.0.1:5173"],
+)
+
+# Trust the X-Forwarded-Proto header set by Nginx so Django knows the
+# original request was HTTPS even though Nginx talks to it over HTTP.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 # ---------------------------------------------------------------------------
 # Cache (Redis-backed via django-redis)
