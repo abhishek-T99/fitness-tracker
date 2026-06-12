@@ -18,10 +18,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Sun,
+  Moon,
 } from "lucide-react";
 import clsx from "clsx";
 
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useTheme } from "../contexts/ThemeContext.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 
 const navItems = [
@@ -44,19 +47,32 @@ function UserAvatar({ user, size = "md" }) {
       <img
         src={user.avatar}
         alt={user.first_name || user.username}
-        className={clsx("rounded-full object-cover ring-2 ring-white", sizeClass)}
+        className={clsx("rounded-full object-cover ring-2 ring-surface", sizeClass)}
       />
     );
   }
   return (
     <div
       className={clsx(
-        "rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold ring-2 ring-white",
+        "rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold ring-2 ring-surface",
         sizeClass
       )}
     >
       {(user?.first_name?.[0] || user?.username?.[0] || "?").toUpperCase()}
     </div>
+  );
+}
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button
+      onClick={toggleTheme}
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+    >
+      {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+    </button>
   );
 }
 
@@ -107,7 +123,8 @@ export default function AppLayout() {
       {/* ── Sidebar ── */}
       <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-30 flex flex-col bg-slate-900 text-slate-100 overflow-x-hidden",
+          "fixed inset-y-0 left-0 z-30 flex flex-col bg-ink-900 text-ink-100 overflow-x-hidden",
+          "dark:border-r dark:border-white/5",
           "transform transition-[width,transform] duration-300 ease-in-out",
           "lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
           // mobile: always full width, slides in/out
@@ -119,7 +136,7 @@ export default function AppLayout() {
         {/* Logo row */}
         <div
           className={clsx(
-            "flex h-16 shrink-0 items-center border-b border-slate-800",
+            "flex h-16 shrink-0 items-center border-b border-ink-800",
             "transition-all duration-300",
             collapsed ? "lg:justify-center px-0" : "justify-between px-4"
           )}
@@ -144,7 +161,7 @@ export default function AppLayout() {
 
           {/* Mobile close */}
           <button
-            className="lg:hidden text-slate-400 hover:text-white ml-auto"
+            className="lg:hidden text-ink-400 hover:text-white ml-auto"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close menu"
           >
@@ -166,7 +183,7 @@ export default function AppLayout() {
                   collapsed ? "lg:justify-center lg:px-0 px-3 gap-3" : "gap-3 px-3",
                   isActive
                     ? "bg-brand-600 text-white"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    : "text-ink-300 hover:bg-ink-800 hover:text-white"
                 )
               }
             >
@@ -184,11 +201,11 @@ export default function AppLayout() {
         </nav>
 
         {/* Collapse toggle — desktop only */}
-        <div className="hidden lg:flex shrink-0 border-t border-slate-800 p-2 justify-end">
+        <div className="hidden lg:flex shrink-0 border-t border-ink-800 p-2 justify-end">
           <button
             onClick={toggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="flex items-center justify-center h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="flex items-center justify-center h-8 w-8 rounded-lg text-ink-400 hover:bg-ink-800 hover:text-white transition-colors"
           >
             {collapsed ? (
               <ChevronRight className="w-4 h-4" />
@@ -201,7 +218,7 @@ export default function AppLayout() {
 
       {/* ── Main ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-surface px-4 lg:px-8">
           {/* Mobile hamburger */}
           <button
             className="lg:hidden text-slate-700"
@@ -211,8 +228,11 @@ export default function AppLayout() {
             <Menu className="w-6 h-6" />
           </button>
 
-          {/* Right-side controls: bell + profile */}
+          {/* Right-side controls: theme + bell + profile */}
           <div className="ml-auto flex items-center gap-2">
+
+          {/* Theme toggle */}
+          <ThemeToggle />
 
           {/* Notification bell */}
           <NotificationBell />
@@ -231,7 +251,7 @@ export default function AppLayout() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-50">
+              <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-surface shadow-lg dark:shadow-black/40 py-1 z-50">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <p className="text-sm font-semibold text-slate-900 truncate">
                     {user?.first_name
@@ -261,7 +281,7 @@ export default function AppLayout() {
 
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition"
                 >
                   <LogOut className="w-4 h-4" />
                   Log Out

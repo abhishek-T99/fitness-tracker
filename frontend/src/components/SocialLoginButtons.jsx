@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 import { authApi } from "../api/endpoints.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useTheme } from "../contexts/ThemeContext.jsx";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
@@ -35,6 +36,7 @@ function loadScript(src, id) {
 
 export default function SocialLoginButtons() {
   const { loginWithTokens } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const googleBtnRef = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -65,7 +67,7 @@ export default function SocialLoginButtons() {
           completeLogin(() => authApi.googleLogin(response.credential)),
       });
       window.google.accounts.id.renderButton(googleBtnRef.current, {
-        theme: "outline",
+        theme: theme === "dark" ? "filled_black" : "outline",
         size: "large",
         width: 336,
         text: "continue_with",
@@ -73,7 +75,7 @@ export default function SocialLoginButtons() {
     }).catch(() => {});
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [theme]);
 
   // ── Facebook SDK ──
   useEffect(() => {

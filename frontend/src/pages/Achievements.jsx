@@ -59,7 +59,7 @@ export default function Achievements() {
             >
               <div
                 className={`mx-auto h-14 w-14 rounded-full flex items-center justify-center mb-3 ${
-                  earned ? "bg-amber-100 text-amber-600" : "bg-slate-100 text-slate-400"
+                  earned ? "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400" : "bg-slate-100 text-slate-400"
                 }`}
               >
                 <Icon className="w-7 h-7" />

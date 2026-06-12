@@ -27,7 +27,7 @@ export default function CheckEmail() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-ink-900 via-ink-800 to-brand-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 text-white mb-3">
@@ -35,7 +35,7 @@ export default function CheckEmail() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center space-y-4">
+        <div className="bg-surface rounded-2xl shadow-xl p-8 text-center space-y-4">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-50 mx-auto">
             <Mail className="w-8 h-8 text-brand-500" />
           </div>

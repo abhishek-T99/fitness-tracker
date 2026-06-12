@@ -86,7 +86,7 @@ export default function Goals() {
                   {g.status === "active" && (
                     <button
                       onClick={() => markAchieved.mutate(g.id)}
-                      className="text-emerald-600 hover:bg-emerald-50 p-2 rounded"
+                      className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 p-2 rounded"
                       title="Mark achieved"
                     >
                       <Check className="w-4 h-4" />
@@ -156,8 +156,8 @@ export default function Goals() {
 
 function badgeFor(status) {
   return {
-    active: "bg-brand-50 text-brand-700",
-    achieved: "bg-emerald-50 text-emerald-700",
+    active: "bg-brand-50 text-brand-700 dark:text-brand-300",
+    achieved: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
     abandoned: "bg-slate-100 text-slate-600",
   }[status];
 }
@@ -182,10 +182,10 @@ function GoalModal({ onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md"
+        className="bg-surface rounded-2xl shadow-xl w-full max-w-md"
       >
         <div className="border-b border-slate-200 px-5 py-4 flex justify-between">
           <h3 className="font-semibold">New goal</h3>

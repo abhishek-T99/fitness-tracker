@@ -135,10 +135,10 @@ function ReminderModal({ onClose, onSaved }) {
   });
 
   return (
-    <div className="fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4">
       <form
         onSubmit={handleSubmit((d) => save.mutate(d))}
-        className="bg-white rounded-2xl shadow-xl w-full max-w-md"
+        className="bg-surface rounded-2xl shadow-xl w-full max-w-md"
       >
         <div className="border-b border-slate-200 px-5 py-4 flex justify-between">
           <h3 className="font-semibold">New reminder</h3>

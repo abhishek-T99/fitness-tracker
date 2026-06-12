@@ -4,10 +4,10 @@ export default function StatCard({ icon: Icon, label, value, hint, accent = "bra
   const accentColor =
     {
       brand: "bg-brand-50 text-brand-600",
-      emerald: "bg-emerald-50 text-emerald-600",
-      amber: "bg-amber-50 text-amber-600",
-      rose: "bg-rose-50 text-rose-600",
-      indigo: "bg-indigo-50 text-indigo-600",
+      emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
+      amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
+      rose: "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
+      indigo: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400",
     }[accent] || "bg-brand-50 text-brand-600";
 
   return (

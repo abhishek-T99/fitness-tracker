@@ -228,8 +228,8 @@ function MealModal({ date, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-slate-900/40 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="border-b border-slate-200 px-5 py-4 flex items-center justify-between">
           <h3 className="font-semibold">Log a meal</h3>
           <button onClick={onClose} className="text-slate-500 hover:text-slate-900">
