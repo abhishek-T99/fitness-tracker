@@ -23,6 +23,7 @@ import Social from "./pages/Social.jsx";
 import Achievements from "./pages/Achievements.jsx";
 import Reminders from "./pages/Reminders.jsx";
 import Profile from "./pages/Profile.jsx";
+import WorkoutSession from "./pages/WorkoutSession.jsx";
 
 export default function App() {
   return (
@@ -36,6 +37,9 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
+        {/* Full-screen workout session — no sidebar */}
+        <Route path="/session/:routineId" element={<WorkoutSession />} />
+
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />

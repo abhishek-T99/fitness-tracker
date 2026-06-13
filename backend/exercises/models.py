@@ -44,6 +44,11 @@ class Exercise(models.Model):
     secondary_muscles = models.JSONField(default=list, blank=True)
     equipment = models.CharField(max_length=20, choices=Equipment.choices, default=Equipment.BODYWEIGHT)
     instructions = models.TextField(blank=True)
+    tutorial_url = models.URLField(
+        blank=True,
+        help_text="Optional link to a curated tutorial video (YouTube or other). "
+                  "If empty, the app generates a YouTube search URL automatically.",
+    )
     is_compound = models.BooleanField(default=False)
     met_value = models.DecimalField(
         max_digits=4,
@@ -55,6 +60,14 @@ class Exercise(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+    @property
+    def youtube_search_query(self) -> str:
+        """
+        Search query used when no curated tutorial_url is stored.
+        Optimised to surface high-quality beginner form guides.
+        """
+        return f"{self.name} proper form tutorial how to"
 
     def __str__(self):
         return self.name

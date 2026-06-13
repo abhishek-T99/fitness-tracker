@@ -1,16 +1,17 @@
 from datetime import timedelta
 
 from django.core.cache import cache
-from django.db.models import Count, Sum
+from django.db.models import Count, Max, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
-from rest_framework import serializers, viewsets
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from fitness_tracker import cache_keys
 
-from .models import Routine, Workout
+from .models import ExerciseSet, Routine, Workout, WorkoutExercise
 from .serializers import RoutineSerializer, WorkoutSerializer
 
 
@@ -131,3 +132,96 @@ class RoutineViewSet(viewsets.ModelViewSet):
                 pass
         _Routine.objects.bulk_update(updates, ["order"])
         return Response({"detail": f"Reordered {len(updates)} routines."})
+
+
+@extend_schema(tags=["Workouts"])
+class ExerciseHistoryView(APIView):
+    """
+    GET /api/v1/workouts/exercise-history/?exercise_ids=1,2,3
+
+    Returns, for each exercise ID, the user's most recent completed sets
+    and their personal best (heaviest completed set).
+
+    Used by the Active Workout Session to display previous performance and
+    drive progressive-overload suggestions on the client.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        raw = request.query_params.get("exercise_ids", "").strip()
+        if not raw:
+            return Response(
+                {"detail": "exercise_ids query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            exercise_ids = [int(x) for x in raw.split(",") if x.strip()]
+        except ValueError:
+            return Response(
+                {"detail": "exercise_ids must be comma-separated integers."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not exercise_ids:
+            return Response(
+                {"detail": "exercise_ids must contain at least one ID."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = {}
+        for ex_id in exercise_ids:
+            result[str(ex_id)] = self._history_for_exercise(request.user, ex_id)
+
+        return Response(result)
+
+    def _history_for_exercise(self, user, exercise_id):
+        # Find the most recent workout for this user that contains this exercise
+        latest_we = (
+            WorkoutExercise.objects
+            .filter(
+                workout__user=user,
+                workout__status=Workout.Status.COMPLETED,
+                exercise_id=exercise_id,
+            )
+            .select_related("workout")
+            .order_by("-workout__started_at")
+            .first()
+        )
+
+        if not latest_we:
+            return None
+
+        # Completed sets from that workout for this exercise
+        completed_sets = (
+            ExerciseSet.objects
+            .filter(workout_exercise=latest_we, completed=True)
+            .order_by("set_number")
+            .values("set_number", "reps", "weight", "rpe", "duration_sec", "distance_m")
+        )
+
+        # Personal best: heaviest single completed set with reps > 0
+        pb = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__exercise_id=exercise_id,
+                completed=True,
+                reps__gt=0,
+                weight__isnull=False,
+            )
+            .order_by("-weight", "-reps")
+            .values("reps", "weight")
+            .first()
+        )
+
+        return {
+            "exercise_id": exercise_id,
+            "last_session": {
+                "workout_started_at": latest_we.workout.started_at,
+                "sets": list(completed_sets),
+            },
+            "personal_best": pb,
+        }

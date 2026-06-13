@@ -15,5 +15,12 @@ class ExerciseAdmin(admin.ModelAdmin):
         ("Classification", {
             "fields": ("category", "primary_muscle", "secondary_muscles", "equipment"),
         }),
-        ("Instructions", {"fields": ("instructions",), "classes": ("collapse",)}),
+        ("Instructions & Tutorial", {
+            "fields": ("instructions", "tutorial_url"),
+            "classes": ("collapse",),
+            "description": (
+                "tutorial_url: paste a specific YouTube link for a curated video. "
+                "Leave blank to auto-generate a YouTube search URL."
+            ),
+        }),
     )

@@ -182,7 +182,7 @@ function RoutineCard({ r, onDelete, dragHandleProps }) {
       {/* Use routine CTA */}
       <div className="px-5 pb-4 pt-3 mt-auto">
         <Link
-          to={`/workouts/new?routine=${r.id}`}
+          to={`/session/${r.id}`}
           className="btn-primary w-full text-sm"
         >
           <Repeat2 className="w-4 h-4" />

@@ -37,6 +37,10 @@ export const exercisesApi = {
 // Workouts
 export const workoutsApi = {
   list: (params) => api.get("/workouts/", { params }).then((r) => r.data),
+  exerciseHistory: (exerciseIds) =>
+    api.get("/workouts/exercise-history/", {
+      params: { exercise_ids: exerciseIds.join(",") },
+    }).then((r) => r.data),
   retrieve: (id) => api.get(`/workouts/${id}/`).then((r) => r.data),
   create: (data) => api.post("/workouts/", data).then((r) => r.data),
   update: (id, data) => api.put(`/workouts/${id}/`, data).then((r) => r.data),
@@ -77,6 +81,13 @@ export const waterApi = {
 };
 
 // Measurements
+export const exerciseTutorialsApi = {
+  fetch: (exerciseSlug) =>
+    api.get("/exercises/youtube-tutorials/", {
+      params: { exercise_slug: exerciseSlug },
+    }).then((r) => r.data),
+};
+
 export const wellnessApi = {
   today: () => api.get("/measurements/today_wellness/").then((r) => r.data),
 };

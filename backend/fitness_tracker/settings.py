@@ -387,6 +387,12 @@ GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
 FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID", "")
 FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "")
 
+# YouTube Data API v3 (exercise tutorials)
+# ---------------------------------------------------------------------------
+# Get a free key at https://console.cloud.google.com → Enable YouTube Data API v3
+# Free tier: 10,000 units/day. Search = 100 units. Results cached 24 h in Redis.
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
+
 # Strava integration
 # ---------------------------------------------------------------------------
 STRAVA_CLIENT_ID = os.getenv("STRAVA_CLIENT_ID", "")

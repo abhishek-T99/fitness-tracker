@@ -55,6 +55,7 @@ class ExerciseFactory(DjangoModelFactory):
     equipment = "barbell"
     is_compound = False
     met_value = "4.0"
+    tutorial_url = ""
 
 
 # ---------------------------------------------------------------------------
