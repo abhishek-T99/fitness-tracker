@@ -19,6 +19,7 @@ class GoalSerializer(serializers.ModelSerializer):
             "deadline",
             "status",
             "notes",
+            "order",
             "progress_percent",
             "created_at",
             "updated_at",

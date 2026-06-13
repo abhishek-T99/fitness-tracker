@@ -108,7 +108,7 @@ export default function StepsCounter() {
               <p className="text-xs text-slate-400">
                 {steps != null
                   ? goalPct >= 100
-                    ? "🎉 Daily goal reached!"
+                    ? "Daily goal reached!"
                     : `${goalPct}% of ${STEP_GOAL.toLocaleString()} goal`
                   : "Goal: 10,000 steps"}
               </p>

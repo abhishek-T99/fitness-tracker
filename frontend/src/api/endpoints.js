@@ -53,6 +53,8 @@ export const routinesApi = {
     api.put(`/workouts/routines/${id}/`, data).then((r) => r.data),
   remove: (id) =>
     api.delete(`/workouts/routines/${id}/`).then((r) => r.data),
+  reorder: (items) =>
+    api.post("/workouts/routines/reorder/", items).then((r) => r.data),
 };
 
 // Nutrition
@@ -96,6 +98,7 @@ export const goalsApi = {
   create: (data) => api.post("/goals/", data).then((r) => r.data),
   update: (id, data) => api.patch(`/goals/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/goals/${id}/`).then((r) => r.data),
+  reorder: (items) => api.post("/goals/reorder/", items).then((r) => r.data),
 };
 
 // Social
@@ -130,6 +133,7 @@ export const remindersApi = {
   create: (data) => api.post("/reminders/", data).then((r) => r.data),
   update: (id, data) => api.patch(`/reminders/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/reminders/${id}/`).then((r) => r.data),
+  reorder: (items) => api.post("/reminders/reorder/", items).then((r) => r.data),
 };
 
 // Integrations

@@ -121,6 +121,7 @@ class RoutineSerializer(serializers.ModelSerializer):
             "description",
             "is_public",
             "estimated_duration_min",
+            "order",
             "items",
             "created_at",
             "updated_at",

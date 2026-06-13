@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../contexts/AuthContext.jsx";
@@ -19,7 +19,7 @@ export default function Login() {
     const params = new URLSearchParams(location.search);
     if (params.get("reason") === "inactivity") {
       toast("You were signed out after 5 days of inactivity.", {
-        icon: "🔒",
+        icon: <Lock className="w-4 h-4 text-slate-500" />,
         duration: 5000,
       });
       // Remove the param so a page refresh doesn't re-show the toast.

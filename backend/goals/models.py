@@ -27,11 +27,12 @@ class Goal(models.Model):
     deadline = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     notes = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["order", "-created_at"]
 
     @property
     def progress_percent(self):

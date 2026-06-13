@@ -39,7 +39,7 @@ def notify_streak_at_risk():
             notif_type=Notification.Type.STREAK_AT_RISK,
             message=(
                 f"Your {streak.current_days}-day streak is at risk! "
-                "Log a workout today to keep it alive. 🔥"
+                "Log a workout today to keep it alive."
             ),
             target_url="/workouts",
         )
@@ -79,7 +79,7 @@ def notify_goal_deadlines():
             notif_type=Notification.Type.GOAL_DEADLINE,
             message=(
                 f"'{goal.title}' deadline is in 3 days. "
-                f"You're at {goal.progress_percent:.0f}% — keep pushing! 🎯"
+                f"You're at {goal.progress_percent:.0f}% — keep pushing."
             ),
             target_url="/goals",
         )

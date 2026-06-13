@@ -97,10 +97,37 @@ class WorkoutViewSet(viewsets.ModelViewSet):
 class RoutineViewSet(viewsets.ModelViewSet):
     serializer_class = RoutineSerializer
     filterset_fields = ["is_public"]
-    ordering_fields = ["name", "updated_at"]
+    ordering_fields = ["name", "updated_at", "order"]
 
     def get_queryset(self):
         return (
             Routine.objects.filter(user=self.request.user)
             .prefetch_related("items__exercise")
         )
+
+    def perform_create(self, serializer):
+        last = self.get_queryset().order_by("order").last()
+        next_order = (last.order + 1) if last else 0
+        # RoutineSerializer.create() already sets user from context; pass order only.
+        serializer.save(order=next_order)
+
+    @extend_schema(
+        request={"application/json": {"type": "array", "items": {"type": "object",
+            "properties": {"id": {"type": "integer"}, "order": {"type": "integer"}}}}},
+        responses={200: None},
+        summary="Bulk-update the display order of routines",
+    )
+    @action(detail=False, methods=["post"])
+    def reorder(self, request):
+        from .models import Routine as _Routine
+        qs = self.get_queryset()
+        updates = []
+        for item in request.data:
+            try:
+                obj = qs.get(pk=item["id"])
+                obj.order = int(item["order"])
+                updates.append(obj)
+            except (_Routine.DoesNotExist, KeyError, TypeError, ValueError):
+                pass
+        _Routine.objects.bulk_update(updates, ["order"])
+        return Response({"detail": f"Reordered {len(updates)} routines."})

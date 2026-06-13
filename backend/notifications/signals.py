@@ -85,6 +85,6 @@ def on_achievement_unlocked(sender, instance, created, **kwargs):
         recipient=instance.user,
         actor=None,
         notif_type=Notification.Type.ACHIEVEMENT,
-        message=f"Achievement unlocked: {instance.achievement.name}! 🏆",
+        message=f"Achievement unlocked: {instance.achievement.name}",
         target_url="/achievements",
     )
