@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.shortcuts import get_object_or_404
@@ -37,19 +39,91 @@ def tokens_for(user):
     return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
 
-# Thin wrappers so we can attach tags without mutating the library classes.
 # authentication_classes=[] is intentional: these are public endpoints and must
 # not run JWT auth. A stale token in the browser would otherwise cause
 # JWTAuthentication to raise AuthenticationFailed before AllowAny can permit
 # the request, blocking login/register for users with old sessions.
-@extend_schema(tags=["Auth"], auth=[])
-class TokenObtainPairView(_TokenObtainPairView):
-    authentication_classes = []
+
+INACTIVITY_DAYS = 5
 
 
 @extend_schema(tags=["Auth"], auth=[])
 class TokenRefreshView(_TokenRefreshView):
+    """
+    Refresh access token, but reject if the user has been inactive for
+    more than INACTIVITY_DAYS days.
+
+    Returns HTTP 401 with {"code": "inactivity_timeout"} so the frontend
+    can show a specific "signed out due to inactivity" message.
+    """
+
     authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        from datetime import timedelta
+        from django.utils import timezone
+        from rest_framework_simplejwt.tokens import RefreshToken as _RT
+        from rest_framework_simplejwt.exceptions import TokenError
+
+        raw = request.data.get("refresh", "")
+        if raw:
+            try:
+                token = _RT(raw)
+                user = User.objects.select_related("profile").get(pk=token["user_id"])
+                last = getattr(user.profile, "last_activity", None)
+                if last and (timezone.now() - last) > timedelta(days=INACTIVITY_DAYS):
+                    return Response(
+                        {
+                            "detail": "Session expired due to inactivity.",
+                            "code": "inactivity_timeout",
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+            except (TokenError, User.DoesNotExist, Exception):
+                pass  # Let the parent view handle invalid / malformed tokens.
+
+        return super().post(request, *args, **kwargs)
+
+
+@extend_schema(tags=["Auth"], auth=[])
+class TokenObtainPairView(_TokenObtainPairView):
+    """
+    Standard JWT login extended with an optional `remember_me` field.
+
+    remember_me=false (default) → refresh token valid for 1 day.
+    remember_me=true            → refresh token valid for 30 days.
+
+    The response includes `remember_me` so the frontend knows how to
+    persist the tokens (sessionStorage vs localStorage).
+    """
+
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        remember_me = str(request.data.get("remember_me", "false")).lower() in ("true", "1", "yes")
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == 200:
+            # Override the refresh token's lifetime based on remember_me.
+            refresh = RefreshToken(response.data["refresh"])
+            lifetime = timedelta(days=30) if remember_me else timedelta(days=1)
+            refresh.set_exp(lifetime=lifetime)
+
+            response.data["refresh"] = str(refresh)
+            response.data["remember_me"] = remember_me
+
+            # Stamp last_activity so the inactivity clock starts from login.
+            try:
+                from django.utils import timezone as tz
+                user = User.objects.select_related("profile").get(
+                    username=request.data.get("username")
+                )
+                from .models import Profile
+                Profile.objects.filter(user=user).update(last_activity=tz.now())
+            except Exception:
+                pass
+
+        return response
 
 
 @extend_schema(
