@@ -4,10 +4,15 @@ from django.db import models
 
 class Achievement(models.Model):
     class Kind(models.TextChoices):
-        WORKOUT_COUNT = "workout_count", "Total workouts"
-        STREAK_DAYS = "streak_days", "Consecutive day streak"
-        VOLUME_TOTAL = "volume_total", "Total lifting volume (kg)"
+        WORKOUT_COUNT   = "workout_count",   "Total workouts"
+        STREAK_DAYS     = "streak_days",     "Consecutive day streak"
+        VOLUME_TOTAL    = "volume_total",    "Total lifting volume (kg)"
         WORKOUT_MINUTES = "workout_minutes", "Total workout minutes"
+        CALORIE_BURN    = "calorie_burn",    "Total calories burned"
+        DISTANCE_KM     = "distance_km",     "Total distance covered (km)"
+        EARLY_BIRD      = "early_bird",      "Workouts started before 7 am"
+        NIGHT_OWL       = "night_owl",       "Workouts started at 9 pm or later"
+        GOALS_COMPLETED = "goals_completed", "Goals marked achieved"
 
     code = models.SlugField(max_length=60, unique=True)
     name = models.CharField(max_length=120)

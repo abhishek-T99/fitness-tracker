@@ -25,36 +25,52 @@ def _unlock(user, achievement: Achievement):
 
 
 def evaluate_after_workout(workout):
-    """Re-evaluate achievement criteria for the workout's user."""
+    """Re-evaluate all achievement criteria for the workout's user."""
+    # Local imports to avoid circular module load at startup.
+    from workouts.models import Workout
+    from goals.models import Goal
+
     user = workout.user
     streak = _update_streak(user, workout.started_at.date())
 
-    from workouts.models import Workout  # local import to avoid circular load
+    completed_qs = Workout.objects.filter(user=user, status=Workout.Status.COMPLETED)
 
-    total_workouts = Workout.objects.filter(
-        user=user, status=Workout.Status.COMPLETED
-    ).count()
-
-    total_minutes = (
-        Workout.objects.filter(user=user, status=Workout.Status.COMPLETED).aggregate(
-            total=Sum("duration_min")
-        )["total"]
-        or 0
+    agg = completed_qs.aggregate(
+        total_minutes=Sum("duration_min"),
+        total_calories=Sum("calories_burned"),
+        total_distance=Sum("distance_km"),
     )
 
-    # Total volume across all workouts.
-    total_volume = 0.0
-    for w in Workout.objects.filter(user=user, status=Workout.Status.COMPLETED):
-        total_volume += w.total_volume
+    total_workouts = completed_qs.count()
+    total_minutes  = agg["total_minutes"]  or 0
+    total_calories = agg["total_calories"] or 0
+    total_distance = int(agg["total_distance"] or 0)
+
+    # Time-of-day counts (based on UTC hour of started_at)
+    early_bird_count = completed_qs.filter(started_at__hour__lt=7).count()
+    night_owl_count  = completed_qs.filter(started_at__hour__gte=21).count()
+
+    # Total lifted volume — must iterate because total_volume is a @property
+    total_volume = sum(
+        w.total_volume
+        for w in completed_qs.prefetch_related("exercises__sets")
+    )
+
+    # Goals achieved — evaluated opportunistically on every workout save
+    goals_completed = Goal.objects.filter(user=user, status="achieved").count()
 
     metrics = {
-        Achievement.Kind.WORKOUT_COUNT: total_workouts,
-        Achievement.Kind.STREAK_DAYS: streak.current_days,
-        Achievement.Kind.VOLUME_TOTAL: int(total_volume),
+        Achievement.Kind.WORKOUT_COUNT:   total_workouts,
+        Achievement.Kind.STREAK_DAYS:     streak.current_days,
+        Achievement.Kind.VOLUME_TOTAL:    int(total_volume),
         Achievement.Kind.WORKOUT_MINUTES: total_minutes,
+        Achievement.Kind.CALORIE_BURN:    total_calories,
+        Achievement.Kind.DISTANCE_KM:     total_distance,
+        Achievement.Kind.EARLY_BIRD:      early_bird_count,
+        Achievement.Kind.NIGHT_OWL:       night_owl_count,
+        Achievement.Kind.GOALS_COMPLETED: goals_completed,
     }
 
     for kind, value in metrics.items():
-        eligible = Achievement.objects.filter(kind=kind, threshold__lte=value)
-        for ach in eligible:
+        for ach in Achievement.objects.filter(kind=kind, threshold__lte=value):
             _unlock(user, ach)
