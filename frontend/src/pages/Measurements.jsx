@@ -102,19 +102,34 @@ export default function Measurements() {
                   <th className="pb-2 font-medium">BMI</th>
                   <th className="pb-2 font-medium">Body fat</th>
                   <th className="pb-2 font-medium">Waist</th>
-                  <th className="pb-2 font-medium">Notes</th>
+                  <th className="pb-2 font-medium">Resting HR</th>
+                  <th className="pb-2 font-medium">Notes / Watch data</th>
                   <th className="pb-2 font-medium w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((m) => (
                   <tr key={m.id} className="border-t border-slate-100">
-                    <td className="py-2">{format(parseISO(m.recorded_at), "MMM d, yyyy")}</td>
+                    <td className="py-2 whitespace-nowrap">{format(parseISO(m.recorded_at), "MMM d, yyyy")}</td>
                     <td className="py-2">{m.weight_kg ? `${m.weight_kg} kg` : "—"}</td>
                     <td className="py-2">{m.bmi ?? "—"}</td>
                     <td className="py-2">{m.body_fat_percent ? `${m.body_fat_percent}%` : "—"}</td>
                     <td className="py-2">{m.waist_cm ? `${m.waist_cm} cm` : "—"}</td>
-                    <td className="py-2 text-slate-500">{m.notes}</td>
+                    <td className="py-2">
+                      {m.resting_hr_bpm ? (
+                        <span className="text-rose-500 font-medium">{m.resting_hr_bpm} bpm</span>
+                      ) : "—"}
+                    </td>
+                    <td className="py-2 text-slate-500 text-xs max-w-[200px]">
+                      {m.notes
+                        ? m.notes.startsWith("Synced from Intervals.icu")
+                          ? <span className="inline-flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+                              {m.notes.replace("Synced from Intervals.icu · ", "")}
+                            </span>
+                          : m.notes
+                        : "—"}
+                    </td>
                     <td className="py-2 text-right">
                       <button
                         onClick={() => remove.mutate(m.id)}

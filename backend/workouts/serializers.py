@@ -48,11 +48,14 @@ class WorkoutSerializer(serializers.ModelSerializer):
             "calories_burned",
             "perceived_exertion",
             "status",
+            "source",
+            "distance_km",
+            "avg_hr_bpm",
             "total_volume",
             "exercises",
             "created_at",
         ]
-        read_only_fields = ["created_at", "total_volume"]
+        read_only_fields = ["created_at", "total_volume", "source"]
 
     def _write_exercises(self, workout, exercises_data):
         for ex_idx, ex_data in enumerate(exercises_data):

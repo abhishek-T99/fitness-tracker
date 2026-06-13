@@ -5,6 +5,7 @@ import { Camera } from "lucide-react";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
+import ConnectedApps from "../components/ConnectedApps.jsx";
 import { authApi } from "../api/endpoints.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
@@ -235,6 +236,8 @@ export default function Profile() {
         </form>
 
         <ChangePassword />
+
+        <ConnectedApps />
       </div>
     </div>
   );

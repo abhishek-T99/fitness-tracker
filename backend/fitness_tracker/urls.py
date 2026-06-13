@@ -17,6 +17,7 @@ api_v1 = [
     path("achievements/", include("achievements.urls")),
     path("reminders/", include("reminders.urls")),
     path("notifications/", include("notifications.urls")),
+    path("integrations/", include("integrations.urls")),
 ]
 
 urlpatterns = [

@@ -56,6 +56,10 @@ class Workout(models.Model):
         blank=True, null=True, help_text="1-10 RPE"
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.COMPLETED)
+    # Populated when a workout is imported from a third-party platform
+    source = models.CharField(max_length=32, blank=True)       # e.g. "intervals", "strava"
+    distance_km = models.DecimalField(max_digits=7, decimal_places=3, blank=True, null=True)
+    avg_hr_bpm = models.PositiveSmallIntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -64,3 +64,24 @@ class BodyMeasurementViewSet(viewsets.ModelViewSet):
         if not latest:
             return Response({})
         return Response(self.get_serializer(latest).data)
+
+    @action(detail=False, methods=["get"])
+    def today_wellness(self, request):
+        """Return today's wellness snapshot (steps, resting HR, HRV, sleep score)."""
+        today = timezone.localdate()
+        entry = self.get_queryset().filter(recorded_at=today).first()
+        if not entry:
+            return Response({
+                "recorded_at": str(today),
+                "steps": None,
+                "resting_hr_bpm": None,
+                "hrv_rmssd": None,
+                "sleep_score": None,
+            })
+        return Response({
+            "recorded_at": str(entry.recorded_at),
+            "steps": entry.steps,
+            "resting_hr_bpm": entry.resting_hr_bpm,
+            "hrv_rmssd": float(entry.hrv_rmssd) if entry.hrv_rmssd else None,
+            "sleep_score": entry.sleep_score,
+        })

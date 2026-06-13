@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "achievements",
     "reminders",
     "notifications",
+    "integrations",
 ]
 
 MIDDLEWARE = [
@@ -385,6 +386,14 @@ GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
 FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID", "")
 FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "")
 
+# Strava integration
+# ---------------------------------------------------------------------------
+STRAVA_CLIENT_ID = os.getenv("STRAVA_CLIENT_ID", "")
+STRAVA_CLIENT_SECRET = os.getenv("STRAVA_CLIENT_SECRET", "")
+# A secret string you choose; must match what you enter in the Strava webhook
+# subscription registration call.
+STRAVA_WEBHOOK_VERIFY_TOKEN = os.getenv("STRAVA_WEBHOOK_VERIFY_TOKEN", "fittrack-strava-verify")
+
 # Static schedule (in addition to whatever lives in the DB scheduler).
 CELERY_BEAT_SCHEDULE = {
     "dispatch-due-reminders-every-minute": {
@@ -410,5 +419,11 @@ CELERY_BEAT_SCHEDULE = {
     "notify-goal-deadlines-daily": {
         "task": "notifications.tasks.notify_goal_deadlines",
         "schedule": crontab(hour=9, minute=0),  # 09:00 UTC — morning nudge
+    },
+    "sync-intervals-activities-every-6h": {
+        # Polls all active Intervals.icu integrations for new activities.
+        # Webhooks handle real-time; this is the safety net for missed events.
+        "task": "integrations.tasks.sync_all_intervals_integrations",
+        "schedule": crontab(minute=0, hour="*/6"),  # every 6 hours
     },
 }

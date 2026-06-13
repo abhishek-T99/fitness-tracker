@@ -24,6 +24,7 @@ import { format, parseISO, subDays } from "date-fns";
 
 import PageHeader from "../components/PageHeader.jsx";
 import StatCard from "../components/StatCard.jsx";
+import StepsCounter from "../components/StepsCounter.jsx";
 import {
   workoutsApi,
   measurementsApi,
@@ -147,7 +148,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="card">
           <div className="card-header">
             <h3 className="font-semibold flex items-center gap-2">
@@ -199,6 +200,8 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+
+        <StepsCounter />
 
         <div className="card">
           <div className="card-header">
