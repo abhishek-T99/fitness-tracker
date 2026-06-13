@@ -47,6 +47,9 @@ class Profile(models.Model):
     daily_calorie_goal = models.PositiveIntegerField(blank=True, null=True)
     weekly_workout_goal = models.PositiveIntegerField(default=3)
     timezone = models.CharField(max_length=64, default="UTC")
+    # Updated by ActivityTrackingMiddleware on every authenticated request.
+    # Used to enforce the 5-day inactivity auto-logout policy.
+    last_activity = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
