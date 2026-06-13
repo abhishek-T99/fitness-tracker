@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { arrayMove } from "@dnd-kit/sortable";
 
 import PageHeader from "../components/PageHeader.jsx";
+import SortableList, { DragHandle, SortableItem } from "../components/SortableList.jsx";
 import { exercisesApi, routinesApi } from "../api/endpoints.js";
+
+let _keySeq = 0;
+const makeKey = () => String(++_keySeq);
 
 export default function RoutineEditor() {
   const { id } = useParams();
@@ -34,6 +39,7 @@ export default function RoutineEditor() {
       setIsPublic(existing.is_public);
       setItems(
         existing.items.map((it) => ({
+          _key: makeKey(),
           exercise: it.exercise,
           exercise_detail: it.exercise_detail,
           target_sets: it.target_sets,
@@ -58,9 +64,10 @@ export default function RoutineEditor() {
   });
 
   const addExercise = (ex) => {
-    setItems([
-      ...items,
+    setItems((prev) => [
+      ...prev,
       {
+        _key: makeKey(),
         exercise: ex.id,
         exercise_detail: ex,
         target_sets: 3,
@@ -71,6 +78,10 @@ export default function RoutineEditor() {
       },
     ]);
     setPickerOpen(false);
+  };
+
+  const handleReorder = (newKeys) => {
+    setItems((prev) => newKeys.map((k) => prev.find((it) => it._key === k)));
   };
 
   const updateItem = (idx, field, value) => {
@@ -151,74 +162,87 @@ export default function RoutineEditor() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <SortableList
+          ids={items.map((it) => it._key)}
+          onReorder={handleReorder}
+          className="space-y-3"
+        >
           {items.map((it, idx) => (
-            <div key={idx} className="card p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h4 className="font-semibold">{it.exercise_detail?.name}</h4>
-                  <p className="text-xs text-slate-500 capitalize">
-                    {it.exercise_detail?.primary_muscle}
-                  </p>
+            <SortableItem key={it._key} id={it._key}>
+              {(dragHandleProps) => (
+                <div className="card p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <DragHandle dragHandleProps={dragHandleProps} />
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500 shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold leading-snug">{it.exercise_detail?.name}</h4>
+                      <p className="text-xs text-slate-500 capitalize">
+                        {it.exercise_detail?.primary_muscle?.replace(/_/g, " ")}
+                        {it.exercise_detail?.equipment && ` · ${it.exercise_detail.equipment}`}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                      className="text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-2 rounded shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="label">Sets</label>
+                      <input
+                        type="number"
+                        className="input"
+                        value={it.target_sets}
+                        onChange={(e) => updateItem(idx, "target_sets", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Reps</label>
+                      <input
+                        type="number"
+                        className="input"
+                        value={it.target_reps}
+                        onChange={(e) => updateItem(idx, "target_reps", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Weight (kg)</label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        className="input"
+                        value={it.target_weight}
+                        onChange={(e) => updateItem(idx, "target_weight", e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Rest (sec)</label>
+                      <input
+                        type="number"
+                        className="input"
+                        value={it.rest_sec}
+                        onChange={(e) => updateItem(idx, "rest_sec", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <input
+                      className="input"
+                      placeholder="Notes (tempo, cue, etc.)"
+                      value={it.notes}
+                      onChange={(e) => updateItem(idx, "notes", e.target.value)}
+                    />
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeItem(idx)}
-                  className="text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-2 rounded"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div>
-                  <label className="label">Sets</label>
-                  <input
-                    type="number"
-                    className="input"
-                    value={it.target_sets}
-                    onChange={(e) => updateItem(idx, "target_sets", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="label">Reps</label>
-                  <input
-                    type="number"
-                    className="input"
-                    value={it.target_reps}
-                    onChange={(e) => updateItem(idx, "target_reps", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="label">Weight (kg)</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    className="input"
-                    value={it.target_weight}
-                    onChange={(e) => updateItem(idx, "target_weight", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="label">Rest (sec)</label>
-                  <input
-                    type="number"
-                    className="input"
-                    value={it.rest_sec}
-                    onChange={(e) => updateItem(idx, "rest_sec", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mt-3">
-                <input
-                  className="input"
-                  placeholder="Notes (tempo, cue, etc.)"
-                  value={it.notes}
-                  onChange={(e) => updateItem(idx, "notes", e.target.value)}
-                />
-              </div>
-            </div>
+              )}
+            </SortableItem>
           ))}
-        </div>
+        </SortableList>
 
         <button
           type="button"
