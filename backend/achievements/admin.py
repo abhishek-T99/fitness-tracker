@@ -65,6 +65,6 @@ class StreakAdmin(admin.ModelAdmin):
         else:
             colour = "#94a3b8"
         return format_html(
-            '<span style="color:{};font-weight:700;">🔥 {} days</span>',
+            '<span style="color:{};font-weight:700;">{} days</span>',
             colour, obj.current_days,
         )

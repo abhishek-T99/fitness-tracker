@@ -11,8 +11,10 @@ class Routine(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    order = models.PositiveIntegerField(default=0, db_index=True)
+
     class Meta:
-        ordering = ["-updated_at"]
+        ordering = ["order", "-updated_at"]
         constraints = [
             models.UniqueConstraint(fields=["user", "name"], name="unique_routine_name_per_user"),
         ]

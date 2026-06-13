@@ -97,7 +97,7 @@ export default function WorkoutDetail() {
                   ))}
                 </tbody>
               </table>
-              {we.notes && <p className="text-xs text-slate-500 mt-3">📝 {we.notes}</p>}
+              {we.notes && <p className="text-xs text-slate-500 mt-3">{we.notes}</p>}
             </div>
           </div>
         ))}

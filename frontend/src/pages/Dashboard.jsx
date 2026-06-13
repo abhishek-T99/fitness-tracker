@@ -67,7 +67,7 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader
-        title={`Hi, ${user?.first_name || user?.username} 👋`}
+        title={`Hi, ${user?.first_name || user?.username}`}
         subtitle="Here's your fitness snapshot."
       />
 

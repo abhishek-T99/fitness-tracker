@@ -610,6 +610,242 @@ EXERCISES = [
      "category": B, "primary_muscle": QUAD, "secondary_muscles": ["core", "ankles"],
      "equipment": OT, "is_compound": True, "met_value": "4.0",
      "instructions": "Stand on dome side of Bosu. Perform controlled squat. Instability demands more core and ankle proprioception than standard squat."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # EXERCISES FROM THE YEAR PLAN (home barbell + dumbbell programme)
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # ── Chest ─────────────────────────────────────────────────────────────────
+    {"name": "Dumbbell Floor Press",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["triceps", "shoulders"],
+     "equipment": DB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Lie on the floor, dumbbells at chest level. Press to lockout. The floor acts as a natural depth stop — elbows touch down lightly, protecting the shoulder. "
+                     "Excellent substitute when no bench is available. Keep feet flat or legs straight."},
+
+    {"name": "Dumbbell Squeeze Press",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["triceps"],
+     "equipment": DB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Lie on floor or bench, dumbbells pressed together throughout the entire set. Squeeze palms toward each other as hard as possible while pressing. "
+                     "Constant inward force maximises inner-chest activation. Do not let the bells separate at any point."},
+
+    {"name": "Decline Push-up",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["triceps", "shoulders"],
+     "equipment": BW, "is_compound": True, "met_value": "4.0",
+     "instructions": "Place feet on a chair or box, hands on the floor shoulder-width apart. Lower chest toward the floor, push back up. "
+                     "Feet-elevated angle shifts emphasis to upper chest and increases difficulty vs standard push-up."},
+
+    # ── Back ──────────────────────────────────────────────────────────────────
+    {"name": "Dumbbell Pullover",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["chest", "core"],
+     "equipment": DB, "met_value": "4.0",
+     "instructions": "Lie on floor or bench perpendicular (upper back only on surface). Hold one dumbbell with both hands above the chest. "
+                     "Lower it back over your head in a wide arc until you feel a full lat stretch, then pull back to start. "
+                     "Floor version: lie flat, lower until upper arms touch the ground. Slow eccentric (3–4 s) maximises stretch."},
+
+    {"name": "Gorilla Row",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["biceps", "core"],
+     "equipment": DB, "is_compound": True, "met_value": "5.0",
+     "instructions": "Place two dumbbells on the floor hip-width apart. Hinge over them, knees soft, and grip both handles. "
+                     "Row one dumbbell to your hip while the other stays planted for balance, then switch. "
+                     "The floor anchor allows heavier loads than standard rows. Keep hips square throughout."},
+
+    # ── Shoulders ─────────────────────────────────────────────────────────────
+    {"name": "Dumbbell Z-press",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["triceps", "core"],
+     "equipment": DB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Sit on the floor with legs straight in front of you (no back support). Hold dumbbells at shoulder height and press overhead. "
+                     "The seated position with no back rest removes any leg drive or lower-back lean — every watt comes from the shoulder girdle. "
+                     "Requires and builds significant shoulder mobility and core stability."},
+
+    {"name": "Half-kneeling Single-arm DB Press",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["core", "triceps"],
+     "equipment": DB, "is_compound": True, "met_value": "4.0",
+     "instructions": "Kneel on one knee (same side as the pressing arm). Hold dumbbell at shoulder. Press overhead while resisting the rotational pull through the core. "
+                     "The split stance creates an anti-rotation challenge — the core has to fight to keep the torso square as the arm presses. "
+                     "Switch sides between sets."},
+
+    # ── Arms — Biceps ─────────────────────────────────────────────────────────
+    {"name": "Concentration Curl",
+     "category": S, "primary_muscle": BICE,
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Sit on a bench or the floor, lean forward, brace the back of your upper arm against the inside of your thigh. "
+                     "Curl the dumbbell slowly to full contraction, squeeze, lower fully. "
+                     "The braced arm position eliminates all cheat — pure bicep isolation. Do not allow the elbow to drift."},
+
+    # ── Arms — Triceps ────────────────────────────────────────────────────────
+    {"name": "Triceps Kickback",
+     "category": S, "primary_muscle": TRIC,
+     "equipment": DB, "met_value": "3.0",
+     "instructions": "Hinge forward 45°, upper arm pinned to the side parallel to the floor. Extend the forearm back to full lockout, squeeze the tricep at the top, "
+                     "then lower slowly. The key: upper arm stays stationary — only the forearm moves. "
+                     "Use lighter weight and focus on the squeeze; momentum kills this exercise."},
+
+    {"name": "Lying DB Triceps Extension",
+     "category": S, "primary_muscle": TRIC,
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Lie on the floor (or bench), dumbbells held above the chest with neutral grip. Bend only at the elbows, lowering dumbbells toward your temples or ears. "
+                     "The floor stops elbow travel past 90°, reducing shoulder stress. Extend back to start without flaring elbows. "
+                     "Also called 'floor skull crushers' with dumbbells."},
+
+    {"name": "Close-grip Barbell Floor Press",
+     "category": S, "primary_muscle": TRIC, "secondary_muscles": ["chest"],
+     "equipment": BB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Lie on the floor, grip shoulder-width or slightly inside. Lower the bar until elbows touch the floor (natural depth stop), press back to lockout. "
+                     "Close grip and the limited ROM combine to target the triceps hard without stressing the shoulder. "
+                     "No rack needed — clean the bar from the floor or have a partner hand it off."},
+
+    # ── Legs ──────────────────────────────────────────────────────────────────
+    {"name": "Reverse Lunge",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "hamstrings"],
+     "equipment": DB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Stand upright, step one foot backward and lower the back knee toward the floor. Front shin stays vertical. Drive through the front heel to return. "
+                     "Easier on the knee than forward lunges because the front knee travels less over the toe. "
+                     "Alternate legs or complete all reps on one side. Hold dumbbells at sides for load."},
+
+    {"name": "B-stance Romanian Deadlift",
+     "category": S, "primary_muscle": HAMS, "secondary_muscles": ["glutes", "back"],
+     "equipment": BB, "is_compound": True, "met_value": "5.0",
+     "instructions": "Stand with 70% of your weight on the working leg; the other foot is half a step back, toes lightly touching the floor for balance only. "
+                     "Perform a Romanian deadlift as normal — hinge at the hips, bar or dumbbells trace the legs, feel the hamstring stretch, drive hips forward to return. "
+                     "The staggered stance adds significant unilateral load without the balance demand of a full single-leg RDL."},
+
+    {"name": "Single-leg Hip Thrust",
+     "category": S, "primary_muscle": GLUT, "secondary_muscles": ["hamstrings", "core"],
+     "equipment": BW, "met_value": "4.0",
+     "instructions": "Set up as a standard hip thrust — upper back on bench, bar or weight across hips — but extend one leg straight out. "
+                     "Drive the planted foot into the floor, lift hips to full extension, and squeeze the working glute hard. "
+                     "Roughly doubles the demand on each glute vs the bilateral version. Keep the extended leg parallel to the floor."},
+
+    {"name": "Cossack Squat",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "hamstrings", "inner thigh"],
+     "equipment": BW, "is_compound": True, "met_value": "4.5",
+     "instructions": "Stand wide. Shift your weight onto one leg and squat deep to that side, keeping the heel flat. "
+                     "The opposite leg extends straight with foot flat or heel up. Hold the bottom for a moment to stretch the inner thigh and hip. "
+                     "Push through the bent-leg heel to rise. Simultaneously builds quad strength and hip mobility — especially useful for squat depth."},
+
+    # ── Core ──────────────────────────────────────────────────────────────────
+    {"name": "Hollow Hold",
+     "category": S, "primary_muscle": CORE,
+     "equipment": BW, "met_value": "3.0",
+     "instructions": "Lie on your back. Press your lower back firmly into the floor (no gap). Arms extend overhead, legs extend and lift so only the mid-back touches the floor. "
+                     "The body forms a shallow dish or 'hollow'. Hold, breathing steadily. "
+                     "Regress by bending the knees or lowering the arms. Progress by lowering the legs closer to the floor. "
+                     "Foundational gymnastics core position — superior to sit-ups for spine health."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # ACTIVATION / PREHAB (warm-up drills from The Year Plan constants)
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Clamshell",
+     "category": F, "primary_muscle": GLUT,
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "Lie on your side, knees bent to 90°, hips stacked. Keeping feet together, rotate the top knee open like a clamshell lid — stop when the pelvis wants to roll back. "
+                     "Lower under control. The movement should be felt in the outer glute, not the lower back. "
+                     "Add a resistance band just above the knees to increase difficulty."},
+
+    {"name": "Fire Hydrant",
+     "category": F, "primary_muscle": GLUT,
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "On hands and knees, spine neutral. Keeping the knee bent at 90°, lift one leg out to the side (like a dog at a fire hydrant) until the hip is at 90° of abduction. "
+                     "Hold briefly, lower slowly. Works hip abductors and external rotators — critical for knee stability in squats and lunges."},
+
+    {"name": "Side-lying Hip Abduction",
+     "category": F, "primary_muscle": GLUT,
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "Lie on your side, body in a straight line. Lift the top leg toward the ceiling, leading with the heel, until ~45° of abduction. "
+                     "Pause, lower with control. Keep the foot flexed and toes pointing slightly toward the floor to target the gluteus medius. "
+                     "Add an ankle weight or resistance band for progression."},
+
+    {"name": "Frog Rocks",
+     "category": F, "primary_muscle": FULL,
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "From a frog position (on all fours, knees wide and turned out, feet in line with knees), rock the hips back toward the heels — feeling the inner-thigh and hip stretch — "
+                     "then rock forward. Keep the spine neutral throughout. "
+                     "A dynamic hip opener that primes the hip for deep squatting patterns. 10 slow rocks per set."},
+
+    {"name": "Hip CARs",
+     "category": F, "primary_muscle": GLUT, "secondary_muscles": ["core"],
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "On all fours or standing holding a support. Trace the largest possible circle with one knee — flex the hip, externally rotate, extend, internally rotate, and return. "
+                     "CARs (Controlled Articular Rotations) train the end-range strength of the hip capsule and maintain joint health. "
+                     "Move as slowly as possible; keep the rest of the body completely still. 3–5 circles each direction, each side."},
+
+    {"name": "90/90 Hip Rotation",
+     "category": F, "primary_muscle": GLUT, "secondary_muscles": ["core"],
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "Sit on the floor with both legs bent at 90° — front leg with the shin across your body, back leg at 90° to the side. "
+                     "Keeping the torso upright, rotate to face the back leg (windshield-wiper motion), then rotate back to the front leg. "
+                     "Each transition is one rep. A non-negotiable hip-mobility drill for squat and hinge patterns."},
+
+    {"name": "Leg Swings",
+     "category": F, "primary_muscle": FULL,
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "Hold a wall or upright for balance. Swing one leg forward and back in a controlled arc — gradually increasing the range over 10 reps. "
+                     "Then swing the same leg side-to-side across the body and out. Switch legs. "
+                     "Dynamic hamstring, hip flexor, and adductor warm-up — do before any lower-body session."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FLEXIBILITY / COOLDOWN (from The Year Plan constants)
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Child's Pose",
+     "category": F, "primary_muscle": BACK, "secondary_muscles": ["shoulders"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Kneel, sit hips back toward heels, reach arms forward on the floor and relax the forehead down. "
+                     "Hold 30–60 s. Walk the hands to the left and right to deepen the lat stretch. "
+                     "Excellent cooldown after any pressing or back session."},
+
+    {"name": "Frog Stretch",
+     "category": F, "primary_muscle": FULL, "secondary_muscles": ["inner thigh"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "On hands and knees, widen the knees as far as comfortable with feet inline with knees. "
+                     "Shift the hips back slowly to deepen the inner-thigh (adductor) and hip stretch. "
+                     "Hold 30–60 s or rock gently. Pairs well with frog rocks as a static hold at the end of the warm-up."},
+
+    {"name": "Butterfly Stretch",
+     "category": F, "primary_muscle": FULL, "secondary_muscles": ["inner thigh"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Sit with soles of feet pressed together, knees falling outward. Hold the feet and gently press the knees toward the floor. "
+                     "Lean forward from the hips (not the spine) to deepen. Hold 30–60 s. "
+                     "Targets the inner thighs, groin, and hip flexors. A standard cooldown for lower-body sessions."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CARDIO — HIIT FINISHER MOVEMENTS
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "High Knees",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["core"],
+     "equipment": BW, "met_value": "8.0",
+     "instructions": "Run in place, driving the knees up to hip height on each stride. Pump the arms in opposition. "
+                     "Go for 20–30 reps or 20–30 seconds. Used as a warm-up activation drill or as a high-intensity HIIT component. "
+                     "Focus on posture — chest up, core braced, land softly on the balls of the feet."},
+
+    {"name": "Jumping Jacks",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["shoulders"],
+     "equipment": BW, "met_value": "7.0",
+     "instructions": "From standing, jump to a wide stance while raising both arms overhead. Jump back to the start position. "
+                     "A low-intensity full-body warm-up movement. Can be substituted with step jacks (no jump) for a lower-impact option. "
+                     "Often used in HIIT finishers for active rest between harder movements."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PELVIC FLOOR — from The Year Plan daily protocol
+    # Prescribed every day including rest days.
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Kegel — Long Hold",
+     "category": F, "primary_muscle": CORE,
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Sit, stand, or lie down in a comfortable position. "
+                     "Gently contract the pelvic-floor muscles — imagine stopping the flow of urine — and hold for 3–5 seconds. "
+                     "Fully relax for 3–5 seconds between each rep. Do 10 reps per round, 2–3 rounds, 1–2 × per day. "
+                     "Key points: isolate the pelvic floor only — do not squeeze the glutes, abs, or inner thighs. "
+                     "Keep breathing throughout; never hold your breath. "
+                     "If you feel pain or downward pressure, ease off and consult a pelvic-floor physiotherapist."},
+
+    {"name": "Kegel — Quick Flick",
+     "category": F, "primary_muscle": CORE,
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "In a comfortable position, rapidly contract and fully release the pelvic-floor muscles in quick succession — each squeeze-and-release takes about 1 second. "
+                     "Do 10 quick flicks per round, 2–3 rounds, 1–2 × per day. "
+                     "Trains the fast-twitch fibres of the pelvic floor (important for coughing, sneezing, and sudden load). "
+                     "Always follow quick flicks with a full, conscious relaxation of the pelvic floor. "
+                     "Perform after long holds in the same session."},
 ]
 
 

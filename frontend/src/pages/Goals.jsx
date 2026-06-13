@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import SortableList, { DragHandle, SortableItem } from "../components/SortableList.jsx";
 import { goalsApi } from "../api/endpoints.js";
 
 const GOAL_TYPES = [
@@ -22,9 +23,11 @@ const GOAL_TYPES = [
 export default function Goals() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [localItems, setLocalItems] = useState(null);
 
   const { data } = useQuery({ queryKey: ["goals"], queryFn: goalsApi.list });
-  const items = data?.results || data || [];
+  const serverItems = data?.results || data || [];
+  const items = localItems ?? serverItems;
 
   const remove = useMutation({
     mutationFn: (id) => goalsApi.remove(id),
@@ -37,7 +40,7 @@ export default function Goals() {
   const markAchieved = useMutation({
     mutationFn: (id) => goalsApi.update(id, { status: "achieved" }),
     onSuccess: () => {
-      toast.success("Goal achieved! 🎉");
+      toast.success("Goal achieved!");
       queryClient.invalidateQueries({ queryKey: ["goals"] });
     },
   });
@@ -46,6 +49,16 @@ export default function Goals() {
     mutationFn: ({ id, current_value }) => goalsApi.update(id, { current_value }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["goals"] }),
   });
+
+  function handleReorder(newIds) {
+    const reordered = newIds.map((id) => items.find((g) => String(g.id) === String(id)));
+    setLocalItems(reordered);
+    const payload = newIds.map((id, i) => ({ id: Number(id), order: i }));
+    goalsApi.reorder(payload).catch(() => {
+      toast.error("Couldn't save order");
+      setLocalItems(null);
+    });
+  }
 
   return (
     <div>
@@ -71,18 +84,28 @@ export default function Goals() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SortableList
+          ids={items.map((g) => String(g.id))}
+          onReorder={handleReorder}
+          strategy="grid"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
           {items.map((g) => (
-            <div key={g.id} className="card p-5">
+            <SortableItem key={g.id} id={String(g.id)}>
+              {(dragHandleProps) => (
+            <div className="card p-5">
               <div className="flex items-start justify-between mb-3">
-                <div>
-                  <span className={`badge ${badgeFor(g.status)}`}>{g.status}</span>
-                  <h3 className="font-semibold mt-1">{g.title}</h3>
-                  <p className="text-xs text-slate-500">
-                    {GOAL_TYPES.find((t) => t.value === g.goal_type)?.label}
-                  </p>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <DragHandle dragHandleProps={dragHandleProps} className="shrink-0" />
+                  <div className="min-w-0">
+                    <span className={`badge ${badgeFor(g.status)}`}>{g.status}</span>
+                    <h3 className="font-semibold mt-1">{g.title}</h3>
+                    <p className="text-xs text-slate-500">
+                      {GOAL_TYPES.find((t) => t.value === g.goal_type)?.label}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 shrink-0">
                   {g.status === "active" && (
                     <button
                       onClick={() => markAchieved.mutate(g.id)}
@@ -137,8 +160,10 @@ export default function Goals() {
                 </div>
               )}
             </div>
+              )}
+            </SortableItem>
           ))}
-        </div>
+        </SortableList>
       )}
 
       {open && (
