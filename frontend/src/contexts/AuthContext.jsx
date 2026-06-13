@@ -2,61 +2,67 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useQueryClient } from "@tanstack/react-query";
 
 import { authApi } from "../api/endpoints.js";
-import { clearTokens, getAccess, setTokens } from "../api/client.js";
+import { clearTokens, getAccess, getRefresh, setTokens } from "../api/client.js";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const queryClient = useQueryClient();
+  const queryClient           = useQueryClient();
 
   const fetchMe = useCallback(async () => {
     try {
       const me = await authApi.me();
       setUser(me);
     } catch {
-      // Clear any stale / invalid tokens so they don't poison future requests.
-      clearTokens();
+      // The axios interceptor already attempted a token refresh before this
+      // catch fires. If we're here, both access and refresh tokens are gone.
+      if (!getRefresh()) clearTokens();
       setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // On mount: restore session if any token exists.
+  // The refresh interceptor handles the case where only the refresh token is valid.
   useEffect(() => {
-    if (getAccess()) {
+    if (getAccess() || getRefresh()) {
       fetchMe();
     } else {
       setLoading(false);
     }
   }, [fetchMe]);
 
-  const login = async ({ username, password }) => {
-    queryClient.clear();   // wipe any previous user's cached data before fetching new user
-    const res = await authApi.login({ username, password });
-    setTokens({ access: res.access, refresh: res.refresh });
+  /**
+   * Standard username/password login.
+   * remember_me=true → 30-day refresh token stored in localStorage.
+   * remember_me=false → 1-day refresh token stored in sessionStorage.
+   */
+  const login = async ({ username, password, remember_me = false }) => {
+    queryClient.clear();
+    const res = await authApi.login({ username, password, remember_me });
+    setTokens({ access: res.access, refresh: res.refresh, persist: remember_me });
     await fetchMe();
   };
 
-  // register no longer auto-logs the user in — account requires email
-  // verification first. Returns the {detail} response for the caller to handle.
-  const register = async (payload) => {
-    return await authApi.register(payload);
-  };
+  const register = async (payload) => authApi.register(payload);
 
-  // Called after the backend returns tokens directly (email verification,
-  // social login) instead of via the username/password flow.
+  /**
+   * Used by email-verification and social-login flows that receive tokens
+   * directly from the backend. Not persisted across browser sessions.
+   */
   const loginWithTokens = ({ access, refresh }) => {
     queryClient.clear();
-    setTokens({ access, refresh });
+    setTokens({ access, refresh, persist: false });
     return fetchMe();
   };
 
   const logout = () => {
     clearTokens();
     setUser(null);
-    queryClient.clear();   // drop every cached query so the next user starts clean
+    queryClient.clear();
   };
 
   const refreshUser = fetchMe;

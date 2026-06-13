@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Dumbbell } from "lucide-react";
@@ -14,15 +14,28 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm();
 
+  // Show a contextual message when the server redirected here with a reason.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("reason") === "inactivity") {
+      toast("You were signed out after 5 days of inactivity.", {
+        icon: "🔒",
+        duration: 5000,
+      });
+      // Remove the param so a page refresh doesn't re-show the toast.
+      window.history.replaceState({}, "", location.pathname);
+    }
+  }, [location.search, location.pathname]);
+
   if (user) {
     const dest = location.state?.from?.pathname || "/dashboard";
     return <Navigate to={dest} replace />;
   }
 
-  const onSubmit = async (data) => {
+  const onSubmit = async ({ username, password, remember_me }) => {
     setSubmitting(true);
     try {
-      await login(data);
+      await login({ username, password, remember_me: !!remember_me });
       toast.success("Welcome back!");
       navigate(location.state?.from?.pathname || "/dashboard", { replace: true });
     } catch (err) {
@@ -71,7 +84,15 @@ export default function Login() {
               <p className="text-rose-600 text-xs mt-1">{errors.password.message}</p>
             )}
           </div>
-          <div className="text-right">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 accent-brand-600"
+                {...register("remember_me")}
+              />
+              <span className="text-sm text-slate-600">Remember me</span>
+            </label>
             <Link
               to="/forgot-password"
               className="text-sm text-brand-600 font-semibold hover:underline"
