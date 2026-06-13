@@ -26,3 +26,8 @@ MEDIA_ROOT = tempfile.mkdtemp()
 GOOGLE_OAUTH_CLIENT_ID = "test-google-client-id"
 FACEBOOK_APP_ID = "test-app-id"
 FACEBOOK_APP_SECRET = "test-app-secret"
+
+# Strava integration test credentials
+STRAVA_CLIENT_ID = "test-strava-client-id"
+STRAVA_CLIENT_SECRET = "test-strava-client-secret"
+STRAVA_WEBHOOK_VERIFY_TOKEN = "test-verify-token"

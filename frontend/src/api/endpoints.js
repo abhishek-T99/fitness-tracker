@@ -75,6 +75,10 @@ export const waterApi = {
 };
 
 // Measurements
+export const wellnessApi = {
+  today: () => api.get("/measurements/today_wellness/").then((r) => r.data),
+};
+
 export const measurementsApi = {
   list: () => api.get("/measurements/").then((r) => r.data),
   create: (data) => api.post("/measurements/", data).then((r) => r.data),
@@ -126,6 +130,18 @@ export const remindersApi = {
   create: (data) => api.post("/reminders/", data).then((r) => r.data),
   update: (id, data) => api.patch(`/reminders/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/reminders/${id}/`).then((r) => r.data),
+};
+
+// Integrations
+export const integrationsApi = {
+  list: () => api.get("/integrations/").then((r) => r.data),
+  // Strava (OAuth redirect flow)
+  stravaConnectUrl: () => `${api.defaults.baseURL}/integrations/strava/connect/`,
+  stravaDisconnect: () => api.delete("/integrations/strava/disconnect/"),
+  // Intervals.icu (API key flow)
+  intervalsConnect: (data) => api.post("/integrations/intervals/connect/", data).then((r) => r.data),
+  intervalsDisconnect: () => api.delete("/integrations/intervals/disconnect/"),
+  intervalsSync: (data) => api.post("/integrations/intervals/sync/", data).then((r) => r.data),
 };
 
 // Notifications

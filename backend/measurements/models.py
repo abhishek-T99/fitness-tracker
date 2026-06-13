@@ -15,6 +15,9 @@ class BodyMeasurement(models.Model):
     arm_cm = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     thigh_cm = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     resting_hr_bpm = models.PositiveIntegerField(blank=True, null=True)
+    steps = models.PositiveIntegerField(blank=True, null=True)
+    hrv_rmssd = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    sleep_score = models.PositiveSmallIntegerField(blank=True, null=True)
     notes = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
