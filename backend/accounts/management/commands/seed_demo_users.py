@@ -1,18 +1,27 @@
 """
 Management command: seed_demo_users
 
-Creates 15 demo users with realistic data across every domain so the whole
-application flow can be explored without manual setup.
+Creates 5 demo users with deeply realistic data — workouts spread over months,
+progressive overload, weight-loss and muscle-gain trajectories, daily nutrition
+logs, and an active social graph with posts, likes and comments.
 
 Usage:
-    python manage.py seed_demo_users          # create / refresh demo data
-    python manage.py seed_demo_users --flush  # wipe demo users first, then recreate
+    python manage.py seed_demo_users           # create / refresh
+    python manage.py seed_demo_users --flush   # wipe first, then recreate
 
-All demo accounts share the password:  FitPass123!
+All accounts share the password:  nepal@123
+
+Personas
+--------
+alice   Alice Chen     Powerlifter, 6-month cut, very social, 24 weeks of data
+marcus  Marcus Webb    Marathon runner, Boston qualifier training, 16 weeks
+sofia   Sofia Rodriguez Weight-loss journey, -8 kg so far, nutrition obsessive, 20 weeks
+jake    Jake Turner    Beginner, 2 months in, inconsistent but improving, 8 weeks
+priya   Priya Kapoor   CrossFit athlete, 8 months, most data, most achievements
 """
 
 import random
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
@@ -20,41 +29,115 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 User = get_user_model()
-
 PASSWORD = "nepal@123"
 
-# ---------------------------------------------------------------------------
-# User roster
-# ---------------------------------------------------------------------------
-USERS = [
-    # username, email, first, last, gender, dob, height_cm, activity, bio, calorie_goal
-    ("alice",   "alice@demo.com",   "Alice",   "Chen",     "female", date(1995, 3, 12), 165, "active",    "Powerlifter & coffee addict ☕",          2100),
-    ("bob",     "bob@demo.com",     "Bob",     "Smith",    "male",   date(1990, 7, 4),  178, "moderate",  "Gym 3x a week, football weekends 🏈",     2500),
-    ("carol",   "carol@demo.com",   "Carol",   "Jones",    "female", date(1998, 11, 22), 162, "light",   "Macro tracking nerd 🥗",                   1800),
-    ("dave",    "dave@demo.com",    "Dave",    "Kim",      "male",   date(2000, 1, 30), 175, "sedentary", "Just starting out, wish me luck! 🙏",     2000),
-    ("eve",     "eve@demo.com",     "Eve",     "Patel",    "female", date(1993, 5, 17), 170, "athlete",   "Marathon runner. 42km is just a warm-up 🏃", 2400),
-    ("frank",   "frank@demo.com",   "Frank",   "Russo",    "male",   date(1988, 9, 3),  182, "active",    "Chasing my 200kg squat PR 🏋️",            3000),
-    ("grace",   "grace@demo.com",   "Grace",   "Lin",      "female", date(1997, 2, 14), 158, "moderate",  "Yoga + weights combo 🧘",                 1900),
-    ("henry",   "henry@demo.com",   "Henry",   "Park",     "male",   date(1985, 6, 28), 180, "light",     "Tracking everything obsessively 📊",       2200),
-    ("iris",    "iris@demo.com",    "Iris",    "Nguyen",   "female", date(1999, 8, 9),  163, "moderate",  "Here for the community 💪",               1950),
-    ("jack",    "jack@demo.com",    "Jack",    "Brown",    "male",   date(1992, 12, 1), 176, "active",    "Goal-setter, habit-builder 🎯",           2300),
-    ("kate",    "kate@demo.com",    "Kate",    "Wilson",   "female", date(1996, 4, 18), 167, "moderate",  "Reminders keep me on track ⏰",           2000),
-    ("liam",    "liam@demo.com",    "Liam",    "Taylor",   "male",   date(1994, 10, 7), 179, "sedentary", "Taking a break from training 😅",         2100),
-    ("mia",     "mia@demo.com",     "Mia",     "Davis",    "female", date(2002, 7, 25), 160, "light",     "New here, still figuring things out 👋",  1700),
-    ("noah",    "noah@demo.com",    "Noah",    "Martinez", "male",   date(1991, 3, 19), 181, "active",    "CrossFit evangelist 🔥",                  2800),
-    ("olivia",  "olivia@demo.com",  "Olivia",  "Anderson", "female", date(1996, 9, 5),  168, "active",    "Hit my goal weight — now maintaining 🎉", 1950),
+# ── Persona definitions ───────────────────────────────────────────────────────
+# (username, email, first, last, gender, dob, height_cm, activity, bio, cal_goal)
+PERSONAS = [
+    ("alice",  "alice@demo.com",  "Alice",  "Chen",      "female", date(1996,  3, 12), 165, "active",   "Powerlifter & coffee addict ☕ | Chasing that 100kg bench", 2200),
+    ("marcus", "marcus@demo.com", "Marcus", "Webb",      "male",   date(1990,  7, 20), 178, "athlete",  "Boston qualifier or bust 🏃 | Sub-3:45 is the goal",       2800),
+    ("sofia",  "sofia@demo.com",  "Sofia",  "Rodriguez", "female", date(1993,  5,  8), 163, "moderate", "Down 8 kg and counting 💚 | Macros tracked daily",          1750),
+    ("jake",   "jake@demo.com",   "Jake",   "Turner",    "male",   date(2002, 11, 14), 176, "light",    "2 months in. Still figuring things out 👋",                 2400),
+    ("priya",  "priya@demo.com",  "Priya",  "Kapoor",    "female", date(1995,  9,  3), 160, "athlete",  "CrossFit | 8 months strong | Community > everything 🔥",    2100),
 ]
+
+# ── Exercise name → object cache (populated in handle()) ─────────────────────
+EX: dict = {}
+
+
+def ex(*names):
+    """Return a list of Exercise objects by name (silently skips missing)."""
+    return [EX[n] for n in names if n in EX]
+
+
+# ── Workout session blueprints ─────────────────────────────────────────────────
+#
+# Each entry: (session_name, hour, duration_min, base_calories, exercise_names, sets, reps,
+#              base_weights_today_kg)
+# base_weights_today_kg align 1:1 with exercise_names for strength sessions.
+# Runners use distance_km instead (sets=1, reps=0, weight=0).
+
+ALICE_SESSIONS = [
+    ("Push Day",   7, 70, 520, ["Bench Press","Incline Dumbbell Press","Overhead Press","Lateral Raise","Tricep Pushdown"], 4, [8,10,8,12,12], [87.5,52.5,55,12.5,35]),
+    ("Pull Day",   7, 65, 490, ["Bent-Over Row","Lat Pulldown","Seated Cable Row","Barbell Curl","Face Pull"],              4, [8,10,10,10,15], [72.5,65,55,32.5,20]),
+    ("Leg Day",    8, 80, 620, ["Back Squat","Romanian Deadlift","Leg Press","Walking Lunge","Calf Raise"],                 5, [6,8,10,12,15],  [112.5,72.5,120,20,60]),
+    ("Upper Body", 7, 60, 460, ["Bench Press","Bent-Over Row","Overhead Press","Pull-up","Lateral Raise"],                 3, [8,8,8,6,12],    [85,70,52.5,0,12.5]),
+]
+# Alice trains Mon=Push, Wed=Pull, Thu=Legs, Sat=Upper
+ALICE_SCHED = [(0,"Push Day"),(2,"Pull Day"),(3,"Leg Day"),(5,"Upper Body")]  # day offset 0=Mon
+
+MARCUS_RUNS = [
+    # (name, day_offset, hour, distance_km, duration_min, calories)
+    ("Easy Run",    0, 6, 9.0,  52, 480),
+    ("Easy Run",    1, 6, 8.5,  49, 450),
+    ("Speed Work",  2, 6, 11.0, 55, 580),
+    ("Easy Run",    3, 6, 9.0,  52, 480),
+    ("Easy Run",    4, 6, 8.5,  49, 450),
+    ("Long Run",    5, 6, None, None, None),  # distance/duration varies by week
+]
+
+SOFIA_SESSIONS = [
+    ("Cardio + Core",    7, 55, 380, ["Running","Plank","Hanging Leg Raise","Burpees"],                              3, [0,45,12,15], [0,0,0,0]),
+    ("Full Body Lift",   8, 60, 350, ["Back Squat","Bench Press","Bent-Over Row","Overhead Press","Walking Lunge"],  3, [10,10,10,10,12], [45,35,30,25,15]),
+    ("HIIT + Strength",  7, 50, 360, ["Burpees","Jump Rope","Leg Press","Lat Pulldown","Plank"],                    3, [0,0,12,12,45],  [0,0,50,42.5,0]),
+]
+SOFIA_SCHED = [(0,"Cardio + Core"),(2,"Full Body Lift"),(4,"HIIT + Strength")]
+
+JAKE_SESSIONS = [
+    ("Full Body A", 18, 50, 300, ["Back Squat","Bench Press","Bent-Over Row","Overhead Press"],   3, [8,8,8,8], [50,45,35,25]),
+    ("Full Body B", 18, 45, 280, ["Deadlift","Push-up","Lat Pulldown","Walking Lunge","Plank"],   3, [6,10,10,10,30],[70,0,40,12.5,0]),
+]
+JAKE_SCHED = [(0,"Full Body A"),(2,"Full Body B")]  # Mon+Wed, sometimes Fri
+
+PRIYA_SESSIONS = [
+    ("WOD A",        6, 65, 560, ["Burpees","Pull-up","Back Squat","Overhead Press","Plank"],       4, [15,10,10,8,45],  [0,0,60,35,0]),
+    ("WOD B",        6, 60, 530, ["Deadlift","Bench Press","Bent-Over Row","Jump Rope","Push-up"],  4, [8,10,10,0,20],   [80,57.5,52.5,0,0]),
+    ("Strength",     7, 70, 510, ["Back Squat","Deadlift","Overhead Press","Pull-up","Barbell Curl"],4,[6,5,8,8,10],    [72.5,95,42.5,0,27.5]),
+    ("Metcon",       6, 55, 540, ["Burpees","Jump Rope","Hanging Leg Raise","Bent-Over Row","Plank"],3,[20,0,15,10,60],[0,0,0,50,0]),
+    ("Open Prep",    6, 75, 580, ["Back Squat","Bench Press","Pull-up","Deadlift","Burpees"],       4, [8,8,10,6,15],   [67.5,55,0,87.5,0]),
+]
+PRIYA_SCHED = [(0,"WOD A"),(1,"WOD B"),(3,"Strength"),(4,"Metcon"),(5,"Open Prep")]
+
+
+# ── Meal templates (realistic eating patterns per persona) ────────────────────
+# Foods listed as (name, servings_range)
+ALICE_MEALS = {
+    "breakfast": [("Oats (dry)",1.5),("Whey Protein Powder",1),("Banana",1)],
+    "lunch":     [("Chicken Breast (cooked)",1.5),("Brown Rice (cooked)",2),("Broccoli (cooked)",2)],
+    "dinner":    [("Salmon (cooked)",1.2),("Sweet Potato (baked)",2),("Broccoli (cooked)",1.5)],
+    "snack":     [("Greek Yogurt (plain, non-fat)",1),("Almonds",0.5),("Apple",1)],
+}
+MARCUS_MEALS = {
+    "breakfast": [("Oats (dry)",2),("Banana",2),("Whole Milk",1.5)],
+    "lunch":     [("Whole Wheat Bread",3),("Chicken Breast (cooked)",1.5),("Avocado",0.5)],
+    "dinner":    [("White Rice (cooked)",3),("Ground Beef 90/10 (cooked)",1.2),("Broccoli (cooked)",1.5)],
+    "snack":     [("Banana",1),("Peanut Butter",1),("Whey Protein Powder",1)],
+}
+SOFIA_MEALS = {
+    "breakfast": [("Egg, large",2),("Oats (dry)",1),("Apple",1)],
+    "lunch":     [("Chicken Breast (cooked)",1),("Brown Rice (cooked)",1),("Broccoli (cooked)",2)],
+    "dinner":    [("Tofu (firm)",1.5),("Lentils (cooked)",1.5),("Broccoli (cooked)",2)],
+    "snack":     [("Greek Yogurt (plain, non-fat)",1),("Apple",1)],
+}
+JAKE_MEALS = {
+    "breakfast": [("Egg, large",3),("Whole Wheat Bread",2),("Whole Milk",1)],
+    "lunch":     [("Ground Beef 90/10 (cooked)",1.2),("White Rice (cooked)",2.5)],
+    "dinner":    [("Chicken Breast (cooked)",1.2),("White Rice (cooked)",2),("Broccoli (cooked)",1)],
+}
+PRIYA_MEALS = {
+    "breakfast": [("Greek Yogurt (plain, non-fat)",1.5),("Oats (dry)",1),("Banana",1),("Whey Protein Powder",1)],
+    "lunch":     [("Chicken Breast (cooked)",2),("Sweet Potato (baked)",2),("Avocado",0.5)],
+    "dinner":    [("Salmon (cooked)",1.2),("Brown Rice (cooked)",1.5),("Broccoli (cooked)",2)],
+    "snack":     [("Almonds",0.5),("Whey Protein Powder",1),("Apple",1)],
+}
 
 
 class Command(BaseCommand):
-    help = "Seed 15 demo users with data across all app domains."
+    help = "Seed 5 realistic demo users with months of activity data."
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--flush",
-            action="store_true",
-            help="Delete existing demo users before recreating them.",
-        )
+        parser.add_argument("--flush", action="store_true",
+                            help="Delete existing demo users before recreating.")
 
     def handle(self, *args, **options):
         self._log("Ensuring exercises, foods, and achievements are seeded…")
@@ -63,593 +146,647 @@ class Command(BaseCommand):
         call_command("seed_achievements", verbosity=0)
 
         if options["flush"]:
-            usernames = [u[0] for u in USERS]
+            usernames = [p[0] for p in PERSONAS]
             deleted, _ = User.objects.filter(username__in=usernames).delete()
             self._log(f"Flushed {deleted} existing demo user(s).")
 
+        # Populate the exercise cache by name
         from exercises.models import Exercise
+        for e in Exercise.objects.all():
+            EX[e.name] = e
+
         from nutrition.models import Food
+        food_map = {f.name: f for f in Food.objects.filter(is_public=True)}
 
-        exercises = list(Exercise.objects.all())
-        foods = list(Food.objects.filter(is_public=True))
+        users_by_name = {}
+        for row in PERSONAS:
+            u = self._create_user(*row)
+            users_by_name[u.username] = u
 
-        if not exercises:
-            self.stderr.write("No exercises found — run seed_exercises first.")
-            return
-        if not foods:
-            self.stderr.write("No foods found — run seed_foods first.")
-            return
-
-        users = self._create_users()
-        self._create_friendships(users)
-        self._create_workouts(users, exercises)
-        self._create_nutrition(users, foods)
-        self._create_measurements(users)
-        self._create_goals(users)
-        self._create_social(users)
-        self._create_achievements(users)
-        self._create_reminders(users)
-
+        self._create_friendships(users_by_name)
+        self._create_workouts(users_by_name)
+        self._create_measurements(users_by_name)
+        self._create_nutrition(users_by_name, food_map)
+        self._create_goals(users_by_name)
+        self._create_social(users_by_name)
+        self._create_achievements(users_by_name)
+        self._create_reminders(users_by_name)
         self._print_credentials()
 
-    # ------------------------------------------------------------------
-    # Users & profiles
-    # ------------------------------------------------------------------
+    # ── Users & profiles ──────────────────────────────────────────────────────
 
-    def _create_users(self):
+    def _create_user(self, username, email, first, last, gender, dob, height, activity, bio, cal_goal):
         from accounts.models import Profile
-
-        created_users = []
-        for (username, email, first, last, gender, dob, height, activity, bio, cal_goal) in USERS:
-            user, created = User.objects.get_or_create(
-                username=username,
-                defaults=dict(
-                    email=email,
-                    first_name=first,
-                    last_name=last,
-                    is_active=True,
-                ),
-            )
-            if created:
-                user.set_password(PASSWORD)
-                user.save()
-
-            Profile.objects.update_or_create(
-                user=user,
-                defaults=dict(
-                    bio=bio,
-                    date_of_birth=dob,
-                    gender=gender,
-                    height_cm=height,
-                    activity_level=activity,
-                    daily_calorie_goal=cal_goal,
-                    weekly_workout_goal=random.randint(3, 5),
-                    units="metric",
-                ),
-            )
-            created_users.append(user)
-
-        self._log(f"Users ready: {len(created_users)}")
-        return created_users
-
-    # ------------------------------------------------------------------
-    # Friendships
-    # ------------------------------------------------------------------
-
-    def _create_friendships(self, users):
-        from social.models import Friendship
-
-        # Accepted pairs — a dense social graph
-        accepted_pairs = [
-            (0, 1), (0, 2), (0, 4), (0, 5), (0, 8),   # alice is popular
-            (1, 2), (1, 5), (1, 9),
-            (2, 6), (2, 8),
-            (3, 13), (4, 6), (5, 9),
-            (7, 10), (8, 9), (8, 14),
-            (10, 11), (11, 12),
-        ]
-        for i, j in accepted_pairs:
-            Friendship.objects.get_or_create(
-                requester=users[i], addressee=users[j],
-                defaults={"status": "accepted"},
-            )
-
-        # Pending requests — to test accept/decline flow
-        pending_pairs = [
-            (13, 0),   # noah → alice (pending)
-            (12, 4),   # mia → eve (pending)
-            (6, 3),    # grace → dave (pending)
-            (14, 7),   # olivia → henry (pending)
-        ]
-        for i, j in pending_pairs:
-            Friendship.objects.get_or_create(
-                requester=users[i], addressee=users[j],
-                defaults={"status": "pending"},
-            )
-
-        self._log("Friendships seeded.")
-
-    # ------------------------------------------------------------------
-    # Workouts
-    # ------------------------------------------------------------------
-
-    def _create_workouts(self, users, exercises):
-        from workouts.models import (
-            ExerciseSet,
-            Routine,
-            RoutineExercise,
-            Workout,
-            WorkoutExercise,
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults=dict(email=email, first_name=first, last_name=last, is_active=True),
         )
+        if created:
+            user.set_password(PASSWORD)
+            user.save()
+        Profile.objects.update_or_create(
+            user=user,
+            defaults=dict(bio=bio, date_of_birth=dob, gender=gender, height_cm=height,
+                          activity_level=activity, daily_calorie_goal=cal_goal,
+                          weekly_workout_goal=5 if activity == "athlete" else 3,
+                          units="metric"),
+        )
+        return user
 
-        today = timezone.now()
+    # ── Friendships ───────────────────────────────────────────────────────────
 
-        # Workout templates per user archetype: (name, day_offset, exercise_slice, sets_per_ex)
-        TEMPLATES = {
-            "alice":  [("Push Day", 0, exercises[:3], 4), ("Pull Day", 2, exercises[3:6], 4),
-                       ("Leg Day", 4, exercises[6:9], 4), ("Upper Body", 7, exercises[:4], 3),
-                       ("Full Body", 9, exercises[5:10], 3)],
-            "bob":    [("Chest & Tri", 1, exercises[:2], 3), ("Back & Bi", 3, exercises[2:5], 3),
-                       ("Legs", 6, exercises[6:8], 3)],
-            "eve":    [("Morning Run", 0, exercises[:1], 1), ("Intervals", 3, exercises[1:2], 1),
-                       ("Long Run", 5, exercises[:1], 1), ("Recovery Run", 8, exercises[:1], 1)],
-            "frank":  [("Squat Focus", 0, exercises[6:9], 5), ("Bench Focus", 2, exercises[:3], 5),
-                       ("Deadlift Day", 4, exercises[3:6], 5), ("Overhead Press", 7, exercises[:2], 4),
-                       ("Accessory Work", 9, exercises[9:12], 4)],
-            "grace":  [("Yoga Flow", 1, exercises[:1], 2), ("Strength + Yoga", 4, exercises[:3], 2),
-                       ("Full Body", 7, exercises[2:5], 3)],
-            "jack":   [("HIIT", 0, exercises[:3], 3), ("Strength", 3, exercises[3:6], 4),
-                       ("Cardio", 6, exercises[:1], 1)],
-            "noah":   [("CrossFit WOD", 0, exercises[:4], 3), ("WOD", 2, exercises[4:7], 3),
-                       ("Strength", 5, exercises[7:10], 4), ("Metcon", 8, exercises[:3], 3)],
-            "iris":   [("Group Class", 2, exercises[:3], 3), ("Home Workout", 5, exercises[3:5], 3)],
-            "olivia": [("Maintenance A", 1, exercises[:4], 3), ("Maintenance B", 4, exercises[4:7], 3)],
-            "kate":   [("Morning Workout", 0, exercises[:3], 3), ("Evening Session", 5, exercises[2:5], 3)],
-            "dave":   [("First Workout!", 3, exercises[:2], 2)],
-            "carol":  [("Light Session", 6, exercises[:2], 2), ("Quick Workout", 13, exercises[2:4], 2)],
-        }
-
-        username_to_user = {u.username: u for u in users}
-
-        for username, templates in TEMPLATES.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-
-            # Create a routine for power users
-            if username in ("alice", "frank", "noah"):
-                routine, _ = Routine.objects.get_or_create(
-                    user=user, name=f"{user.first_name}'s Main Routine",
-                    defaults={
-                        "description": "Auto-generated demo routine",
-                        "estimated_duration_min": 60,
-                    },
+    def _create_friendships(self, u):
+        from social.models import Friendship
+        # All five are mutually connected (accepted)
+        names = list(u.keys())
+        for i in range(len(names)):
+            for j in range(i + 1, len(names)):
+                Friendship.objects.get_or_create(
+                    requester=u[names[i]], addressee=u[names[j]],
+                    defaults={"status": "accepted"},
                 )
-                routine.items.all().delete()
-                for idx, ex in enumerate(exercises[:4]):
-                    RoutineExercise.objects.create(
-                        routine=routine, exercise=ex, order=idx,
-                        target_sets=4, target_reps=8, rest_sec=90,
-                    )
+        self._log("Friendships: all 5 users connected.")
 
-            for name, day_offset, ex_list, n_sets in templates:
-                started = today - timedelta(days=day_offset)
-                workout = Workout.objects.create(
-                    user=user,
-                    name=name,
-                    started_at=started,
-                    ended_at=started + timedelta(minutes=random.randint(45, 90)),
-                    duration_min=random.randint(45, 90),
-                    calories_burned=random.randint(300, 700),
-                    perceived_exertion=random.randint(6, 9),
+    # ── Workouts ──────────────────────────────────────────────────────────────
+
+    def _create_workouts(self, u):
+        from workouts.models import Workout, WorkoutExercise, ExerciseSet, Routine, RoutineExercise
+
+        today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # ── Alice ─────────────────────────────────────────────────────────────
+        alice = u["alice"]
+        routine, _ = Routine.objects.get_or_create(
+            user=alice, name="Powerlifting 4-Day Split",
+            defaults={"description": "Push/Pull/Legs/Upper. Progressive overload every session.",
+                      "estimated_duration_min": 70},
+        )
+        routine.items.all().delete()
+        for idx, nm in enumerate(["Bench Press","Back Squat","Deadlift","Bent-Over Row"]):
+            if nm in EX:
+                RoutineExercise.objects.create(routine=routine, exercise=EX[nm], order=idx,
+                                               target_sets=4, target_reps=8, rest_sec=180)
+        total_weeks = 24
+        for week in range(total_weeks):
+            pf = 1 - (week / total_weeks) * 0.22  # progression factor: 1.0 today → 0.78 oldest
+            for day_offset, sname in ALICE_SCHED:
+                if _skip("alice", week, day_offset, 8): continue
+                tmpl = next(s for s in ALICE_SESSIONS if s[0] == sname)
+                _, hour, dur, cal, exnames, sets, reps_list, weights = tmpl
+                dt = today - timedelta(weeks=week, days=day_offset)
+                dt = dt.replace(hour=hour)
+                w = Workout.objects.create(
+                    user=alice, name=sname,
+                    started_at=dt, ended_at=dt + timedelta(minutes=dur),
+                    duration_min=dur,
+                    calories_burned=_jitter(cal, 50),
+                    perceived_exertion=random.randint(7, 9),
                     status="completed",
                 )
-                for ex_order, exercise in enumerate(ex_list[:4]):
-                    we = WorkoutExercise.objects.create(
-                        workout=workout, exercise=exercise, order=ex_order
-                    )
-                    base_weight = random.uniform(40, 120)
+                for oi, (ename, n_sets, reps, wt_today) in enumerate(
+                        zip(exnames, [sets]*len(exnames), reps_list, weights)):
+                    if ename not in EX:
+                        continue
+                    we = WorkoutExercise.objects.create(workout=w, exercise=EX[ename], order=oi)
                     for s in range(1, n_sets + 1):
+                        actual_wt = round_weight(wt_today * pf * (1 + (s-1)*0.025)) if wt_today else None
                         ExerciseSet.objects.create(
-                            workout_exercise=we,
-                            set_number=s,
-                            reps=random.randint(5, 12),
-                            weight=round(base_weight + (s - 1) * 2.5, 2),
-                            rpe=random.randint(7, 9),
-                            completed=True,
+                            workout_exercise=we, set_number=s,
+                            reps=reps if reps else None,
+                            weight=actual_wt,
+                            duration_sec=reps if not wt_today and reps > 20 else None,
+                            rpe=random.randint(7, 9), completed=True,
+                        )
+
+        # ── Marcus ────────────────────────────────────────────────────────────
+        marcus = u["marcus"]
+        total_weeks = 16
+        for week in range(total_weeks):
+            pf = 1 - (week / total_weeks) * 0.15  # pace/distance improves over time
+            for run in MARCUS_RUNS:
+                name, day_off, hour, dist, dur, cal = run
+                if _skip("marcus", week, day_off, 6): continue
+                dt = (today - timedelta(weeks=week, days=day_off)).replace(hour=hour)
+
+                # Long run: scale with week progression
+                if name == "Long Run":
+                    dist = round(18 + (total_weeks - week) * 0.7, 1)  # 18→29 km progression
+                    dur  = int(dist * 5.5)   # ~5:30/km easy long-run pace
+                    cal  = int(dist * 65)
+                else:
+                    dist = round(dist * pf, 1)
+                    dur  = dur or int(dist * 5.2)
+                    cal  = cal or int(dist * 60)
+
+                w = Workout.objects.create(
+                    user=marcus, name=name,
+                    started_at=dt, ended_at=dt + timedelta(minutes=dur),
+                    duration_min=dur, distance_km=dist,
+                    calories_burned=_jitter(cal, 40),
+                    perceived_exertion=random.randint(6, 8),
+                    status="completed",
+                )
+                if "Running" in EX:
+                    we = WorkoutExercise.objects.create(workout=w, exercise=EX["Running"], order=0)
+                    ExerciseSet.objects.create(
+                        workout_exercise=we, set_number=1,
+                        distance_m=int(dist * 1000), duration_sec=dur * 60, completed=True,
+                    )
+
+        # ── Sofia ─────────────────────────────────────────────────────────────
+        sofia = u["sofia"]
+        total_weeks = 20
+        for week in range(total_weeks):
+            pf = 1 - (week / total_weeks) * 0.28
+            for day_offset, sname in SOFIA_SCHED:
+                if _skip("sofia", week, day_offset, 12): continue
+                tmpl = next(s for s in SOFIA_SESSIONS if s[0] == sname)
+                _, hour, dur, cal, exnames, sets, reps_list, weights = tmpl
+                dt = (today - timedelta(weeks=week, days=day_offset)).replace(hour=hour)
+                w = Workout.objects.create(
+                    user=sofia, name=sname,
+                    started_at=dt, ended_at=dt + timedelta(minutes=dur),
+                    duration_min=dur, calories_burned=_jitter(cal, 40),
+                    perceived_exertion=random.randint(6, 8), status="completed",
+                )
+                for oi, (ename, n_sets, reps, wt_today) in enumerate(
+                        zip(exnames, [sets]*len(exnames), reps_list, weights)):
+                    if ename not in EX: continue
+                    we = WorkoutExercise.objects.create(workout=w, exercise=EX[ename], order=oi)
+                    for s in range(1, n_sets + 1):
+                        actual_wt = round_weight(wt_today * pf) if wt_today else None
+                        ExerciseSet.objects.create(
+                            workout_exercise=we, set_number=s,
+                            reps=reps if reps else None,
+                            weight=actual_wt,
+                            duration_sec=reps if not wt_today and reps > 20 else None,
+                            rpe=random.randint(6, 8), completed=True,
+                        )
+
+        # ── Jake ─────────────────────────────────────────────────────────────
+        jake = u["jake"]
+        total_weeks = 8
+        for week in range(total_weeks):
+            pf = 1 - (week / total_weeks) * 0.30
+            for day_offset, sname in JAKE_SCHED:
+                # Jake is inconsistent — higher skip rate + sometimes adds Friday
+                if _skip("jake", week, day_offset, 25): continue
+                tmpl = next(s for s in JAKE_SESSIONS if s[0] == sname)
+                _, hour, dur, cal, exnames, sets, reps_list, weights = tmpl
+                dt = (today - timedelta(weeks=week, days=day_offset)).replace(hour=hour)
+                w = Workout.objects.create(
+                    user=jake, name=sname,
+                    started_at=dt, ended_at=dt + timedelta(minutes=dur),
+                    duration_min=dur, calories_burned=_jitter(cal, 40),
+                    perceived_exertion=random.randint(6, 9), status="completed",
+                )
+                for oi, (ename, n_sets, reps, wt_today) in enumerate(
+                        zip(exnames, [sets]*len(exnames), reps_list, weights)):
+                    if ename not in EX: continue
+                    we = WorkoutExercise.objects.create(workout=w, exercise=EX[ename], order=oi)
+                    for s in range(1, n_sets + 1):
+                        actual_wt = round_weight(wt_today * pf) if wt_today else None
+                        ExerciseSet.objects.create(
+                            workout_exercise=we, set_number=s,
+                            reps=reps if reps else None,
+                            weight=actual_wt,
+                            rpe=random.randint(6, 9), completed=True,
+                        )
+
+        # ── Priya ─────────────────────────────────────────────────────────────
+        priya = u["priya"]
+        routine2, _ = Routine.objects.get_or_create(
+            user=priya, name="CrossFit 5-Day Program",
+            defaults={"description": "5 days a week. Strength + Metcons. No excuses.",
+                      "estimated_duration_min": 65},
+        )
+        routine2.items.all().delete()
+        for idx, nm in enumerate(["Back Squat","Deadlift","Pull-up","Overhead Press"]):
+            if nm in EX:
+                RoutineExercise.objects.create(routine=routine2, exercise=EX[nm], order=idx,
+                                               target_sets=4, target_reps=8, rest_sec=120)
+        total_weeks = 32
+        for week in range(total_weeks):
+            pf = 1 - (week / total_weeks) * 0.25
+            for day_offset, sname in PRIYA_SCHED:
+                if _skip("priya", week, day_offset, 8): continue
+                tmpl = next(s for s in PRIYA_SESSIONS if s[0] == sname)
+                _, hour, dur, cal, exnames, sets, reps_list, weights = tmpl
+                dt = (today - timedelta(weeks=week, days=day_offset)).replace(hour=hour)
+                w = Workout.objects.create(
+                    user=priya, name=sname,
+                    started_at=dt, ended_at=dt + timedelta(minutes=dur),
+                    duration_min=dur, calories_burned=_jitter(cal, 50),
+                    perceived_exertion=random.randint(8, 10), status="completed",
+                )
+                for oi, (ename, n_sets, reps, wt_today) in enumerate(
+                        zip(exnames, [sets]*len(exnames), reps_list, weights)):
+                    if ename not in EX: continue
+                    we = WorkoutExercise.objects.create(workout=w, exercise=EX[ename], order=oi)
+                    for s in range(1, n_sets + 1):
+                        actual_wt = round_weight(wt_today * pf) if wt_today else None
+                        ExerciseSet.objects.create(
+                            workout_exercise=we, set_number=s,
+                            reps=reps if reps else None,
+                            weight=actual_wt,
+                            duration_sec=reps if not wt_today and reps > 20 else None,
+                            rpe=random.randint(7, 10), completed=True,
                         )
 
         self._log("Workouts seeded.")
 
-    # ------------------------------------------------------------------
-    # Nutrition
-    # ------------------------------------------------------------------
+    # ── Measurements ─────────────────────────────────────────────────────────
 
-    def _create_nutrition(self, users, foods):
-        from nutrition.models import Meal, MealItem, WaterLog
-
-        today = timezone.now()
-        meal_plans = {
-            "alice":  {"days": 14, "meals_per_day": 4, "water_ml": 2500},
-            "bob":    {"days": 7,  "meals_per_day": 3, "water_ml": 2000},
-            "carol":  {"days": 30, "meals_per_day": 4, "water_ml": 2200},
-            "dave":   {"days": 3,  "meals_per_day": 2, "water_ml": 1500},
-            "eve":    {"days": 14, "meals_per_day": 3, "water_ml": 3000},
-            "frank":  {"days": 14, "meals_per_day": 5, "water_ml": 3500},
-            "grace":  {"days": 7,  "meals_per_day": 3, "water_ml": 2000},
-            "jack":   {"days": 10, "meals_per_day": 3, "water_ml": 2500},
-            "kate":   {"days": 7,  "meals_per_day": 3, "water_ml": 2000},
-            "olivia": {"days": 7,  "meals_per_day": 3, "water_ml": 1800},
-        }
-        meal_types = ["breakfast", "lunch", "dinner", "snack"]
-        meal_hours = {"breakfast": 7, "lunch": 12, "dinner": 19, "snack": 16}
-
-        username_to_user = {u.username: u for u in users}
-
-        for username, plan in meal_plans.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-
-            for day in range(plan["days"]):
-                dt = today - timedelta(days=day)
-                types_today = meal_types[: plan["meals_per_day"]]
-                for mtype in types_today:
-                    consumed = dt.replace(
-                        hour=meal_hours[mtype], minute=0, second=0, microsecond=0
-                    )
-                    meal = Meal.objects.create(user=user, meal_type=mtype, consumed_at=consumed)
-                    for food in random.sample(foods, min(3, len(foods))):
-                        MealItem.objects.create(
-                            meal=meal,
-                            food=food,
-                            servings=round(random.uniform(0.5, 2.5), 2),
-                        )
-
-                WaterLog.objects.create(
-                    user=user,
-                    amount_ml=plan["water_ml"] + random.randint(-300, 300),
-                    logged_at=dt.replace(hour=20, minute=0, second=0, microsecond=0),
-                )
-
-        self._log("Nutrition seeded.")
-
-    # ------------------------------------------------------------------
-    # Body measurements
-    # ------------------------------------------------------------------
-
-    def _create_measurements(self, users):
+    def _create_measurements(self, u):
         from measurements.models import BodyMeasurement
-
         today = date.today()
-        measurement_data = {
-            "alice":  {"weeks": 12, "start_weight": 68.0, "delta": -0.3},
-            "bob":    {"weeks": 8,  "start_weight": 85.0, "delta": -0.2},
-            "carol":  {"weeks": 16, "start_weight": 62.0, "delta": -0.1},
-            "frank":  {"weeks": 12, "start_weight": 95.0, "delta": 0.2},
-            "eve":    {"weeks": 10, "start_weight": 60.0, "delta": -0.2},
-            "grace":  {"weeks": 6,  "start_weight": 58.0, "delta": -0.1},
-            "henry":  {"weeks": 20, "start_weight": 82.0, "delta": -0.15},
-            "jack":   {"weeks": 8,  "start_weight": 78.0, "delta": -0.2},
-            "olivia": {"weeks": 24, "start_weight": 72.0, "delta": -0.4},
-        }
-        username_to_user = {u.username: u for u in users}
 
-        for username, cfg in measurement_data.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-
-            for week in range(cfg["weeks"]):
-                record_date = today - timedelta(weeks=week)
-                weight = round(cfg["start_weight"] + cfg["delta"] * week * 7, 2)
+        # (user, weeks, start_weight, weekly_delta, body_fat_start, rhr)
+        configs = [
+            ("alice",  24, 71.8, -0.11, 22.5, 56),  # cutting: -2.6kg over 24 weeks
+            ("marcus", 16, 72.2,  0.00, 11.0, 48),  # stable runner weight
+            ("sofia",  20, 78.0, -0.38, 31.0, 68),  # weight loss: -7.6kg over 20 weeks
+            ("jake",    8, 85.0, -0.19, 20.0, 72),  # slow drop as beginner
+            ("priya",  32, 58.0,  0.07, 18.5, 54),  # gaining muscle slowly
+        ]
+        for username, weeks, start_wt, delta, bf_start, rhr in configs:
+            user = u[username]
+            for week in range(weeks):
+                rec_date = today - timedelta(weeks=week)
+                weight   = round(start_wt + delta * week, 1)   # note: week=0 is today
+                bf_pct   = round(bf_start - (weeks - week) * 0.05, 1)
                 BodyMeasurement.objects.get_or_create(
-                    user=user,
-                    recorded_at=record_date,
+                    user=user, recorded_at=rec_date,
                     defaults=dict(
                         weight_kg=weight,
-                        body_fat_percent=round(random.uniform(12, 25), 1),
-                        waist_cm=round(random.uniform(70, 90), 1),
-                        chest_cm=round(random.uniform(90, 105), 1),
-                        resting_hr_bpm=random.randint(52, 72),
+                        body_fat_percent=max(8.0, bf_pct),
+                        waist_cm=round(70 + weight * 0.3, 1),
+                        resting_hr_bpm=rhr + random.randint(-3, 3),
+                        steps=random.randint(6000, 14000) if username != "jake" else None,
                     ),
                 )
-
         self._log("Measurements seeded.")
 
-    # ------------------------------------------------------------------
-    # Goals
-    # ------------------------------------------------------------------
+    # ── Nutrition ─────────────────────────────────────────────────────────────
 
-    def _create_goals(self, users):
+    def _create_nutrition(self, u, food_map):
+        from nutrition.models import Meal, MealItem, WaterLog
+        today = timezone.now()
+
+        # (user, days, meals_per_day, skip_rate, water_ml, meal_template)
+        configs = [
+            ("alice",  60, 4, 0.05, 2600, ALICE_MEALS),
+            ("marcus", 60, 4, 0.07, 3200, MARCUS_MEALS),
+            ("sofia",  90, 4, 0.03, 2000, SOFIA_MEALS),  # never misses a log
+            ("jake",   21, 3, 0.30, 2200, JAKE_MEALS),   # inconsistent
+            ("priya",  45, 4, 0.06, 2400, PRIYA_MEALS),
+        ]
+        meal_hours = {"breakfast": 7, "lunch": 12, "dinner": 19, "snack": 16}
+
+        for username, days, meals_per_day, skip_rate, water, meal_tmpl in configs:
+            user = u[username]
+            for day in range(days):
+                if random.random() < skip_rate:
+                    continue
+                dt = today - timedelta(days=day)
+                meal_types = list(meal_tmpl.keys())[:meals_per_day]
+                for mtype in meal_types:
+                    consumed = dt.replace(hour=meal_hours[mtype], minute=0, second=0, microsecond=0)
+                    meal = Meal.objects.create(user=user, meal_type=mtype, consumed_at=consumed)
+                    for food_name, serving_base in meal_tmpl[mtype]:
+                        food = food_map.get(food_name)
+                        if food:
+                            servings = round(serving_base + random.uniform(-0.2, 0.2), 2)
+                            MealItem.objects.create(meal=meal, food=food, servings=max(0.5, servings))
+                WaterLog.objects.create(
+                    user=user,
+                    amount_ml=water + random.randint(-300, 300),
+                    logged_at=dt.replace(hour=20, minute=0, second=0, microsecond=0),
+                )
+        self._log("Nutrition seeded.")
+
+    # ── Goals ─────────────────────────────────────────────────────────────────
+
+    def _create_goals(self, u):
         from goals.models import Goal
-
         today = date.today()
+
         goal_sets = {
             "alice": [
-                ("Bench 80kg",      "strength",        80,  65,  65,  "kg",  today + timedelta(days=90)),
-                ("Lose 3kg",        "weight_loss",     65,  68,  67.5,"kg",  today + timedelta(days=60)),
-                ("4 workouts/week", "workouts_per_week", 4, 0,   3,   "wkt/wk", None),
+                ("Bench Press 100kg",   "strength",          100, 70,  87.5, "kg",  today+timedelta(days=90),  "active"),
+                ("Cut to 65kg",         "weight_loss",       65,  72,  67.2, "kg",  today+timedelta(days=60),  "active"),
+                ("4 sessions per week", "workouts_per_week", 4,   0,   4,    "sessions", None,                 "active"),
+                ("Hit 100 workouts",    "workout_count",     100, 0,   88,   "workouts", None,                 "active"),
             ],
-            "bob": [
-                ("Drop to 80kg",    "weight_loss",     80,  85,  83,  "kg",  today + timedelta(days=45)),
-                ("Run 5km",         "endurance",       5,   0,   3,   "km",  today + timedelta(days=30)),
+            "marcus": [
+                ("Sub-3:45 marathon",   "endurance",         225, 280, 248,  "min", today+timedelta(days=90),  "active"),
+                ("Run 60km/week",       "endurance",         60,  0,   52,   "km",  None,                      "active"),
+                ("Sub-50min 10K",       "endurance",         50,  65,  48,   "min", today-timedelta(days=14),  "achieved"),
             ],
-            "carol": [
-                ("Hit 1800 kcal/day","calories",       1800,0,  1650,"kcal", None),
-                ("Lose 5kg",        "weight_loss",     57,  62,  60.5,"kg",  today + timedelta(days=120)),
+            "sofia": [
+                ("Reach 65kg",          "weight_loss",       65,  78,  70.2, "kg",  today+timedelta(days=90),  "active"),
+                ("Log food every day",  "custom",            90,  0,   85,   "days", None,                     "active"),
+                ("Lose first 5kg",      "weight_loss",       73,  78,  70.2, "kg",  today-timedelta(days=30),  "achieved"),
+                ("Work out 3x/week",    "workouts_per_week", 3,   0,   3,    "sessions", None,                 "active"),
             ],
-            "dave": [
-                ("Work out 3x/week","workouts_per_week",3,  0,   1,   "wkt/wk", today + timedelta(days=30)),
+            "jake": [
+                ("Survive the first month", "workout_count", 12, 0,   14,   "workouts", today-timedelta(days=5), "achieved"),
+                ("Work out 3x/week",    "workouts_per_week", 3,  0,   2,    "sessions", today+timedelta(days=30), "active"),
+                ("Lose 5kg",            "weight_loss",       80, 85,  83.5, "kg",  today+timedelta(days=90),  "active"),
             ],
-            "frank": [
-                ("Squat 180kg PR",  "strength",        180, 140, 160, "kg",  today + timedelta(days=180)),
-                ("Gain 5kg muscle", "weight_gain",     100, 95,  97,  "kg",  today + timedelta(days=120)),
-                ("3000 kcal/day",   "calories",        3000,0,  2800,"kcal", None),
-            ],
-            "jack": [
-                ("Lose 8kg",        "weight_loss",     70,  78,  74,  "kg",  today + timedelta(days=90)),
-                ("5 workouts/week", "workouts_per_week",5,  0,   3,   "wkt/wk", today + timedelta(days=60)),
-            ],
-            "olivia": [
-                ("Maintain 65kg",   "weight_loss",     65,  72,  65,  "kg",  None),     # achieved
-                ("10k sub-50min",   "endurance",       50,  65,  49,  "min", today - timedelta(days=10)),  # achieved
-            ],
-            "eve": [
-                ("Sub-4h marathon", "endurance",       240, 280, 255, "min", today + timedelta(days=90)),
-                ("Run 50km/week",   "endurance",       50,  0,   38,  "km",  None),
-            ],
-            "mia": [
-                ("Try the gym",     "custom",          1,   0,   0,   "visit", today + timedelta(days=14)),
+            "priya": [
+                ("Squat bodyweight×1.5","strength",          90,  58, 72.5, "kg",  today-timedelta(days=60),  "achieved"),
+                ("100 CrossFit WODs",   "workout_count",     100, 0,  100,  "WODs",today-timedelta(days=20),  "achieved"),
+                ("6-month streak",      "streak_days",       180, 0,  165,  "days",today+timedelta(days=30),  "active"),
+                ("Deadlift 120kg",      "strength",          120, 75, 95,   "kg",  today+timedelta(days=60),  "active"),
+                ("Compete in Open",     "custom",            1,   0,  1,    "event",today-timedelta(days=14), "achieved"),
             ],
         }
-
-        username_to_user = {u.username: u for u in users}
 
         for username, goals in goal_sets.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-            for title, gtype, target, start, current, unit, deadline in goals:
-                # Determine status from current vs target (for weight_loss: current <= target means achieved)
-                if gtype == "weight_loss":
-                    status = "achieved" if current <= target else "active"
-                else:
-                    status = "achieved" if current >= target else "active"
-
+            user = u[username]
+            for title, gtype, target, start, current, unit, deadline, status in goals:
                 Goal.objects.get_or_create(
                     user=user, title=title,
-                    defaults=dict(
-                        goal_type=gtype,
-                        target_value=target,
-                        starting_value=start,
-                        current_value=current,
-                        unit=unit,
-                        deadline=deadline,
-                        status=status,
-                    ),
+                    defaults=dict(goal_type=gtype, target_value=target, starting_value=start,
+                                  current_value=current, unit=unit, deadline=deadline,
+                                  status=status),
                 )
-
         self._log("Goals seeded.")
 
-    # ------------------------------------------------------------------
-    # Social — posts, likes, comments
-    # ------------------------------------------------------------------
+    # ── Social ────────────────────────────────────────────────────────────────
 
-    def _create_social(self, users):
-        from social.models import Comment, Friendship, Like, Post
+    def _create_social(self, u):
+        from social.models import Comment, Like, Post
 
-        post_bodies = {
-            "alice":  ["Just hit a new squat PR — 120kg! 🎉",
-                       "Rest day today. Meal prepped for the whole week 🥗",
-                       "Push day done. Bench is moving up nicely 💪"],
-            "bob":    ["Chest day with the boys. Good session!",
-                       "Football match today — counts as cardio right? 😅"],
-            "eve":    ["10km done before sunrise. Best way to start the day 🌅",
-                       "Long run Saturday — 28km in the books. Legs are toast 🏃"],
-            "frank":  ["200kg deadlift is COMING. Hit 185kg today 🏋️",
-                       "Heavy squat session. Back feels solid."],
-            "noah":   ["WOD today: 21-15-9 thrusters + pull-ups. Died. 💀",
-                       "CrossFit open prep is going well 🔥"],
-            "grace":  ["Morning yoga + afternoon weights. Feeling balanced 🧘"],
-            "iris":   ["Love this community! Keep pushing everyone 💙",
-                       "Group class was brutal today 😤"],
-            "jack":   ["Down 4kg since January. Slow and steady 🎯",
-                       "Meal prep Sunday done. Discipline > motivation."],
-            "carol":  ["Hit my protein goal every day this week! 💚",
-                       "Trying a new food tracking approach this month 📱"],
-            "olivia": ["Reached goal weight! Time to focus on maintenance 🎉",
-                       "Feeling the best I have in years 🌟"],
-        }
+        today = timezone.now()
 
-        username_to_user = {u.username: u for u in users}
-        all_posts = []
-
-        for username, bodies in post_bodies.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-            for body in bodies:
-                post = Post.objects.create(user=user, body=body)
-                all_posts.append(post)
-
-        # Likes: friends like each other's posts
-        accepted = Friendship.objects.filter(status="accepted").select_related("requester", "addressee")
-        for friendship in accepted:
-            # requester likes addressee's recent posts and vice versa
-            for post in Post.objects.filter(user=friendship.addressee)[:2]:
-                Like.objects.get_or_create(post=post, user=friendship.requester)
-            for post in Post.objects.filter(user=friendship.requester)[:1]:
-                Like.objects.get_or_create(post=post, user=friendship.addressee)
-
-        # Comments
-        comment_pairs = [
-            ("bob",    "alice",  "Crushing it as always! 🙌"),
-            ("alice",  "frank",  "Beast mode activated 🔥"),
-            ("iris",   "alice",  "So inspiring!"),
-            ("carol",  "olivia", "You did it!! 🎉🎉"),
-            ("eve",    "noah",   "CrossFit and running — respect 💪"),
-            ("jack",   "carol",  "Macro tracking changed my life too!"),
-            ("grace",  "iris",   "Group classes are the best motivation!"),
-            ("noah",   "frank",  "Those numbers are insane 😤"),
-            ("olivia", "eve",    "Sub-4h is coming for you! 🏃"),
-            ("alice",  "jack",   "4kg is huge progress, keep going!"),
+        # (username, body, days_ago)
+        post_data = [
+            # Alice — powerlifter updates
+            ("alice",  "NEW BENCH PR: 87.5kg × 4 reps. 100kg is coming 🎯", 2),
+            ("alice",  "Week 24 check-in: down 4.5kg since I started the cut. Strength staying strong 💪", 14),
+            ("alice",  "Rest day means meal prep day. 12 containers of chicken and rice ready to go 🥗", 21),
+            ("alice",  "Push day done. Overhead press is finally clicking after months of struggling 🏋️", 35),
+            ("alice",  "6 months of logging every single session. This app keeps me honest. Here's to 6 more 🚀", 56),
+            # Marcus — runner updates
+            ("marcus", "28km long run this morning. Legs are absolutely cooked. 2 hours 32 mins 🏃", 3),
+            ("marcus", "Speed session: 6×1km repeats averaging 3:55/km. Boston qualifier is within reach 💨", 10),
+            ("marcus", "10K in 47:48! PR by 2 mins. Sub-45 is next 🔥", 30),
+            ("marcus", "Week 12 of training. 52km this week. Body is adapting. Sleep is the real gains 😴", 45),
+            ("marcus", "First 20km long run of the training block. Legs held up. Nutrition was on point 💧", 70),
+            # Sofia — weight loss journey
+            ("sofia",  "8kg down from where I started 🎉 Slow and steady. Tracking every macro every day.", 1),
+            ("sofia",  "Hit my protein goal for 30 days straight. It's a habit now, not a chore 💚", 15),
+            ("sofia",  "First time fitting into my old jeans in 2 years. This is why we do it 😭❤️", 32),
+            ("sofia",  "Meal prep Sunday. Healthy eating doesn't have to be boring — today was teriyaki tofu 🍱", 50),
+            ("sofia",  "5kg milestone: officially lost 5kg. 8 more to go. Halfway there! 🎯", 68),
+            # Jake — beginner energy
+            ("jake",   "Week 1 done!! Legs are DEAD but I'm proud. Starting something new is scary 🙏", 55),
+            ("jake",   "Just hit 10 workouts total. A month ago I couldn't do 5 push-ups. Now I'm doing sets 💪", 30),
+            ("jake",   "Down 1.5kg. Still figuring out the eating but the gym is becoming a habit fr 🏋️", 10),
+            # Priya — CrossFit veteran
+            ("priya",  "WOD today: 21-15-9 thrusters at 42.5kg + pull-ups. 8:43. New PR 💥", 1),
+            ("priya",  "100 CrossFit WODs logged on FitTrack! Never thought I'd hit triple digits 🏆", 20),
+            ("priya",  "Competed in the CrossFit Open this weekend. Placed 47th in the region. Not bad for a 'hobby' 😄", 42),
+            ("priya",  "Squat 72.5kg × 5. 8 months ago that was my 1RM. Progress is beautiful 🙌", 65),
+            ("priya",  "Morning crew showing up at 6am every day. This community is everything 💙", 90),
+            ("priya",  "Deadlift 95kg today. 120kg is the goal. Getting closer every week 🔥", 105),
         ]
-        for commenter_username, post_owner_username, body in comment_pairs:
-            commenter = username_to_user.get(commenter_username)
-            post_owner = username_to_user.get(post_owner_username)
-            if not commenter or not post_owner:
-                continue
-            post = Post.objects.filter(user=post_owner).first()
+
+        post_objects = {}
+        for username, body, days_ago in post_data:
+            user = u[username]
+            post = Post.objects.create(user=user, body=body)
+            # Backdate the post
+            Post.objects.filter(pk=post.pk).update(
+                created_at=today - timedelta(days=days_ago)
+            )
+            post.refresh_from_db()
+            post_objects[(username, body[:20])] = post
+
+        all_posts = list(Post.objects.filter(user__in=u.values()).order_by("?"))
+
+        # Realistic likes: each user likes posts from their friends
+        like_pairs = [
+            # (liker, post_owner, post_body_prefix)
+            ("marcus", "alice",  "NEW BENCH PR"),
+            ("priya",  "alice",  "NEW BENCH PR"),
+            ("sofia",  "alice",  "6 months of logging"),
+            ("jake",   "alice",  "Week 24 check-in"),
+            ("alice",  "marcus", "28km long run"),
+            ("priya",  "marcus", "28km long run"),
+            ("sofia",  "marcus", "10K in 47:48"),
+            ("jake",   "marcus", "10K in 47:48"),
+            ("alice",  "sofia",  "8kg down"),
+            ("marcus", "sofia",  "8kg down"),
+            ("priya",  "sofia",  "8kg down"),
+            ("alice",  "sofia",  "Hit my protein goal"),
+            ("priya",  "sofia",  "First time fitting"),
+            ("alice",  "jake",   "Week 1 done"),
+            ("marcus", "jake",   "Week 1 done"),
+            ("sofia",  "jake",   "Week 1 done"),
+            ("priya",  "jake",   "Week 1 done"),
+            ("alice",  "jake",   "Down 1.5kg"),
+            ("alice",  "priya",  "WOD today: 21-15-9"),
+            ("marcus", "priya",  "100 CrossFit WODs"),
+            ("sofia",  "priya",  "100 CrossFit WODs"),
+            ("jake",   "priya",  "100 CrossFit WODs"),
+            ("alice",  "priya",  "Squat 72.5kg"),
+            ("marcus", "priya",  "Morning crew"),
+        ]
+        for liker, post_owner, body_prefix in like_pairs:
+            post = Post.objects.filter(user=u[post_owner], body__startswith=body_prefix).first()
             if post:
-                Comment.objects.create(post=post, user=commenter, body=body)
+                Like.objects.get_or_create(post=post, user=u[liker])
 
-        self._log("Social posts, likes, and comments seeded.")
+        # Rich comments
+        comments = [
+            ("marcus", "alice",  "NEW BENCH PR",          "Bro that's incredible. I can barely lift the bar 😂"),
+            ("priya",  "alice",  "NEW BENCH PR",          "100kg is YOURS. Lock it in 🔒🔥"),
+            ("sofia",  "alice",  "Week 24 check-in",      "The cut AND keeping strength?! Goals honestly 💪"),
+            ("jake",   "alice",  "6 months of logging",   "This is so motivating. You're the reason I started 🙏"),
+            ("alice",  "marcus", "28km long run",         "28km?? I struggle at 5. Mad respect 🏃"),
+            ("priya",  "marcus", "28km long run",         "That pace for 28km is elite. Boston watch out! 🏆"),
+            ("sofia",  "marcus", "10K in 47:48",          "PR!! You absolutely smashed it!! 🎉"),
+            ("alice",  "sofia",  "8kg down",              "EIGHT KG?! The dedication is unreal. So proud of you 💚"),
+            ("marcus", "sofia",  "Hit my protein goal",   "30 days straight of hitting protein is wild discipline 🔥"),
+            ("priya",  "sofia",  "First time fitting",    "THIS MADE ME EMOTIONAL. You deserve every bit of this 😭❤️"),
+            ("jake",   "sofia",  "8kg down",              "This is exactly what I needed to see today. Thank you 💪"),
+            ("alice",  "jake",   "Week 1 done",           "Week 1 is the hardest. You made it!! Keep going! 🚀"),
+            ("sofia",  "jake",   "Week 1 done",           "I remember my week 1 like it was yesterday. The soreness is real 😂 You got this!"),
+            ("priya",  "jake",   "Just hit 10 workouts",  "10 workouts in and already seeing changes? That's the magic 💥"),
+            ("marcus", "jake",   "Down 1.5kg",            "Progress is progress. Don't compare your day 30 to anyone's day 300 👊"),
+            ("alice",  "priya",  "WOD today: 21-15-9",    "8:43?! That's genuinely scary. I need to try CrossFit 😅"),
+            ("sofia",  "priya",  "100 CrossFit WODs",     "100 WODs!! That's obsession in the best possible way 🏆"),
+            ("jake",   "priya",  "100 CrossFit WODs",     "Goals! I hope I'm posting something like this in a year 🙌"),
+            ("marcus", "priya",  "Competed in the CrossFit","47th in the region for a 'hobby'?? You're insane 😂 legendary"),
+            ("alice",  "priya",  "Squat 72.5kg",          "From 72.5 as your 1RM to 72.5 for reps in 8 months. That's what hard work looks like 🙌"),
+        ]
+        for commenter, post_owner, body_prefix, comment_body in comments:
+            post = Post.objects.filter(user=u[post_owner], body__startswith=body_prefix).first()
+            if post:
+                Comment.objects.get_or_create(
+                    post=post, user=u[commenter],
+                    defaults={"body": comment_body},
+                )
 
-    # ------------------------------------------------------------------
-    # Achievements
-    # ------------------------------------------------------------------
+        self._log("Social: posts, likes, and comments seeded.")
 
-    def _create_achievements(self, users):
+    # ── Achievements ──────────────────────────────────────────────────────────
+
+    def _create_achievements(self, u):
         from achievements.models import Achievement, Streak, UserAchievement
 
-        username_to_user = {u.username: u for u in users}
-
-        # Streak data
         streak_data = {
-            "alice":  (21, 45),
-            "frank":  (14, 30),
-            "eve":    (30, 60),
-            "noah":   (7,  20),
-            "jack":   (5,  14),
-            "carol":  (3,  10),
-            "olivia": (10, 90),
-            "liam":   (0,  15),   # streak decayed
+            "alice":  (12, 45, date.today()),
+            "marcus": (18, 28, date.today()),
+            "sofia":  ( 5, 21, date.today()),
+            "jake":   ( 2,  5, date.today()),
+            "priya":  (22, 60, date.today()),
         }
-        for username, (current, longest) in streak_data.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-            last_date = date.today() if current > 0 else date.today() - timedelta(days=5)
+        for username, (cur, longest, last) in streak_data.items():
             Streak.objects.update_or_create(
-                user=user,
-                defaults={"current_days": current, "longest_days": longest, "last_workout_date": last_date},
+                user=u[username],
+                defaults={"current_days": cur, "longest_days": longest, "last_workout_date": last},
             )
 
-        # Unlock achievements for power users
-        all_achievements = list(Achievement.objects.all())
-        if not all_achievements:
-            return
-
+        # Each user unlocks badges that match their actual history
         unlock_map = {
-            "alice":  all_achievements[:3],
-            "frank":  all_achievements[:4],
-            "eve":    all_achievements[:2],
-            "olivia": all_achievements[:5],
-            "noah":   all_achievements[:2],
+            "alice": [
+                "first_workout","workouts_10","workouts_25","workouts_50","workouts_100",
+                "streak_3","streak_7","streak_14",
+                "volume_1k","volume_5k","volume_10k","volume_25k",
+                "minutes_100","minutes_300","minutes_600","minutes_1500","minutes_3000",
+                "calories_1k","calories_5k",
+                "early_bird_5","early_bird_20",
+                "goals_1",
+            ],
+            "marcus": [
+                "first_workout","workouts_10","workouts_25","workouts_50",
+                "streak_3","streak_7","streak_14",
+                "minutes_100","minutes_300","minutes_600","minutes_1500","minutes_3000",
+                "calories_1k","calories_5k","calories_25k",
+                "distance_5k","distance_21k","distance_42k","distance_100k","distance_500k",
+                "early_bird_5","early_bird_20","early_bird_50",
+                "goals_1","goals_5",
+            ],
+            "sofia": [
+                "first_workout","workouts_10","workouts_25","workouts_50",
+                "streak_3","streak_7","streak_14","streak_30",
+                "minutes_100","minutes_300","minutes_600",
+                "calories_1k","calories_5k",
+                "goals_1",
+            ],
+            "jake": [
+                "first_workout","workouts_10",
+                "streak_3",
+                "minutes_100",
+                "calories_1k",
+            ],
+            "priya": [
+                "first_workout","workouts_10","workouts_25","workouts_50","workouts_100","workouts_200",
+                "streak_3","streak_7","streak_14","streak_30","streak_60",
+                "volume_1k","volume_5k","volume_10k","volume_25k","volume_50k",
+                "minutes_100","minutes_300","minutes_600","minutes_1500","minutes_3000","minutes_6000",
+                "calories_1k","calories_5k","calories_25k","calories_100k",
+                "early_bird_5","early_bird_20","early_bird_50",
+                "goals_1","goals_5","goals_10",
+            ],
         }
-        for username, achievements in unlock_map.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
-            for ach in achievements:
-                UserAchievement.objects.get_or_create(user=user, achievement=ach)
+        all_achievements = {a.code: a for a in Achievement.objects.all()}
+        for username, codes in unlock_map.items():
+            user = u[username]
+            for code in codes:
+                if code in all_achievements:
+                    UserAchievement.objects.get_or_create(user=user, achievement=all_achievements[code])
 
         self._log("Achievements and streaks seeded.")
 
-    # ------------------------------------------------------------------
-    # Reminders
-    # ------------------------------------------------------------------
+    # ── Reminders ─────────────────────────────────────────────────────────────
 
-    def _create_reminders(self, users):
+    def _create_reminders(self, u):
         from reminders.models import Reminder
 
-        reminder_sets = {
+        reminder_data = {
             "alice": [
-                ("Morning Workout", "workout", time(6, 30),  ["mon", "wed", "fri", "sat"]),
-                ("Protein Shake",   "meal",    time(8, 0),   ["mon", "tue", "wed", "thu", "fri"]),
-                ("Hydration Check", "water",   time(12, 0),  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+                ("Push Day", "workout", time( 6,30), ["mon"]),
+                ("Pull Day", "workout", time( 6,30), ["wed"]),
+                ("Leg Day",  "workout", time( 7, 0), ["thu"]),
+                ("Upper",    "workout", time( 7, 0), ["sat"]),
+                ("Protein Check", "meal", time(20, 0), ["mon","tue","wed","thu","fri","sat","sun"]),
+                ("Weekly Weigh-In", "measurement", time(7,30), ["mon"]),
             ],
-            "bob": [
-                ("Gym Time",        "workout", time(18, 30), ["mon", "wed", "fri"]),
-                ("Drink Water",     "water",   time(9, 0),   ["mon", "tue", "wed", "thu", "fri"]),
+            "marcus": [
+                ("Morning Run", "workout", time( 5,45), ["mon","tue","wed","thu","fri","sat"]),
+                ("Post-Run Nutrition", "meal", time(7,30), ["mon","tue","wed","thu","fri","sat"]),
+                ("Weekly Long Run", "workout", time(6, 0), ["sat"]),
             ],
-            "carol": [
-                ("Log Breakfast",   "meal",    time(7, 30),  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-                ("Log Lunch",       "meal",    time(12, 30), ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-                ("Log Dinner",      "meal",    time(19, 30), ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+            "sofia": [
+                ("Log Breakfast",   "meal", time( 7,30), ["mon","tue","wed","thu","fri","sat","sun"]),
+                ("Log Lunch",       "meal", time(12,30), ["mon","tue","wed","thu","fri","sat","sun"]),
+                ("Log Dinner",      "meal", time(19,30), ["mon","tue","wed","thu","fri","sat","sun"]),
+                ("Water Reminder",  "water", time(10, 0), ["mon","tue","wed","thu","fri"]),
+                ("Water Reminder",  "water", time(15, 0), ["mon","tue","wed","thu","fri"]),
+                ("Workout — Mon",   "workout", time(7,30), ["mon"]),
+                ("Workout — Wed",   "workout", time(7,30), ["wed"]),
+                ("Workout — Fri",   "workout", time(7,30), ["fri"]),
+                ("Weekly Weigh-In", "measurement", time(7, 0), ["fri"]),
             ],
-            "dave": [
-                ("Beginner Workout","workout", time(19, 0),  ["tue", "thu", "sat"]),
+            "jake": [
+                ("Gym Time",  "workout", time(18, 0), ["mon","wed"]),
+                ("Drink Water", "water", time(12, 0), ["mon","tue","wed","thu","fri"]),
             ],
-            "eve": [
-                ("Morning Run",     "workout", time(5, 45),  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-                ("Post-Run Snack",  "meal",    time(7, 0),   ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-            ],
-            "frank": [
-                ("Heavy Lifting",   "workout", time(7, 0),   ["mon", "wed", "fri"]),
-                ("Pre-Workout Meal","meal",    time(6, 30),  ["mon", "wed", "fri"]),
-                ("Weigh In",        "measurement", time(7, 15), ["mon"]),
-            ],
-            "henry": [
-                ("Weekly Weigh-In", "measurement", time(8, 0), ["mon"]),
-                ("Monthly Measurements", "measurement", time(8, 0), ["mon"]),
-            ],
-            "kate": [
-                ("Morning Workout", "workout", time(7, 0),   ["mon", "tue", "wed", "thu", "fri"]),
-                ("Water Reminder",  "water",   time(10, 0),  ["mon", "tue", "wed", "thu", "fri"]),
-                ("Water Reminder",  "water",   time(14, 0),  ["mon", "tue", "wed", "thu", "fri"]),
-                ("Evening Walk",    "workout", time(19, 30), ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-            ],
-            "jack": [
-                ("Morning Weigh-In","measurement", time(7, 0), ["mon", "wed", "fri"]),
-                ("Workout Time",    "workout", time(17, 30), ["mon", "tue", "wed", "thu", "fri"]),
+            "priya": [
+                ("Morning WOD", "workout", time( 5,45), ["mon","tue","thu","fri","sat"]),
+                ("Pre-WOD Meal", "meal",   time( 5, 0), ["mon","tue","thu","fri","sat"]),
+                ("Weekly Weigh-In", "measurement", time(7,30), ["mon"]),
+                ("Mobility Work", "workout", time(20, 0), ["wed","sun"]),
             ],
         }
-        username_to_user = {u.username: u for u in users}
-
-        for username, reminders in reminder_sets.items():
-            user = username_to_user.get(username)
-            if not user:
-                continue
+        for username, reminders in reminder_data.items():
+            user = u[username]
             for title, rtype, tod, days in reminders:
                 Reminder.objects.get_or_create(
                     user=user, title=title, time_of_day=tod,
                     defaults={"reminder_type": rtype, "days_of_week": days, "is_active": True},
                 )
-
         self._log("Reminders seeded.")
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
+    # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _log(self, msg):
         self.stdout.write(f"  {msg}")
 
     def _print_credentials(self):
-        self.stdout.write("\n" + self.style.SUCCESS("=" * 60))
-        self.stdout.write(self.style.SUCCESS("  Demo users created — all share password: FitPass123!"))
-        self.stdout.write(self.style.SUCCESS("=" * 60))
+        self.stdout.write("\n" + self.style.SUCCESS("=" * 68))
+        self.stdout.write(self.style.SUCCESS("  Demo users ready  ·  Password: nepal@123"))
+        self.stdout.write(self.style.SUCCESS("=" * 68))
         rows = [
-            ("Username", "Name",          "Archetype"),
-            ("--------", "----",          "---------"),
-            ("alice",    "Alice Chen",    "Power lifter, active social"),
-            ("bob",      "Bob Smith",     "Moderate gym-goer"),
-            ("carol",    "Carol Jones",   "Nutrition tracker"),
-            ("dave",     "Dave Kim",      "Beginner (minimal data)"),
-            ("eve",      "Eve Patel",     "Endurance runner"),
-            ("frank",    "Frank Russo",   "Strength athlete"),
-            ("grace",    "Grace Lin",     "Yoga + weights"),
-            ("henry",    "Henry Park",    "Measurement obsessive"),
-            ("iris",     "Iris Nguyen",   "Social / community"),
-            ("jack",     "Jack Brown",    "Goal-oriented, cutting"),
-            ("kate",     "Kate Wilson",   "Reminder-heavy user"),
-            ("liam",     "Liam Taylor",   "Inactive (streak decayed)"),
-            ("mia",      "Mia Davis",     "New user (sparse data)"),
-            ("noah",     "Noah Martinez", "CrossFit, pending requests"),
-            ("olivia",   "Olivia Anderson","Goals achieved, maintaining"),
+            ("alice",  "Alice Chen",       "Powerlifter · 6-month cut · very social · 24wk history"),
+            ("marcus", "Marcus Webb",      "Marathon runner · Boston qualifier training · 16wk history"),
+            ("sofia",  "Sofia Rodriguez",  "Weight-loss journey · -8kg · logs every meal · 20wk history"),
+            ("jake",   "Jake Turner",      "Beginner · 2 months in · inconsistent · minimal data"),
+            ("priya",  "Priya Kapoor",     "CrossFit · 8 months · most data · 20+ achievements"),
         ]
-        for username, name, archetype in rows:
-            self.stdout.write(f"  {username:<10} {name:<20} {archetype}")
-        self.stdout.write(self.style.SUCCESS("=" * 60) + "\n")
+        for username, name, note in rows:
+            self.stdout.write(f"  {username:<8} {name:<20} {note}")
+        self.stdout.write(self.style.SUCCESS("=" * 68) + "\n")
+
+
+# ── Module-level helpers ──────────────────────────────────────────────────────
+
+def _skip(username: str, week: int, day: int, skip_pct: int) -> bool:
+    """Deterministic skip — same seed → same workouts every run."""
+    return abs(hash((username, week, day))) % 100 < skip_pct
+
+
+def _jitter(base: int, spread: int) -> int:
+    return base + random.randint(-spread, spread)
+
+
+def round_weight(w: float) -> float:
+    """Round to nearest 2.5 kg (standard plate increment)."""
+    if not w:
+        return None
+    return round(round(w / 2.5) * 2.5, 1)

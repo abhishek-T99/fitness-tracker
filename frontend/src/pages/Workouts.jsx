@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Dumbbell, Plus } from "lucide-react";
@@ -5,7 +6,10 @@ import { format, parseISO } from "date-fns";
 
 import PageHeader from "../components/PageHeader.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import Pagination from "../components/Pagination.jsx";
 import { workoutsApi } from "../api/endpoints.js";
+
+const PAGE_SIZE = 12;
 
 const SOURCE_META = {
   intervals: { label: "Intervals.icu", color: "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400" },
@@ -89,17 +93,22 @@ function WorkoutCard({ w }) {
 }
 
 export default function Workouts() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["workouts"],
-    queryFn: () => workoutsApi.list(),
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["workouts", page],
+    queryFn: () => workoutsApi.list({ page, page_size: PAGE_SIZE }),
+    keepPreviousData: true,
   });
-  const items = data?.results || data || [];
+
+  const items      = data?.results ?? [];
+  const totalCount = data?.count   ?? 0;
 
   return (
     <div>
       <PageHeader
         title="Workouts"
-        subtitle="Your training history"
+        subtitle={totalCount > 0 ? `${totalCount} sessions in your history` : "Your training history"}
         actions={
           <Link to="/workouts/new" className="btn-primary">
             <Plus className="w-4 h-4" /> Log workout
@@ -109,7 +118,7 @@ export default function Workouts() {
 
       {isLoading ? (
         <p className="text-slate-500">Loading…</p>
-      ) : items.length === 0 ? (
+      ) : items.length === 0 && page === 1 ? (
         <EmptyState
           icon={Dumbbell}
           title="No workouts yet"
@@ -121,9 +130,17 @@ export default function Workouts() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((w) => <WorkoutCard key={w.id} w={w} />)}
-        </div>
+        <>
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+            {items.map((w) => <WorkoutCard key={w.id} w={w} />)}
+          </div>
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            totalCount={totalCount}
+            onChange={setPage}
+          />
+        </>
       )}
     </div>
   );
