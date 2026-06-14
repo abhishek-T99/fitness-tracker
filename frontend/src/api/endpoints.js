@@ -69,6 +69,7 @@ export const foodsApi = {
 export const mealsApi = {
   list: (params) => api.get("/nutrition/meals/", { params }).then((r) => r.data),
   create: (data) => api.post("/nutrition/meals/", data).then((r) => r.data),
+  update: (id, data) => api.put(`/nutrition/meals/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/nutrition/meals/${id}/`).then((r) => r.data),
   dailySummary: (date) =>
     api
@@ -76,8 +77,10 @@ export const mealsApi = {
       .then((r) => r.data),
 };
 export const waterApi = {
-  list: () => api.get("/nutrition/water/").then((r) => r.data),
+  list: (params) => api.get("/nutrition/water/", { params }).then((r) => r.data),
   create: (data) => api.post("/nutrition/water/", data).then((r) => r.data),
+  update: (id, data) => api.patch(`/nutrition/water/${id}/`, data).then((r) => r.data),
+  remove: (id) => api.delete(`/nutrition/water/${id}/`).then((r) => r.data),
 };
 
 // Measurements
@@ -95,6 +98,7 @@ export const wellnessApi = {
 export const measurementsApi = {
   list: () => api.get("/measurements/").then((r) => r.data),
   create: (data) => api.post("/measurements/", data).then((r) => r.data),
+  update: (id, data) => api.patch(`/measurements/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/measurements/${id}/`).then((r) => r.data),
   weightHistory: (days = 90) =>
     api

@@ -5,6 +5,7 @@ from .models import BodyMeasurement
 
 class BodyMeasurementSerializer(serializers.ModelSerializer):
     bmi = serializers.FloatField(read_only=True)
+    estimated_body_fat = serializers.SerializerMethodField()
 
     class Meta:
         model = BodyMeasurement
@@ -16,6 +17,7 @@ class BodyMeasurementSerializer(serializers.ModelSerializer):
             "chest_cm",
             "waist_cm",
             "hips_cm",
+            "neck_cm",
             "arm_cm",
             "thigh_cm",
             "resting_hr_bpm",
@@ -24,9 +26,13 @@ class BodyMeasurementSerializer(serializers.ModelSerializer):
             "sleep_score",
             "notes",
             "bmi",
+            "estimated_body_fat",
             "created_at",
         ]
-        read_only_fields = ["created_at", "bmi"]
+        read_only_fields = ["created_at", "bmi", "estimated_body_fat"]
+
+    def get_estimated_body_fat(self, obj):
+        return obj.estimated_body_fat
 
     def validate(self, attrs):
         request = self.context.get("request")
