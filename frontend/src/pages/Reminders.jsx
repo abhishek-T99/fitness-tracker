@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Bell, Plus, Trash2, Repeat, Clock,
+  Bell, Plus, Trash2, Repeat, Clock, Pencil,
   Dumbbell, Droplets, Apple, Ruler, PersonStanding, Settings,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -51,7 +51,7 @@ function intervalLabel(mins) {
 
 // ── Reminder row in the list ───────────────────────────────────────────────
 
-function ReminderRow({ r, onToggle, onDelete, dragHandleProps }) {
+function ReminderRow({ r, onToggle, onDelete, onEdit, dragHandleProps }) {
   const typeInfo = TYPES.find((t) => t.value === r.reminder_type) || TYPES[TYPES.length - 1];
   const TypeIcon = typeInfo.Icon;
   const isInterval = r.recurrence_type === "interval";
@@ -86,11 +86,15 @@ function ReminderRow({ r, onToggle, onDelete, dragHandleProps }) {
               : (r.days_of_week || []).join(", ")}
           </span>
         </div>
+        {r.notes && (
+          <p className="text-xs text-slate-400 mt-1 truncate">{r.notes}</p>
+        )}
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2 shrink-0">
-        <label className="inline-flex items-center cursor-pointer">
+      <div className="flex items-center gap-1 shrink-0">
+        {/* Active toggle */}
+        <label className="inline-flex items-center cursor-pointer mr-1">
           <input
             type="checkbox"
             className="sr-only peer"
@@ -105,8 +109,21 @@ function ReminderRow({ r, onToggle, onDelete, dragHandleProps }) {
             />
           </div>
         </label>
-        <button onClick={onDelete} className="text-slate-400 hover:text-rose-500 p-1">
-          <Trash2 className="w-4 h-4" />
+        {/* Edit */}
+        <button
+          onClick={onEdit}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+          title="Edit reminder"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        {/* Delete */}
+        <button
+          onClick={onDelete}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+          title="Delete reminder"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
@@ -117,7 +134,8 @@ function ReminderRow({ r, onToggle, onDelete, dragHandleProps }) {
 
 export default function Reminders() {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);       // true = create new
+  const [editing, setEditing] = useState(null);  // reminder object = edit mode
   const [localItems, setLocalItems] = useState(null);
 
   const { data } = useQuery({ queryKey: ["reminders"], queryFn: remindersApi.list });
@@ -183,6 +201,7 @@ export default function Reminders() {
                   r={r}
                   dragHandleProps={dragHandleProps}
                   onToggle={() => toggleActive.mutate({ id: r.id, is_active: !r.is_active })}
+                  onEdit={() => setEditing(r)}
                   onDelete={() => remove.mutate(r.id)}
                 />
               )}
@@ -191,11 +210,24 @@ export default function Reminders() {
         </SortableList>
       )}
 
+      {/* Create modal */}
       {open && (
         <ReminderModal
           onClose={() => setOpen(false)}
           onSaved={() => {
             setOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["reminders"] });
+          }}
+        />
+      )}
+
+      {/* Edit modal */}
+      {editing && (
+        <ReminderModal
+          reminder={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
             queryClient.invalidateQueries({ queryKey: ["reminders"] });
           }}
         />
@@ -206,25 +238,47 @@ export default function Reminders() {
 
 // ── New reminder modal ─────────────────────────────────────────────────────
 
-function ReminderModal({ onClose, onSaved }) {
-  const [recurrence, setRecurrence] = useState("once");
-  const [days, setDays] = useState(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
-  const [intervalPreset, setIntervalPreset] = useState(60);
-  const [customInterval, setCustomInterval] = useState(45);
+function ReminderModal({ reminder = null, onClose, onSaved }) {
+  const isEditing = !!reminder;
+
+  // Derive initial interval preset from existing interval_minutes
+  function derivePreset(mins) {
+    if (!mins) return 60;
+    return INTERVAL_PRESETS.find((p) => p.value === mins && p.value !== 0)
+      ? mins
+      : 0; // 0 = "Custom…"
+  }
+
+  const [recurrence, setRecurrence] = useState(
+    reminder?.recurrence_type ?? "once"
+  );
+  const [days, setDays] = useState(
+    reminder?.days_of_week?.length ? reminder.days_of_week
+      : ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+  );
+  const [intervalPreset, setIntervalPreset] = useState(
+    derivePreset(reminder?.interval_minutes)
+  );
+  const [customInterval, setCustomInterval] = useState(
+    reminder?.interval_minutes ?? 45
+  );
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm({
     defaultValues: {
-      reminder_type: "water",
-      time_of_day: "08:00",
-      start_time: "08:00",
-      end_time: "20:00",
-      title: "",
-      notes: "",
+      reminder_type: reminder?.reminder_type ?? "water",
+      title:         reminder?.title         ?? "",
+      notes:         reminder?.notes         ?? "",
+      time_of_day:   reminder?.time_of_day   ?? "08:00",
+      start_time:    reminder?.start_time    ?? "08:00",
+      end_time:      reminder?.end_time      ?? "20:00",
     },
   });
 
   const save = useMutation({
-    mutationFn: (data) => remindersApi.create(data),
+    mutationFn: (payload) =>
+      isEditing
+        ? remindersApi.update(reminder.id, payload)
+        : remindersApi.create(payload),
     onSuccess: onSaved,
     onError: (err) => {
       const detail = err?.response?.data;
@@ -245,15 +299,21 @@ function ReminderModal({ onClose, onSaved }) {
       recurrence_type: recurrence,
       days_of_week: days,
       notes: data.notes,
-      is_active: true,
     };
 
+    // Preserve is_active when editing; default true for new reminders
+    if (!isEditing) payload.is_active = true;
+
     if (recurrence === "once") {
-      payload.time_of_day = data.time_of_day;
+      payload.time_of_day  = data.time_of_day;
+      payload.start_time   = null;
+      payload.end_time     = null;
+      payload.interval_minutes = null;
     } else {
-      payload.start_time = data.start_time;
-      payload.end_time = data.end_time;
+      payload.start_time       = data.start_time;
+      payload.end_time         = data.end_time;
       payload.interval_minutes = Number(effectiveInterval);
+      payload.time_of_day      = null;
     }
 
     save.mutate(payload);
@@ -281,7 +341,9 @@ function ReminderModal({ onClose, onSaved }) {
       >
         {/* Header */}
         <div className="border-b border-slate-200 px-5 py-4 flex justify-between items-center">
-          <h3 className="font-semibold text-slate-900">New reminder</h3>
+          <h3 className="font-semibold text-slate-900">
+            {isEditing ? "Edit reminder" : "New reminder"}
+          </h3>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
         </div>
 
@@ -505,7 +567,7 @@ function ReminderModal({ onClose, onSaved }) {
         <div className="border-t border-slate-200 px-5 py-4 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
           <button type="submit" className="btn-primary" disabled={save.isPending}>
-            {save.isPending ? "Saving…" : "Save reminder"}
+            {save.isPending ? "Saving…" : isEditing ? "Update reminder" : "Save reminder"}
           </button>
         </div>
       </form>

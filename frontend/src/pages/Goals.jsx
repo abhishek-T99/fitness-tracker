@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Target, Trash2, Check } from "lucide-react";
+import { Plus, Target, Trash2, Check, Pencil, RotateCcw } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import toast from "react-hot-toast";
 
@@ -23,6 +23,7 @@ const GOAL_TYPES = [
 export default function Goals() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [localItems, setLocalItems] = useState(null);
 
   const { data } = useQuery({ queryKey: ["goals"], queryFn: goalsApi.list });
@@ -40,7 +41,15 @@ export default function Goals() {
   const markAchieved = useMutation({
     mutationFn: (id) => goalsApi.update(id, { status: "achieved" }),
     onSuccess: () => {
-      toast.success("Goal achieved!");
+      toast.success("Goal marked as achieved!");
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
+
+  const markActive = useMutation({
+    mutationFn: (id) => goalsApi.update(id, { status: "active" }),
+    onSuccess: () => {
+      toast.success("Goal reactivated.");
       queryClient.invalidateQueries({ queryKey: ["goals"] });
     },
   });
@@ -106,20 +115,36 @@ export default function Goals() {
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  {g.status === "active" && (
+                  {g.status === "active" ? (
                     <button
                       onClick={() => markAchieved.mutate(g.id)}
-                      className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 p-2 rounded"
-                      title="Mark achieved"
+                      className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 p-1.5 rounded-lg transition-colors"
+                      title="Mark as achieved"
                     >
                       <Check className="w-4 h-4" />
                     </button>
+                  ) : (
+                    <button
+                      onClick={() => markActive.mutate(g.id)}
+                      className="text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-500/10 p-1.5 rounded-lg transition-colors"
+                      title="Reactivate goal"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
                   )}
+                  <button
+                    onClick={() => setEditing(g)}
+                    className="text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-500/10 p-1.5 rounded-lg transition-colors"
+                    title="Edit goal"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => {
                       if (confirm("Delete this goal?")) remove.mutate(g.id);
                     }}
-                    className="text-slate-400 hover:text-rose-500 p-2 rounded"
+                    className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-1.5 rounded-lg transition-colors"
+                    title="Delete goal"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -175,6 +200,17 @@ export default function Goals() {
           }}
         />
       )}
+
+      {editing && (
+        <GoalModal
+          goal={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            queryClient.invalidateQueries({ queryKey: ["goals"] });
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -187,10 +223,25 @@ function badgeFor(status) {
   }[status];
 }
 
-function GoalModal({ onClose, onSaved }) {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+function GoalModal({ goal = null, onClose, onSaved }) {
+  const isEditing = !!goal;
+
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      title:          goal?.title         ?? "",
+      goal_type:      goal?.goal_type     ?? "weight_loss",
+      starting_value: goal?.starting_value ?? "",
+      current_value:  goal?.current_value  ?? "",
+      target_value:   goal?.target_value   ?? "",
+      unit:           goal?.unit           ?? "",
+      deadline:       goal?.deadline       ?? "",
+      notes:          goal?.notes          ?? "",
+    },
+  });
+
   const save = useMutation({
-    mutationFn: (data) => goalsApi.create(data),
+    mutationFn: (data) =>
+      isEditing ? goalsApi.update(goal.id, data) : goalsApi.create(data),
     onSuccess: onSaved,
     onError: () => toast.error("Could not save goal"),
   });
@@ -198,8 +249,8 @@ function GoalModal({ onClose, onSaved }) {
   const onSubmit = (data) => {
     const payload = {
       ...data,
-      target_value: Number(data.target_value),
-      current_value: Number(data.current_value || 0),
+      target_value:   Number(data.target_value),
+      current_value:  Number(data.current_value  || 0),
       starting_value: Number(data.starting_value || data.current_value || 0),
     };
     if (!payload.deadline) delete payload.deadline;
@@ -212,14 +263,15 @@ function GoalModal({ onClose, onSaved }) {
         onSubmit={handleSubmit(onSubmit)}
         className="bg-surface rounded-2xl shadow-xl w-full max-w-md"
       >
-        <div className="border-b border-slate-200 px-5 py-4 flex justify-between">
-          <h3 className="font-semibold">New goal</h3>
-          <button type="button" onClick={onClose}>✕</button>
+        <div className="border-b border-slate-200 px-5 py-4 flex justify-between items-center">
+          <h3 className="font-semibold">{isEditing ? "Edit goal" : "New goal"}</h3>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
         </div>
         <div className="p-5 grid grid-cols-2 gap-3">
           <div className="col-span-2">
             <label className="label">Title</label>
             <input className="input" {...register("title", { required: true })} />
+            {errors.title && <p className="text-xs text-rose-500 mt-1">Required</p>}
           </div>
           <div className="col-span-2">
             <label className="label">Type</label>
@@ -252,7 +304,7 @@ function GoalModal({ onClose, onSaved }) {
             <input className="input" placeholder="kg, lb, reps…" {...register("unit")} />
           </div>
           <div className="col-span-2">
-            <label className="label">Deadline (optional)</label>
+            <label className="label">Deadline <span className="text-slate-400 font-normal">(optional)</span></label>
             <input type="date" className="input" {...register("deadline")} />
           </div>
           <div className="col-span-2">
@@ -263,7 +315,7 @@ function GoalModal({ onClose, onSaved }) {
         <div className="border-t border-slate-200 px-5 py-4 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
           <button type="submit" className="btn-primary" disabled={save.isPending}>
-            {save.isPending ? "Saving…" : "Save"}
+            {save.isPending ? "Saving…" : isEditing ? "Update goal" : "Save goal"}
           </button>
         </div>
       </form>
