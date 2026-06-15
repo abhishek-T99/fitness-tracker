@@ -93,6 +93,27 @@ class WorkoutViewSet(viewsets.ModelViewSet):
         cache.set(key, payload, cache_keys.WORKOUT_STATS_TTL)
         return Response(payload)
 
+    @extend_schema(
+        request=None, responses={200: WorkoutSerializer},
+        summary="Reset calories_burned to None and re-estimate from set data",
+    )
+    @action(detail=True, methods=["post"], url_path="recalculate-calories")
+    def recalculate_calories(self, request, pk=None):
+        """
+        Clears the current calories_burned and re-runs the MET-based
+        estimation from the workout's exercise sets. Call this after
+        editing sets, or when the user wants to discard a manual entry.
+        """
+        from .services import estimate_calories
+        workout = self.get_object()
+        Workout.objects.filter(pk=workout.pk).update(calories_burned=None)
+        workout.calories_burned = None
+        estimate = estimate_calories(workout)
+        if estimate is not None:
+            Workout.objects.filter(pk=workout.pk).update(calories_burned=estimate)
+            workout.calories_burned = estimate
+        return Response(self.get_serializer(workout).data)
+
 
 @extend_schema(tags=["Workouts"])
 class RoutineViewSet(viewsets.ModelViewSet):
