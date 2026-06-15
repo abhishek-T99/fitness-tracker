@@ -24,6 +24,7 @@ import Achievements from "./pages/Achievements.jsx";
 import Reminders from "./pages/Reminders.jsx";
 import Profile from "./pages/Profile.jsx";
 import WorkoutSession from "./pages/WorkoutSession.jsx";
+import MealPlan from "./pages/MealPlan.jsx";
 
 export default function App() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/routines/:id" element={<RoutineEditor />} />
 
           <Route path="/nutrition" element={<Nutrition />} />
+          <Route path="/meal-plan" element={<MealPlan />} />
           <Route path="/measurements" element={<Measurements />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/social" element={<Social />} />

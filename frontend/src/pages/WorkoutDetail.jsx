@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
@@ -23,6 +23,17 @@ export default function WorkoutDetail() {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
       navigate("/workouts");
     },
+  });
+
+  const recalc = useMutation({
+    mutationFn: () => workoutsApi.recalculateCalories(id),
+    onSuccess: () => {
+      toast.success("Calories recalculated.");
+      queryClient.invalidateQueries({ queryKey: ["workout", id] });
+      queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["workoutStats"] });
+    },
+    onError: () => toast.error("Could not recalculate"),
   });
 
   if (isLoading || !w) return <p className="text-slate-500">Loading…</p>;
@@ -51,7 +62,27 @@ export default function WorkoutDetail() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Metric label="Duration" value={`${w.duration_min || 0} min`} />
-        <Metric label="Calories" value={w.calories_burned || 0} />
+        <div className="card p-4">
+          <p className="text-xs text-slate-500">Calories</p>
+          <div className="flex items-end justify-between gap-2 mt-1">
+            <p className="text-xl font-bold">
+              {w.calories_burned ?? (
+                <span className="text-slate-400 text-base font-normal">—</span>
+              )}
+            </p>
+            <button
+              onClick={() => recalc.mutate()}
+              disabled={recalc.isPending}
+              title="Recalculate from sets"
+              className="text-slate-400 hover:text-brand-600 transition-colors mb-0.5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${recalc.isPending ? "animate-spin" : ""}`} />
+            </button>
+          </div>
+          {!w.calories_burned && (
+            <p className="text-[10px] text-slate-400 mt-0.5">tap ↺ to estimate</p>
+          )}
+        </div>
         <Metric label="RPE" value={w.perceived_exertion || "—"} />
         <Metric label="Total volume" value={`${Math.round(w.total_volume || 0)} kg`} />
       </div>

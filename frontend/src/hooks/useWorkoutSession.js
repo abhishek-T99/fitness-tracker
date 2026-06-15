@@ -84,7 +84,7 @@ function buildInitialSession(routine, history) {
   return {
     routineId: routine.id,
     routineName: routine.name,
-    startedAt: new Date().toISOString(),
+    startedAt: null,            // stamped precisely when the user taps "Begin"
     status: "preview",          // preview | active | resting | done
     currentExIdx: 0,
     currentSetIdx: 0,
@@ -150,11 +150,15 @@ export default function useWorkoutSession() {
     setSession(s);
   }, []);
 
-  /** Transition preview → active. */
+  /** Transition preview → active. Stamps startedAt at the moment the user begins. */
   const beginSession = useCallback(() => {
     setSession((prev) => {
       if (!prev) return prev;
-      const s = { ...prev, status: "active" };
+      const s = {
+        ...prev,
+        status: "active",
+        startedAt: new Date().toISOString(),  // clock starts NOW, not at page load
+      };
       return _prefillCurrentSet(s);
     });
   }, []);
