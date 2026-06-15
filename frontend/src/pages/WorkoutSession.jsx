@@ -10,7 +10,7 @@
  *   4. For each exercise:  show set → user logs reps/weight → rest timer → next set
  *   5. After all exercises → summary screen → save as completed Workout
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
@@ -23,6 +23,39 @@ import RestTimer from "../components/RestTimer.jsx";
 import ExerciseTutorialSheet, { TutorialTrigger } from "../components/ExerciseTutorialSheet.jsx";
 import useWorkoutSession, { getProgressionSuggestion } from "../hooks/useWorkoutSession.js";
 import { routinesApi, workoutsApi } from "../api/endpoints.js";
+
+// ── Stopwatch ─────────────────────────────────────────────────────────────────
+
+/**
+ * Live elapsed-time display.  Ticks every second from startedAt (ISO string).
+ * Shows MM:SS for the first hour, then H:MM:SS.
+ */
+function Stopwatch({ startedAt, className = "" }) {
+  const [elapsed, setElapsed] = useState(0); // seconds
+
+  useEffect(() => {
+    if (!startedAt) return;
+    const origin = new Date(startedAt).getTime();
+
+    const tick = () => setElapsed(Math.floor((Date.now() - origin) / 1000));
+    tick();                                   // run immediately
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  const h  = Math.floor(elapsed / 3600);
+  const m  = Math.floor((elapsed % 3600) / 60);
+  const s  = elapsed % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const display = h > 0
+    ? `${h}:${pad(m)}:${pad(s)}`
+    : `${pad(m)}:${pad(s)}`;
+
+  return (
+    <span className={`font-mono tabular-nums ${className}`}>{display}</span>
+  );
+}
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
 
@@ -46,6 +79,7 @@ function totalVolume(logs, items) {
 }
 
 function elapsedMinutes(startedAt) {
+  if (!startedAt) return 0;
   return Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000);
 }
 
@@ -422,7 +456,10 @@ export default function WorkoutSession() {
               {currentItem?.exercise_detail?.name}
             </p>
           </div>
-          <ExerciseProgress currentIdx={currentExIdx} total={totalExercises} dark />
+          <div className="flex items-center gap-3">
+            <Stopwatch startedAt={session.startedAt} className="text-xs text-white/40" />
+            <ExerciseProgress currentIdx={currentExIdx} total={totalExercises} dark />
+          </div>
         </div>
 
         <div className="flex-1 flex items-center justify-center">
@@ -460,6 +497,10 @@ export default function WorkoutSession() {
           <p className="text-xs text-slate-500 truncate">{r?.name}</p>
           <p className="font-semibold text-slate-900 truncate">{currentItem?.exercise_detail?.name}</p>
         </div>
+        <Stopwatch
+          startedAt={session.startedAt}
+          className="text-sm font-semibold text-brand-600 dark:text-brand-400 shrink-0"
+        />
         <TutorialTrigger
           onClick={() => setTutorialOpen(true)}
           isFirstSession={!exHistory?.last_session}
