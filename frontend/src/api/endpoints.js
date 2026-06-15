@@ -37,6 +37,8 @@ export const exercisesApi = {
 // Workouts
 export const workoutsApi = {
   list: (params) => api.get("/workouts/", { params }).then((r) => r.data),
+  recalculateCalories: (id) =>
+    api.post(`/workouts/${id}/recalculate-calories/`).then((r) => r.data),
   exerciseHistory: (exerciseIds) =>
     api.get("/workouts/exercise-history/", {
       params: { exercise_ids: exerciseIds.join(",") },
@@ -149,6 +151,21 @@ export const remindersApi = {
   update: (id, data) => api.patch(`/reminders/${id}/`, data).then((r) => r.data),
   remove: (id) => api.delete(`/reminders/${id}/`).then((r) => r.data),
   reorder: (items) => api.post("/reminders/reorder/", items).then((r) => r.data),
+};
+
+// Meal Plans
+export const mealPlanApi = {
+  list:      (params) => api.get("/meal-plans/", { params }).then((r) => r.data),
+  create:    (data)   => api.post("/meal-plans/", data).then((r) => r.data),
+  retrieve:  (id)     => api.get(`/meal-plans/${id}/`).then((r) => r.data),
+  update:    (id, d)  => api.patch(`/meal-plans/${id}/`, d).then((r) => r.data),
+  remove:    (id)     => api.delete(`/meal-plans/${id}/`),
+  generate:  (id)     => api.post(`/meal-plans/${id}/generate/`).then((r) => r.data),
+  logDay:    (id, d)  => api.post(`/meal-plans/${id}/log-day/`, d).then((r) => r.data),
+  summary:   (id)     => api.get(`/meal-plans/${id}/summary/`).then((r) => r.data),
+  addItem:   (planId, d)  => api.post(`/meal-plans/${planId}/items/`, d).then((r) => r.data),
+  updateItem:(itemId, d)  => api.patch(`/meal-plan-items/${itemId}/`, d).then((r) => r.data),
+  removeItem:(itemId)     => api.delete(`/meal-plan-items/${itemId}/`),
 };
 
 // Integrations
