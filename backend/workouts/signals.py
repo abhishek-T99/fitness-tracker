@@ -8,6 +8,13 @@ from .models import ExerciseSet, Workout, WorkoutExercise
 
 def _invalidate_workout_stats(user_id: int) -> None:
     cache.delete_many([f"workout_stats:{user_id}", f"streak:{user_id}"])
+    # Progress analytics keys use wildcard patterns — delete_pattern is provided
+    # by django-redis and degrades silently (IGNORE_EXCEPTIONS=True) on plain caches.
+    for prefix in ("progress:strength", "progress:volume", "progress:heatmap"):
+        try:
+            cache.delete_pattern(f"{prefix}:{user_id}:*")
+        except AttributeError:
+            pass  # non-redis backend in tests
 
 
 @receiver(post_save, sender=Workout)

@@ -32,3 +32,27 @@ def streak(user_id: int) -> str:
 
 
 STREAK_TTL = 60 * 5
+
+
+# ── Progress analytics ────────────────────────────────────────────────────────
+# All progress keys share the prefix pattern "progress:<type>:<user_id>:..."
+# so a single delete_pattern("progress:*:<user_id>:*") clears them all.
+
+def strength_history(user_id: int, exercise_id: int, days: int) -> str:
+    return f"progress:strength:{user_id}:{exercise_id}:{days}"
+
+
+def volume_by_muscle(user_id: int, weeks: int) -> str:
+    return f"progress:volume:{user_id}:{weeks}"
+
+
+def activity_heatmap(user_id: int, days: int) -> str:
+    return f"progress:heatmap:{user_id}:{days}"
+
+
+def body_composition(user_id: int, days: int) -> str:
+    return f"progress:body_comp:{user_id}:{days}"
+
+
+PROGRESS_TTL = 60 * 5          # 5 min — same as workout_stats
+BODY_COMP_TTL = 60 * 2         # 2 min — same as nutrition_summary

@@ -1,9 +1,11 @@
+from collections import defaultdict
 from datetime import timedelta
 
 from django.core.cache import cache
-from django.db.models import Count, Max, Sum
+from django.db.models import Count, ExpressionWrapper, F, FloatField, Sum
+from django.db.models.functions import TruncDate, TruncWeek
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view, inline_serializer
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -91,6 +93,235 @@ class WorkoutViewSet(viewsets.ModelViewSet):
             "daily_counts": by_day,
         }
         cache.set(key, payload, cache_keys.WORKOUT_STATS_TTL)
+        return Response(payload)
+
+    @extend_schema(
+        summary="Estimated 1RM progression for a single exercise over time",
+        parameters=[
+            OpenApiParameter("exercise_id", int, required=True,
+                             description="Exercise primary key"),
+            OpenApiParameter("days", int, description="Look-back window (default 90, max 365)"),
+        ],
+        responses=inline_serializer(
+            name="StrengthHistoryEntry",
+            fields={
+                "date":           serializers.DateField(),
+                "estimated_1rm":  serializers.FloatField(),
+                "max_weight":     serializers.FloatField(),
+                "max_reps":       serializers.IntegerField(),
+                "total_volume":   serializers.FloatField(),
+            },
+            many=True,
+        ),
+    )
+    @action(detail=False, methods=["get"], url_path="strength-history")
+    def strength_history(self, request):
+        """
+        Returns a time-series of estimated 1-rep-max (Epley formula) per date
+        for the requested exercise.  Only completed, non-warmup sets with both
+        weight and reps are included.
+        """
+        exercise_id = request.query_params.get("exercise_id")
+        if not exercise_id:
+            return Response(
+                {"detail": "exercise_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            exercise_id = int(exercise_id)
+            days = min(int(request.query_params.get("days", 90)), 365)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.strength_history(request.user.id, exercise_id, days)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = (timezone.now() - timedelta(days=days)).date()
+        sets = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__exercise_id=exercise_id,
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__date__gte=since,
+                is_warmup=False,
+                completed=True,
+                reps__gt=0,
+                weight__isnull=False,
+            )
+            .annotate(date=TruncDate("workout_exercise__workout__started_at"))
+            .values("date", "reps", "weight")
+            .order_by("date")
+        )
+
+        # Epley 1RM: weight × (1 + reps / 30)
+        by_date = defaultdict(lambda: {"estimated_1rm": 0.0, "max_weight": 0.0,
+                                       "max_reps": 0, "total_volume": 0.0})
+        for s in sets:
+            w = float(s["weight"])
+            r = int(s["reps"])
+            d = s["date"].isoformat()
+            orm = round(w * (1 + r / 30), 1)
+            entry = by_date[d]
+            entry["estimated_1rm"] = max(entry["estimated_1rm"], orm)
+            entry["max_weight"]    = max(entry["max_weight"], w)
+            entry["max_reps"]      = max(entry["max_reps"], r)
+            entry["total_volume"]  += round(w * r, 1)
+
+        payload = [{"date": d, **v} for d, v in sorted(by_date.items())]
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @extend_schema(
+        summary="Weekly training volume broken down by primary muscle group",
+        parameters=[
+            OpenApiParameter("weeks", int, description="Number of weeks to look back (default 12, max 52)"),
+        ],
+        responses=inline_serializer(
+            name="VolumeByMuscleEntry",
+            fields={
+                "week_start":   serializers.DateField(),
+                "muscle_group": serializers.CharField(),
+                "volume_kg":    serializers.FloatField(),
+            },
+            many=True,
+        ),
+    )
+    @action(detail=False, methods=["get"], url_path="volume-by-muscle")
+    def volume_by_muscle(self, request):
+        """
+        Returns weekly volume (kg × reps) per primary muscle group for the last
+        N weeks.  Warmup sets are excluded.  Cardio/bodyweight exercises with no
+        weight are excluded (zero-weight sets carry no load volume).
+        """
+        try:
+            weeks = min(int(request.query_params.get("weeks", 12)), 52)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid weeks parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.volume_by_muscle(request.user.id, weeks)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(weeks=weeks)
+        rows = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__gte=since,
+                is_warmup=False,
+                completed=True,
+                weight__gt=0,
+                reps__gt=0,
+            )
+            .annotate(
+                week=TruncWeek("workout_exercise__workout__started_at"),
+                muscle=F("workout_exercise__exercise__primary_muscle"),
+                vol=ExpressionWrapper(F("weight") * F("reps"), output_field=FloatField()),
+            )
+            .values("week", "muscle")
+            .annotate(volume_kg=Sum("vol"))
+            .order_by("week", "muscle")
+        )
+
+        payload = [
+            {
+                "week_start":   r["week"].date().isoformat(),
+                "muscle_group": r["muscle"],
+                "volume_kg":    round(float(r["volume_kg"]), 1),
+            }
+            for r in rows
+        ]
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @extend_schema(
+        summary="Daily workout activity for the calendar heatmap",
+        parameters=[
+            OpenApiParameter("days", int, description="Look-back window in days (default 365, max 730)"),
+        ],
+        responses=inline_serializer(
+            name="ActivityHeatmapEntry",
+            fields={
+                "date":               serializers.DateField(),
+                "workout_count":      serializers.IntegerField(),
+                "total_volume_kg":    serializers.FloatField(),
+                "total_duration_min": serializers.IntegerField(),
+            },
+            many=True,
+        ),
+    )
+    @action(detail=False, methods=["get"], url_path="activity-heatmap")
+    def activity_heatmap(self, request):
+        """
+        Returns one entry per day the user had at least one completed workout.
+        Used to render a GitHub-style contribution grid in the frontend.
+        """
+        try:
+            days = min(int(request.query_params.get("days", 365)), 730)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid days parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.activity_heatmap(request.user.id, days)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = (timezone.now() - timedelta(days=days)).date()
+
+        # Per-day workout counts + duration
+        workout_rows = (
+            Workout.objects
+            .filter(
+                user=request.user,
+                status=Workout.Status.COMPLETED,
+                started_at__date__gte=since,
+            )
+            .annotate(date=TruncDate("started_at"))
+            .values("date")
+            .annotate(
+                workout_count=Count("id"),
+                total_duration_min=Sum("duration_min"),
+            )
+            .order_by("date")
+        )
+
+        # Per-day volume from sets (separate query — sets live on a child table)
+        volume_rows = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__date__gte=since,
+                completed=True,
+                weight__gt=0,
+                reps__gt=0,
+            )
+            .annotate(date=TruncDate("workout_exercise__workout__started_at"))
+            .values("date")
+            .annotate(
+                total_volume_kg=Sum(
+                    ExpressionWrapper(F("weight") * F("reps"), output_field=FloatField())
+                )
+            )
+        )
+
+        volume_map = {r["date"]: round(float(r["total_volume_kg"]), 1) for r in volume_rows}
+
+        payload = [
+            {
+                "date":               r["date"].isoformat(),
+                "workout_count":      r["workout_count"],
+                "total_volume_kg":    volume_map.get(r["date"], 0.0),
+                "total_duration_min": r["total_duration_min"] or 0,
+            }
+            for r in workout_rows
+        ]
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
         return Response(payload)
 
     @extend_schema(
