@@ -168,6 +168,18 @@ export const mealPlanApi = {
   removeItem:(itemId)     => api.delete(`/meal-plan-items/${itemId}/`),
 };
 
+// Progress analytics
+export const progressApi = {
+  strengthHistory: (exerciseId, days = 90) =>
+    api.get("/workouts/strength-history/", { params: { exercise_id: exerciseId, days } }).then((r) => r.data),
+  volumeByMuscle: (weeks = 12) =>
+    api.get("/workouts/volume-by-muscle/", { params: { weeks } }).then((r) => r.data),
+  activityHeatmap: (days = 365) =>
+    api.get("/workouts/activity-heatmap/", { params: { days } }).then((r) => r.data),
+  bodyComposition: (days = 90) =>
+    api.get("/measurements/body-composition/", { params: { days } }).then((r) => r.data),
+};
+
 // Integrations
 export const integrationsApi = {
   list: () => api.get("/integrations/").then((r) => r.data),

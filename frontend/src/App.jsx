@@ -25,6 +25,7 @@ import Reminders from "./pages/Reminders.jsx";
 import Profile from "./pages/Profile.jsx";
 import WorkoutSession from "./pages/WorkoutSession.jsx";
 import MealPlan from "./pages/MealPlan.jsx";
+import Progress from "./pages/Progress.jsx";
 
 export default function App() {
   return (
@@ -58,6 +59,7 @@ export default function App() {
 
           <Route path="/nutrition" element={<Nutrition />} />
           <Route path="/meal-plan" element={<MealPlan />} />
+          <Route path="/progress" element={<Progress />} />
           <Route path="/measurements" element={<Measurements />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/social" element={<Social />} />
