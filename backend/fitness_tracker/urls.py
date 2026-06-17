@@ -19,6 +19,7 @@ api_v1 = [
     path("notifications/", include("notifications.urls")),
     path("integrations/", include("integrations.urls")),
     path("", include("meal_plans.urls")),
+    path("levels/", include("levels.urls")),
 ]
 
 urlpatterns = [
