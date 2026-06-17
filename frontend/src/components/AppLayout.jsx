@@ -22,12 +22,17 @@ import {
   ChevronRight,
   Sun,
   Moon,
+  Medal,
 } from "lucide-react";
 import clsx from "clsx";
 
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useTheme } from "../contexts/ThemeContext.jsx";
+import { useLevelContext } from "../contexts/LevelContext.jsx";
 import NotificationBell from "./NotificationBell.jsx";
+import LevelBadge from "./LevelBadge.jsx";
+import XPBar from "./XPBar.jsx";
+import LevelUpModal from "./LevelUpModal.jsx";
 
 const navItems = [
   { to: "/dashboard",    label: "Dashboard",       icon: LayoutDashboard },
@@ -41,6 +46,7 @@ const navItems = [
   { to: "/goals",        label: "Goals",            icon: Target },
   { to: "/social",       label: "Social",           icon: Users },
   { to: "/achievements", label: "Achievements",     icon: Trophy },
+  { to: "/leaderboard",  label: "Leaderboard",      icon: Medal },
   { to: "/reminders",    label: "Reminders",        icon: Bell },
 ];
 
@@ -80,6 +86,24 @@ function ThemeToggle() {
   );
 }
 
+function SidebarXP({ collapsed }) {
+  const ctx = useLevelContext();
+  const profile = ctx?.profile;
+  if (!profile || collapsed) return null;
+
+  return (
+    <div className="shrink-0 border-t border-ink-800 px-3 py-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <LevelBadge tier={profile.tier} level={profile.level} />
+        {profile.prestige_count > 0 && (
+          <span className="text-xs text-yellow-400 font-bold">✦{profile.prestige_count}</span>
+        )}
+      </div>
+      <XPBar compact />
+    </div>
+  );
+}
+
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -114,6 +138,8 @@ export default function AppLayout() {
   }
 
   return (
+    <>
+    <LevelUpModal />
     <div className="min-h-screen flex bg-slate-50">
 
       {/* Mobile overlay backdrop */}
@@ -203,6 +229,9 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* XP bar — desktop only */}
+        <SidebarXP collapsed={collapsed} />
 
         {/* Collapse toggle — desktop only */}
         <div className="hidden lg:flex shrink-0 border-t border-ink-800 p-2 justify-end">
@@ -301,5 +330,6 @@ export default function AppLayout() {
         </main>
       </div>
     </div>
+    </>
   );
 }

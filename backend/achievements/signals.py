@@ -18,6 +18,17 @@ def invalidate_streak(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=UserAchievement)
-def invalidate_streak_on_unlock(sender, instance, **kwargs):
+def on_achievement_unlocked(sender, instance, created, **kwargs):
     # Unlocks happen in the streak-evaluation pipeline; refresh that too.
     cache.delete(cache_keys.streak(instance.user_id))
+
+    if created:
+        try:
+            from levels.services import award_xp
+            award_xp(
+                instance.user, 150,
+                f"Unlocked achievement: {instance.achievement.name}",
+                "achievement", instance.id,
+            )
+        except Exception:
+            pass

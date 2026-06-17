@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { Camera } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Camera, Zap, Star } from "lucide-react";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import ConnectedApps from "../components/ConnectedApps.jsx";
-import { authApi } from "../api/endpoints.js";
+import LevelBadge from "../components/LevelBadge.jsx";
+import { authApi, levelsApi } from "../api/endpoints.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useLevelContext } from "../contexts/LevelContext.jsx";
 
 const ACTIVITY = [
   { value: "sedentary", label: "Sedentary" },
@@ -148,6 +150,7 @@ export default function Profile() {
       <PageHeader title="Profile & settings" subtitle="Manage your account" />
 
       <div className="space-y-6 max-w-3xl">
+        <LevelCard />
         <AvatarUpload user={user} onUploaded={refreshUser} />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -238,6 +241,85 @@ export default function Profile() {
         <ChangePassword />
 
         <ConnectedApps />
+      </div>
+    </div>
+  );
+}
+
+function LevelCard() {
+  const ctx = useLevelContext();
+  const profile = ctx?.profile;
+  const queryClient = useQueryClient();
+
+  const prestige = useMutation({
+    mutationFn: levelsApi.prestige,
+    onSuccess: () => {
+      toast.success("Prestige unlocked! You're back to Level 1.");
+      queryClient.invalidateQueries({ queryKey: ["levelProfile"] });
+      ctx?.refetch?.();
+    },
+    onError: (err) => toast.error(err?.response?.data?.detail || "Prestige failed"),
+  });
+
+  if (!profile) return null;
+
+  const pct = Math.min(profile.xp_progress_pct ?? 0, 100);
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h3 className="font-semibold flex items-center gap-2">
+          <Zap className="w-4 h-4 text-brand-500" /> Level & XP
+        </h3>
+      </div>
+      <div className="card-body">
+        <div className="flex items-center gap-5 mb-5">
+          <div className="h-16 w-16 rounded-full bg-brand-500/15 ring-4 ring-brand-500/30 flex items-center justify-center shrink-0">
+            <span className="text-2xl font-extrabold text-brand-600">{profile.level}</span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <LevelBadge tier={profile.tier} level={null} size="lg" />
+              <span className="text-sm text-slate-600">{profile.athlete_class_display}</span>
+            </div>
+            <p className="text-sm text-slate-500">
+              {(profile.total_xp ?? 0).toLocaleString()} total XP
+            </p>
+            {profile.prestige_count > 0 && (
+              <p className="text-sm text-yellow-500 font-semibold">
+                ✦ Prestige {profile.prestige_count}/5
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-1 mb-5">
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>Level {profile.level}</span>
+            <span>Level {profile.level + 1}</span>
+          </div>
+          <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-brand-500 to-brand-400 rounded-full transition-all duration-700"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-slate-400">
+            <span>{(profile.xp_in_current_level ?? 0).toLocaleString()} XP</span>
+            <span>{pct.toFixed(1)}% • {(profile.xp_for_next_level ?? 0).toLocaleString()} to next</span>
+          </div>
+        </div>
+
+        {profile.level >= 100 && profile.prestige_count < 5 && (
+          <button
+            className="btn-primary flex items-center gap-2"
+            onClick={() => prestige.mutate()}
+            disabled={prestige.isPending}
+          >
+            <Star className="w-4 h-4" />
+            {prestige.isPending ? "Prestiging…" : "Prestige Now"}
+          </button>
+        )}
       </div>
     </div>
   );

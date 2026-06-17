@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "notifications",
     "integrations",
     "meal_plans",
+    "levels",
 ]
 
 MIDDLEWARE = [
@@ -433,5 +434,13 @@ CELERY_BEAT_SCHEDULE = {
         # Webhooks handle real-time; this is the safety net for missed events.
         "task": "integrations.tasks.sync_all_intervals_integrations",
         "schedule": crontab(minute=0, hour="*/6"),  # every 6 hours
+    },
+    "generate-weekly-challenges-monday": {
+        "task": "levels.tasks.generate_weekly_challenges",
+        "schedule": crontab(hour=0, minute=5, day_of_week="mon"),  # Mon 00:05 UTC
+    },
+    "update-athlete-classes-weekly": {
+        "task": "levels.tasks.update_athlete_classes",
+        "schedule": crontab(hour=3, minute=0, day_of_week="mon"),  # Mon 03:00 UTC
     },
 }

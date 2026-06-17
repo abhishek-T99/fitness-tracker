@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class GoalsConfig(AppConfig):
+class LevelsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "goals"
+    name = "levels"
 
     def ready(self):
-        import goals.signals  # noqa: F401
+        import levels.signals  # noqa: F401

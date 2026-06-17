@@ -19,20 +19,25 @@ import {
   Apple,
   Trophy,
   Target,
+  Zap,
+  CheckCircle2,
 } from "lucide-react";
 import { format, parseISO, subDays } from "date-fns";
 
 import PageHeader from "../components/PageHeader.jsx";
 import StatCard from "../components/StatCard.jsx";
 import StepsCounter from "../components/StepsCounter.jsx";
+import LevelBadge from "../components/LevelBadge.jsx";
 import {
   workoutsApi,
   measurementsApi,
   mealsApi,
   goalsApi,
   achievementsApi,
+  levelsApi,
 } from "../api/endpoints.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useLevelContext } from "../contexts/LevelContext.jsx";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -148,6 +153,11 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <XPCard />
+        <WeeklyChallengesCard />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="card">
           <div className="card-header">
@@ -221,6 +231,134 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function XPCard() {
+  const ctx = useLevelContext();
+  const profile = ctx?.profile;
+
+  if (!profile) return null;
+
+  const pct = Math.min(profile.xp_progress_pct ?? 0, 100);
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h3 className="font-semibold flex items-center gap-2">
+          <Zap className="w-4 h-4 text-brand-500" /> Level Progress
+        </h3>
+        <Link to="/profile" className="text-xs text-brand-600 hover:underline">
+          View profile →
+        </Link>
+      </div>
+      <div className="card-body space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-14 w-14 rounded-full bg-brand-500/15 ring-2 ring-brand-500/30 flex items-center justify-center shrink-0">
+            <span className="text-xl font-extrabold text-brand-600">{profile.level}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <LevelBadge tier={profile.tier} level={null} size="sm" />
+              <span className="text-xs text-slate-500">{profile.athlete_class_display}</span>
+            </div>
+            <p className="text-xs text-slate-500">
+              {(profile.total_xp ?? 0).toLocaleString()} total XP
+              {profile.prestige_count > 0 && (
+                <span className="ml-2 text-yellow-500 font-bold">✦{profile.prestige_count} Prestige</span>
+              )}
+            </p>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>{(profile.xp_in_current_level ?? 0).toLocaleString()} XP</span>
+            <span>{(profile.xp_for_next_level ?? 0).toLocaleString()} to next level</span>
+          </div>
+          <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-brand-500 to-brand-400 rounded-full transition-all duration-700"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="text-right text-xs text-slate-400">{pct.toFixed(1)}%</p>
+        </div>
+        {profile.recent_transactions?.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Recent XP</p>
+            {profile.recent_transactions.slice(0, 3).map((tx) => (
+              <div key={tx.id} className="flex justify-between text-xs">
+                <span className="text-slate-600 truncate">{tx.reason}</span>
+                <span className="text-brand-600 font-semibold ml-2 shrink-0">+{tx.amount}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WeeklyChallengesCard() {
+  const { data } = useQuery({
+    queryKey: ["weeklyChallenges"],
+    queryFn: levelsApi.challenges,
+    staleTime: 60_000,
+  });
+
+  const challenges = data?.challenges ?? [];
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h3 className="font-semibold flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-amber-500" /> Weekly Challenges
+        </h3>
+        {data?.resets_in_secs != null && (
+          <span className="text-xs text-slate-400">
+            Resets in {Math.ceil(data.resets_in_secs / 3600)}h
+          </span>
+        )}
+      </div>
+      <div className="card-body space-y-4">
+        {challenges.length === 0 ? (
+          <p className="text-sm text-slate-500">No challenges this week yet.</p>
+        ) : (
+          challenges.map((uc) => {
+            const ch = uc.challenge;
+            const pct = uc.progress_pct ?? 0;
+            return (
+              <div key={uc.id} className="space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {uc.completed ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full border-2 border-slate-300 shrink-0" />
+                    )}
+                    <span className={`text-sm font-medium truncate ${uc.completed ? "text-slate-400 line-through" : "text-slate-700"}`}>
+                      {ch.description}
+                    </span>
+                  </div>
+                  <span className="text-xs text-brand-600 font-semibold shrink-0">+{ch.xp_reward} XP</span>
+                </div>
+                <div className="ml-5.5">
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${uc.completed ? "bg-emerald-500" : "bg-brand-500"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {uc.current_value}/{ch.target_value}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
