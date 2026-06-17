@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
+import { LevelProvider } from "./contexts/LevelContext.jsx";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -21,7 +22,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <App />
+            <LevelProvider>
+              <App />
+            </LevelProvider>
             <Toaster
               position="top-right"
               toastOptions={{

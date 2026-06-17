@@ -192,6 +192,15 @@ export const integrationsApi = {
   intervalsSync: (data) => api.post("/integrations/intervals/sync/", data).then((r) => r.data),
 };
 
+// Levels / XP
+export const levelsApi = {
+  profile:      ()       => api.get("/levels/profile/").then((r) => r.data),
+  transactions: (params) => api.get("/levels/transactions/", { params }).then((r) => r.data),
+  challenges:   ()       => api.get("/levels/challenges/").then((r) => r.data),
+  leaderboard:  ()       => api.get("/levels/leaderboard/").then((r) => r.data),
+  prestige:     ()       => api.post("/levels/prestige/").then((r) => r.data),
+};
+
 // Notifications
 export const notificationsApi = {
   list: (params) => api.get("/notifications/", { params }).then((r) => r.data),
