@@ -3,9 +3,11 @@
  *
  * Props
  * ─────
- *  data  Array of { date: "YYYY-MM-DD", workout_count, total_volume_kg, total_duration_min }
- *        Only days with workouts are present; missing days = rest days.
- *  days  Number of days to display (default 365).
+ *  data      Array of { date: "YYYY-MM-DD", workout_count, total_volume_kg, total_duration_min }
+ *            Only days with workouts are present; missing days = rest days.
+ *  days      Max days to look back (default 365).
+ *  minWeeks  Minimum weeks to always display (default 16) so new users
+ *            never see a tiny cluster in a huge empty card.
  */
 import { useMemo, useState } from "react";
 import { format, parseISO, subDays, startOfWeek, addDays, differenceInCalendarDays } from "date-fns";
@@ -14,41 +16,66 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function intensityClass(volume) {
-  if (!volume) return "bg-slate-100 dark:bg-slate-800";
-  if (volume < 500)  return "bg-brand-200 dark:bg-brand-900";
-  if (volume < 1500) return "bg-brand-400 dark:bg-brand-700";
-  if (volume < 3000) return "bg-brand-500 dark:bg-brand-500";
-  return "bg-brand-700 dark:bg-brand-400";
+  if (!volume) return "rest-cell";
+  if (volume < 500)  return "active-cell-1";
+  if (volume < 1500) return "active-cell-2";
+  if (volume < 3000) return "active-cell-3";
+  return "active-cell-4";
 }
 
-export default function WorkoutCalendar({ data = [], days = 365 }) {
+// Separate intensity → Tailwind classes so JIT scanner sees full strings
+const CELL_CLASSES = {
+  "rest-cell":    "bg-slate-200/60 dark:bg-ink-700/50",
+  "active-cell-1":"bg-brand-200 dark:bg-brand-900",
+  "active-cell-2":"bg-brand-400 dark:bg-brand-700",
+  "active-cell-3":"bg-brand-500 dark:bg-brand-500",
+  "active-cell-4":"bg-brand-700 dark:bg-brand-400",
+};
+
+const LEGEND_CLASSES = [
+  "bg-slate-200/60 dark:bg-ink-700/50",
+  "bg-brand-200 dark:bg-brand-900",
+  "bg-brand-400 dark:bg-brand-700",
+  "bg-brand-500 dark:bg-brand-500",
+  "bg-brand-700 dark:bg-brand-400",
+];
+
+export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16 }) {
   const [tooltip, setTooltip] = useState(null);
 
-  // Build a lookup from date-string → data
   const byDate = useMemo(() => {
     const map = {};
     for (const d of data) map[d.date] = d;
     return map;
   }, [data]);
 
-  // Build the grid: columns = weeks (left→right), rows = day-of-week (Sun=0)
-  const today = new Date();
-  const maxOrigin = subDays(today, days - 1);
+  const today      = new Date();
+  const maxOrigin  = subDays(today, days - 1);           // furthest back (365 d)
+  const minOrigin  = subDays(today, minWeeks * 7 - 1);   // minimum grid width
 
-  // If there are workouts, start from the week of the earliest one rather
-  // than always showing a potentially empty year-long grid.
-  const firstEntry = data.length > 0
+  // Find earliest workout date
+  const firstEntryStr = data.length > 0
     ? data.reduce((min, d) => d.date < min ? d.date : min, data[0].date)
     : null;
-  const firstEntryDate = firstEntry ? parseISO(firstEntry) : null;
-  const origin = firstEntryDate && firstEntryDate > maxOrigin ? firstEntryDate : maxOrigin;
+  const firstEntryDate = firstEntryStr ? parseISO(firstEntryStr) : null;
 
-  // Align to the Sunday of the week containing origin
-  const gridStart = startOfWeek(origin, { weekStartsOn: 0 });
-  const totalDays = differenceInCalendarDays(today, gridStart) + 1;
+  // Origin rules:
+  //  - New user (first workout < minWeeks ago) → show minWeeks so grid isn't tiny
+  //  - Established user → show from first workout (up to maxOrigin)
+  //  - Very old user (first workout > 365 d ago) → show full year
+  let origin;
+  if (!firstEntryDate || firstEntryDate > minOrigin) {
+    origin = minOrigin;      // new user: always show at least minWeeks
+  } else if (firstEntryDate < maxOrigin) {
+    origin = maxOrigin;      // > 365 d of history: cap at 1 year
+  } else {
+    origin = firstEntryDate; // show from first workout
+  }
+
+  const gridStart  = startOfWeek(origin, { weekStartsOn: 0 });
+  const totalDays  = differenceInCalendarDays(today, gridStart) + 1;
   const totalWeeks = Math.ceil(totalDays / 7);
 
-  // Cells: [week][dow] = { date, inRange, entry }
   const grid = useMemo(() => {
     const cols = [];
     for (let w = 0; w < totalWeeks; w++) {
@@ -64,7 +91,6 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
     return cols;
   }, [byDate, gridStart, origin, totalWeeks]);
 
-  // Month labels: one per month change along the top
   const monthLabels = useMemo(() => {
     const labels = [];
     let lastMonth = -1;
@@ -83,6 +109,11 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
   const totalWorkouts = data.reduce((s, d) => s + d.workout_count, 0);
   const activeDays    = data.length;
 
+  // Cell + gap size (px) — used for month label positioning
+  const CELL = 12;
+  const GAP  = 3;
+  const COL_STEP = CELL + GAP;
+
   return (
     <div className="select-none">
       {/* Month labels */}
@@ -91,39 +122,49 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
           <span
             key={wi}
             className="absolute text-[10px] text-slate-400"
-            style={{ left: wi * 13 }}
+            style={{ left: wi * COL_STEP }}
           >
             {label}
           </span>
         ))}
       </div>
 
-      <div className="flex gap-0.5">
+      <div className="flex" style={{ gap: GAP }}>
         {/* Day-of-week labels */}
-        <div className="flex flex-col gap-0.5 mr-1 pt-0.5">
+        <div className="flex flex-col mr-1 pt-0.5" style={{ gap: GAP }}>
           {WEEKDAYS.map((d, i) => (
-            <div key={d} className="w-5 h-2.5 text-[9px] text-slate-400 leading-none">
+            <div
+              key={d}
+              className="text-[9px] text-slate-400 leading-none flex items-center"
+              style={{ height: CELL, width: 20 }}
+            >
               {i % 2 === 1 ? d : ""}
             </div>
           ))}
         </div>
 
         {/* Grid */}
-        <div className="flex gap-0.5">
+        <div className="flex" style={{ gap: GAP }}>
           {grid.map((col, wi) => (
-            <div key={wi} className="flex flex-col gap-0.5">
+            <div key={wi} className="flex flex-col" style={{ gap: GAP }}>
               {col.map((cell) => {
                 if (!cell.inRange) {
-                  return <div key={cell.iso} className="w-2.5 h-2.5" />;
+                  return (
+                    <div
+                      key={cell.iso}
+                      style={{ width: CELL, height: CELL }}
+                    />
+                  );
                 }
+                const cls = cell.entry
+                  ? CELL_CLASSES[intensityClass(cell.entry.total_volume_kg)]
+                  : CELL_CLASSES["rest-cell"];
                 return (
                   <div
                     key={cell.iso}
-                    className={`w-2.5 h-2.5 rounded-sm cursor-default transition-opacity
-                      ${cell.entry ? intensityClass(cell.entry.total_volume_kg) : "bg-slate-100 dark:bg-slate-800"}
-                      ${tooltip?.iso === cell.iso ? "ring-1 ring-brand-500" : ""}
-                    `}
-                    onMouseEnter={() => setTooltip({ ...cell, x: wi, y: wi })}
+                    className={`rounded-sm cursor-default transition-all duration-100 ${cls} ${tooltip?.iso === cell.iso ? "ring-1 ring-brand-500 scale-110" : "hover:scale-110"}`}
+                    style={{ width: CELL, height: CELL }}
+                    onMouseEnter={() => setTooltip({ ...cell })}
                     onMouseLeave={() => setTooltip(null)}
                   />
                 );
@@ -135,10 +176,10 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
 
       {/* Tooltip */}
       {tooltip && (
-        <div className="mt-2 text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 shadow-md inline-block">
+        <div className="mt-2 text-xs text-ink-900 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-lg inline-block">
           <span className="font-semibold">{format(tooltip.date, "EEE, MMM d yyyy")}</span>
           {tooltip.entry ? (
-            <span className="ml-2 text-slate-500">
+            <span className="ml-2 text-ink-500">
               {tooltip.entry.workout_count} workout{tooltip.entry.workout_count !== 1 ? "s" : ""}
               {" · "}
               {Math.round(tooltip.entry.total_volume_kg).toLocaleString()} kg
@@ -147,7 +188,7 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
                 : ""}
             </span>
           ) : (
-            <span className="ml-2 text-slate-400">Rest day</span>
+            <span className="ml-2 text-ink-400">Rest day</span>
           )}
         </div>
       )}
@@ -155,12 +196,12 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
       {/* Legend + summary */}
       <div className="flex items-center justify-between mt-3">
         <p className="text-[11px] text-slate-400">
-          {totalWorkouts} workout{totalWorkouts !== 1 ? "s" : ""} across {activeDays} active day{activeDays !== 1 ? "s" : ""}
+          {totalWorkouts} workout{totalWorkouts !== 1 ? "s" : ""} · {activeDays} active day{activeDays !== 1 ? "s" : ""}
         </p>
-        <div className="flex items-center gap-1 text-[10px] text-slate-400">
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
           <span>Less</span>
-          {["bg-slate-100 dark:bg-slate-800","bg-brand-200 dark:bg-brand-900","bg-brand-400 dark:bg-brand-700","bg-brand-500 dark:bg-brand-500","bg-brand-700 dark:bg-brand-400"].map((cls, i) => (
-            <div key={i} className={`w-2.5 h-2.5 rounded-sm ${cls}`} />
+          {LEGEND_CLASSES.map((cls, i) => (
+            <div key={i} className={`rounded-sm ${cls}`} style={{ width: CELL, height: CELL }} />
           ))}
           <span>More</span>
         </div>
