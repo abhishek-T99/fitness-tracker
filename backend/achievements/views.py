@@ -20,6 +20,11 @@ class AchievementCatalogViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = AchievementSerializer
     queryset = Achievement.objects.all()
+    # The catalog is a small, static dataset (< 50 rows) that the frontend
+    # must receive in full to render the badge grid correctly.  Pagination
+    # would cause the frontend to only see page 1, hiding earned badges that
+    # happen to fall on later pages.
+    pagination_class = None
 
     def list(self, request, *args, **kwargs):
         cached = cache.get(cache_keys.ACHIEVEMENT_CATALOG)
@@ -33,6 +38,9 @@ class AchievementCatalogViewSet(viewsets.ReadOnlyModelViewSet):
 @extend_schema(tags=["Achievements"])
 class UserAchievementViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserAchievementSerializer
+    # Return all unlocked badges in one response so the frontend ID lookup
+    # works regardless of how many badges a user has earned.
+    pagination_class = None
 
     def get_queryset(self):
         return UserAchievement.objects.filter(user=self.request.user).select_related("achievement")

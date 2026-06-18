@@ -234,7 +234,9 @@ export default function WorkoutEditor() {
                     <tr className="text-left">
                       <th className="pb-2 font-medium w-12">Set</th>
                       <th className="pb-2 font-medium">Reps</th>
-                      <th className="pb-2 font-medium">Weight (kg)</th>
+                      {!["bodyweight", "cardio"].includes(it.exercise_detail?.equipment) && (
+                        <th className="pb-2 font-medium">Weight (kg)</th>
+                      )}
                       <th className="pb-2 font-medium">RPE</th>
                       <th className="pb-2 font-medium">Warmup</th>
                       <th className="pb-2 font-medium w-10"></th>
@@ -254,6 +256,7 @@ export default function WorkoutEditor() {
                             }
                           />
                         </td>
+                        {!["bodyweight", "cardio"].includes(it.exercise_detail?.equipment) && (
                         <td className="py-1 pr-2">
                           <input
                             className="input py-1"
@@ -265,6 +268,7 @@ export default function WorkoutEditor() {
                             }
                           />
                         </td>
+                        )}
                         <td className="py-1 pr-2">
                           <input
                             className="input py-1"

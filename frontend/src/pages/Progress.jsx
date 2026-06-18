@@ -18,7 +18,7 @@ import { TrendingUp, Scale, Dumbbell, BarChart2, Search } from "lucide-react";
 
 import PageHeader from "../components/PageHeader.jsx";
 import WorkoutCalendar from "../components/WorkoutCalendar.jsx";
-import { progressApi, exercisesApi } from "../api/endpoints.js";
+import { progressApi, exercisesApi, achievementsApi } from "../api/endpoints.js";
 
 // ── Colour palette for muscle groups ─────────────────────────────────────────
 const MUSCLE_COLORS = {
@@ -426,6 +426,45 @@ function Skeleton() {
   );
 }
 
+// ── Calendar stats sidebar ────────────────────────────────────────────────────
+function CalendarStatsSidebar({ streak = {}, heatmapData = [] }) {
+  const { totalWorkouts, avgPerWeek } = useMemo(() => {
+    const total = heatmapData.reduce((s, d) => s + d.workout_count, 0);
+    if (!total) return { totalWorkouts: 0, avgPerWeek: "0.0" };
+    const firstStr = heatmapData.reduce(
+      (min, d) => (d.date < min ? d.date : min),
+      heatmapData[0].date,
+    );
+    const weeks = Math.max(1, (Date.now() - new Date(firstStr).getTime()) / (7 * 24 * 60 * 60 * 1000));
+    return { totalWorkouts: total, avgPerWeek: (total / weeks).toFixed(1) };
+  }, [heatmapData]);
+
+  const stats = [
+    { label: "Current Streak", value: streak.current_days ?? 0, unit: "days" },
+    { label: "Best Streak",    value: streak.longest_days  ?? 0, unit: "days" },
+    { label: "Total Workouts", value: totalWorkouts,              unit: null  },
+    { label: "Avg / Week",     value: avgPerWeek,                 unit: null  },
+  ];
+
+  return (
+    <div className="shrink-0 w-44 pl-6 ml-2 border-l border-slate-100 dark:border-slate-700 flex flex-col justify-center gap-5">
+      {stats.map(({ label, value, unit }) => (
+        <div key={label}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1 leading-none">
+            {label}
+          </p>
+          <p className="text-2xl font-bold text-slate-900 leading-none tabular-nums">
+            {value}
+            {unit && (
+              <span className="text-xs font-normal text-slate-400 ml-1">{unit}</span>
+            )}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const TABS = [
   { id: "body",     label: "Body",     icon: Scale },
   { id: "strength", label: "Strength", icon: Dumbbell },
@@ -443,6 +482,11 @@ export default function Progress() {
     queryFn: () => progressApi.activityHeatmap(365),
   });
 
+  const { data: streak = {} } = useQuery({
+    queryKey: ["streak"],
+    queryFn: achievementsApi.streak,
+  });
+
   return (
     <div>
       <PageHeader
@@ -451,12 +495,15 @@ export default function Progress() {
         icon={<TrendingUp className="w-5 h-5" />}
       />
 
-      {/* Calendar heatmap */}
-      <div className="card p-5 mb-6 overflow-x-auto">
-        <h3 className="font-semibold mb-4 text-sm text-slate-700 dark:text-slate-200">
-          Workout Activity — Last 12 Months
-        </h3>
-        <WorkoutCalendar data={heatmapData} days={365} />
+      {/* Calendar heatmap + stats */}
+      <div className="card p-5 mb-6">
+        <h3 className="font-semibold mb-4 text-sm text-slate-700">Workout Activity</h3>
+        <div className="flex items-start">
+          <div className="flex-1 min-w-0 overflow-x-auto">
+            <WorkoutCalendar data={heatmapData} />
+          </div>
+          <CalendarStatsSidebar streak={streak} heatmapData={heatmapData} />
+        </div>
       </div>
 
       {/* Tabs */}
