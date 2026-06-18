@@ -126,7 +126,7 @@ export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
               {col.map((cell) => {
                 let cls;
                 if (cell.isFuture) {
-                  cls = "bg-slate-100/40 dark:bg-ink-800/25";
+                  cls = "bg-slate-200/50 dark:bg-ink-600/50";
                 } else if (cell.entry) {
                   cls = CELL_CLASSES[intensityClass(cell.entry.total_volume_kg)];
                 } else {
@@ -142,7 +142,7 @@ export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
                 return (
                   <div
                     key={cell.iso}
-                    className={`rounded-sm transition-all duration-100 ${cls} ${cell.isFuture ? "opacity-40" : `cursor-default ${ring}`}`}
+                    className={`rounded-sm transition-all duration-100 ${cls} ${cell.isFuture ? "opacity-60" : `cursor-default ${ring}`}`}
                     style={{ width: CELL, height: CELL }}
                     onMouseEnter={() => !cell.isFuture && setTooltip({ ...cell })}
                     onMouseLeave={() => setTooltip(null)}
