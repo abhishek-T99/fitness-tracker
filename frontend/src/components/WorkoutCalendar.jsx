@@ -1,16 +1,13 @@
 /**
- * WorkoutCalendar — GitHub-style contribution heatmap.
+ * WorkoutCalendar — forward-looking heatmap starting from the current week.
  *
  * Props
  * ─────
- *  data      Array of { date: "YYYY-MM-DD", workout_count, total_volume_kg, total_duration_min }
- *            Only days with workouts are present; missing days = rest days.
- *  days      Max days to look back (default 365).
- *  minWeeks  Minimum weeks to always display (default 16) so new users
- *            never see a tiny cluster in a huge empty card.
+ *  data         Array of { date: "YYYY-MM-DD", workout_count, total_volume_kg, total_duration_min }
+ *  futureWeeks  How many weeks ahead to show (default 52).
  */
 import { useMemo, useState } from "react";
-import { format, parseISO, subDays, addWeeks, startOfWeek, addDays, differenceInCalendarDays } from "date-fns";
+import { format, isSameDay, addWeeks, startOfWeek, addDays } from "date-fns";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -23,13 +20,12 @@ function intensityClass(volume) {
   return "active-cell-4";
 }
 
-// Separate intensity → Tailwind classes so JIT scanner sees full strings
 const CELL_CLASSES = {
-  "rest-cell":    "bg-slate-200/60 dark:bg-ink-700/50",
-  "active-cell-1":"bg-brand-200 dark:bg-brand-900",
-  "active-cell-2":"bg-brand-400 dark:bg-brand-700",
-  "active-cell-3":"bg-brand-500 dark:bg-brand-500",
-  "active-cell-4":"bg-brand-700 dark:bg-brand-400",
+  "rest-cell":     "bg-slate-200/60 dark:bg-ink-700/50",
+  "active-cell-1": "bg-brand-200 dark:bg-brand-900",
+  "active-cell-2": "bg-brand-400 dark:bg-brand-700",
+  "active-cell-3": "bg-brand-500 dark:bg-brand-500",
+  "active-cell-4": "bg-brand-700 dark:bg-brand-400",
 };
 
 const LEGEND_CLASSES = [
@@ -40,7 +36,12 @@ const LEGEND_CLASSES = [
   "bg-brand-700 dark:bg-brand-400",
 ];
 
-export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, futureWeeks = 16 }) {
+// Cell size + gap (px)
+const CELL     = 12;
+const GAP      = 3;
+const COL_STEP = CELL + GAP;
+
+export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
   const [tooltip, setTooltip] = useState(null);
 
   const byDate = useMemo(() => {
@@ -50,32 +51,9 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, 
   }, [data]);
 
   const today      = new Date();
-  const gridEnd    = addWeeks(today, futureWeeks);        // extend forward N weeks
-  const maxOrigin  = subDays(today, days - 1);           // furthest back (365 d)
-  const minOrigin  = subDays(today, minWeeks * 7 - 1);   // minimum grid width
-
-  // Find earliest workout date
-  const firstEntryStr = data.length > 0
-    ? data.reduce((min, d) => d.date < min ? d.date : min, data[0].date)
-    : null;
-  const firstEntryDate = firstEntryStr ? parseISO(firstEntryStr) : null;
-
-  // Origin rules:
-  //  - New user (first workout < minWeeks ago) → show minWeeks so grid isn't tiny
-  //  - Established user → show from first workout (up to maxOrigin)
-  //  - Very old user (first workout > 365 d ago) → show full year
-  let origin;
-  if (!firstEntryDate || firstEntryDate > minOrigin) {
-    origin = minOrigin;      // new user: always show at least minWeeks
-  } else if (firstEntryDate < maxOrigin) {
-    origin = maxOrigin;      // > 365 d of history: cap at 1 year
-  } else {
-    origin = firstEntryDate; // show from first workout
-  }
-
-  const gridStart  = startOfWeek(origin, { weekStartsOn: 0 });
-  const totalDays  = differenceInCalendarDays(gridEnd, gridStart) + 1;
-  const totalWeeks = Math.ceil(totalDays / 7);
+  // Grid runs from Sunday of the current week → futureWeeks more columns
+  const gridStart  = startOfWeek(today, { weekStartsOn: 0 });
+  const totalWeeks = futureWeeks + 1; // current week + N future weeks
 
   const grid = useMemo(() => {
     const cols = [];
@@ -83,26 +61,27 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, 
       const col = [];
       for (let d = 0; d < 7; d++) {
         const cellDate = addDays(gridStart, w * 7 + d);
-        const iso = format(cellDate, "yyyy-MM-dd");
-        const inRange = cellDate >= origin && cellDate <= gridEnd;
+        const iso      = format(cellDate, "yyyy-MM-dd");
         const isFuture = cellDate > today;
-        col.push({ date: cellDate, iso, inRange, isFuture, entry: byDate[iso] || null });
+        const isToday  = isSameDay(cellDate, today);
+        col.push({ date: cellDate, iso, isFuture, isToday, entry: byDate[iso] || null });
       }
       cols.push(col);
     }
     return cols;
-  }, [byDate, gridStart, gridEnd, origin, totalWeeks]);
+  }, [byDate, gridStart, totalWeeks]);
 
+  // Month labels — only emit one per month, skip if too close to the previous label
   const monthLabels = useMemo(() => {
     const labels = [];
     let lastMonth = -1;
+    let lastWi    = -4; // enforce minimum 4-column gap before first label
     grid.forEach((col, wi) => {
-      const firstInRange = col.find((c) => c.inRange);
-      if (!firstInRange) return;
-      const m = firstInRange.date.getMonth();
-      if (m !== lastMonth) {
+      const m = col[0].date.getMonth();
+      if (m !== lastMonth && wi - lastWi >= 3) {
         labels.push({ wi, label: MONTHS[m] });
         lastMonth = m;
+        lastWi    = wi;
       }
     });
     return labels;
@@ -111,20 +90,15 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, 
   const totalWorkouts = data.reduce((s, d) => s + d.workout_count, 0);
   const activeDays    = data.length;
 
-  // Cell + gap size (px) — used for month label positioning
-  const CELL = 12;
-  const GAP  = 3;
-  const COL_STEP = CELL + GAP;
-
   return (
-    <div className="select-none">
+    <div className="select-none overflow-x-auto">
       {/* Month labels */}
-      <div className="relative h-5 mb-1">
+      <div className="relative h-5 mb-1" style={{ minWidth: totalWeeks * COL_STEP + 24 }}>
         {monthLabels.map(({ wi, label }) => (
           <span
             key={wi}
-            className="absolute text-[10px] text-slate-400"
-            style={{ left: wi * COL_STEP }}
+            className="absolute text-[10px] text-slate-400 whitespace-nowrap"
+            style={{ left: wi * COL_STEP + 24 }}
           >
             {label}
           </span>
@@ -133,12 +107,12 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, 
 
       <div className="flex" style={{ gap: GAP }}>
         {/* Day-of-week labels */}
-        <div className="flex flex-col mr-1 pt-0.5" style={{ gap: GAP }}>
+        <div className="flex flex-col shrink-0 mr-1 pt-0.5" style={{ gap: GAP, width: 20 }}>
           {WEEKDAYS.map((d, i) => (
             <div
               key={d}
               className="text-[9px] text-slate-400 leading-none flex items-center"
-              style={{ height: CELL, width: 20 }}
+              style={{ height: CELL }}
             >
               {i % 2 === 1 ? d : ""}
             </div>
@@ -150,23 +124,25 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, 
           {grid.map((col, wi) => (
             <div key={wi} className="flex flex-col" style={{ gap: GAP }}>
               {col.map((cell) => {
-                if (!cell.inRange) {
-                  return (
-                    <div
-                      key={cell.iso}
-                      style={{ width: CELL, height: CELL }}
-                    />
-                  );
+                let cls;
+                if (cell.isFuture) {
+                  cls = "bg-slate-100/40 dark:bg-ink-800/25";
+                } else if (cell.entry) {
+                  cls = CELL_CLASSES[intensityClass(cell.entry.total_volume_kg)];
+                } else {
+                  cls = CELL_CLASSES["rest-cell"];
                 }
-                const cls = cell.isFuture
-                  ? "bg-slate-100/50 dark:bg-ink-800/30 border border-dashed border-slate-300/50 dark:border-ink-600/40"
-                  : cell.entry
-                    ? CELL_CLASSES[intensityClass(cell.entry.total_volume_kg)]
-                    : CELL_CLASSES["rest-cell"];
+
+                const ring = cell.isToday
+                  ? "ring-1 ring-brand-500 ring-offset-1 ring-offset-surface"
+                  : tooltip?.iso === cell.iso
+                    ? "ring-1 ring-brand-400 scale-110"
+                    : "hover:scale-110";
+
                 return (
                   <div
                     key={cell.iso}
-                    className={`rounded-sm transition-all duration-100 ${cls} ${cell.isFuture ? "cursor-default opacity-60" : `cursor-default ${tooltip?.iso === cell.iso ? "ring-1 ring-brand-500 scale-110" : "hover:scale-110"}`}`}
+                    className={`rounded-sm transition-all duration-100 ${cls} ${cell.isFuture ? "opacity-40" : `cursor-default ${ring}`}`}
                     style={{ width: CELL, height: CELL }}
                     onMouseEnter={() => !cell.isFuture && setTooltip({ ...cell })}
                     onMouseLeave={() => setTooltip(null)}
