@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Target, Trash2, Check, Pencil, RotateCcw } from "lucide-react";
@@ -247,6 +247,12 @@ function badgeFor(status) {
 
 function GoalModal({ goal = null, onClose, onSaved }) {
   const isEditing = !!goal;
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {

@@ -21,6 +21,15 @@ export default function LevelUpModal() {
     });
   }, [levelUp]);
 
+  useEffect(() => {
+    if (!levelUp) return;
+    function onKey(e) {
+      if (e.key === "Escape") dismissLevelUp?.();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [levelUp, dismissLevelUp]);
+
   if (!levelUp) return null;
 
   return (
