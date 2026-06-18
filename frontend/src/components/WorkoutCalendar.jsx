@@ -32,8 +32,17 @@ export default function WorkoutCalendar({ data = [], days = 365 }) {
   }, [data]);
 
   // Build the grid: columns = weeks (left→right), rows = day-of-week (Sun=0)
-  const today  = new Date();
-  const origin = subDays(today, days - 1);
+  const today = new Date();
+  const maxOrigin = subDays(today, days - 1);
+
+  // If there are workouts, start from the week of the earliest one rather
+  // than always showing a potentially empty year-long grid.
+  const firstEntry = data.length > 0
+    ? data.reduce((min, d) => d.date < min ? d.date : min, data[0].date)
+    : null;
+  const firstEntryDate = firstEntry ? parseISO(firstEntry) : null;
+  const origin = firstEntryDate && firstEntryDate > maxOrigin ? firstEntryDate : maxOrigin;
+
   // Align to the Sunday of the week containing origin
   const gridStart = startOfWeek(origin, { weekStartsOn: 0 });
   const totalDays = differenceInCalendarDays(today, gridStart) + 1;

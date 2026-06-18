@@ -453,8 +453,8 @@ export default function Progress() {
 
       {/* Calendar heatmap */}
       <div className="card p-5 mb-6 overflow-x-auto">
-        <h3 className="font-semibold mb-4 text-sm text-slate-700 dark:text-slate-200">
-          Workout Activity — Last 12 Months
+        <h3 className="font-semibold mb-4 text-sm text-slate-700">
+          Workout Activity
         </h3>
         <WorkoutCalendar data={heatmapData} days={365} />
       </div>
