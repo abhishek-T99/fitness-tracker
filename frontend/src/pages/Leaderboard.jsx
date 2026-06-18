@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Crown, Medal, Users } from "lucide-react";
+import { Crown, Medal, Users, Star } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import LevelBadge from "../components/LevelBadge.jsx";
 import { levelsApi } from "../api/endpoints.js";
 
 function RankIcon({ rank }) {
-  if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" />;
-  if (rank === 2) return <Medal className="w-5 h-5 text-slate-400" />;
-  if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
-  return <span className="text-sm font-bold text-slate-400 w-5 text-center">#{rank}</span>;
+  if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" aria-label="1st place" />;
+  if (rank === 2) return <Medal className="w-5 h-5 text-slate-400" aria-label="2nd place" />;
+  if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" aria-label="3rd place" />;
+  return <span className="text-sm font-bold text-slate-400 w-5 text-center" aria-label={`${rank}th place`}>#{rank}</span>;
 }
 
 function UserInitials({ displayName, avatar }) {
@@ -52,9 +52,17 @@ export default function Leaderboard() {
             </div>
             <UserInitials displayName={selfEntry.display_name} avatar={selfEntry.avatar} />
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-slate-900 dark:text-white">
-                You — {selfEntry.display_name}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-slate-900 dark:text-white">
+                  You — {selfEntry.display_name}
+                </p>
+                {selfEntry.prestige_count > 0 && (
+                  <span className="inline-flex items-center gap-0.5 text-xs font-bold text-yellow-500">
+                    <Star className="w-3 h-3 fill-yellow-400 stroke-yellow-500" />
+                    {selfEntry.prestige_count}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <LevelBadge tier={selfEntry.tier} level={selfEntry.level} />
                 <span className="text-xs text-slate-500">{selfEntry.athlete_class_display}</span>
@@ -96,12 +104,20 @@ export default function Leaderboard() {
                 </div>
                 <UserInitials displayName={entry.display_name} avatar={entry.avatar} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-900 dark:text-white truncate">
-                    {entry.display_name}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="font-semibold text-slate-900 dark:text-white truncate">
+                      {entry.display_name}
+                    </p>
                     {entry.is_self && (
-                      <span className="ml-2 text-xs font-normal text-brand-600">(You)</span>
+                      <span className="text-xs font-medium text-brand-600 bg-brand-50 dark:bg-brand-500/15 px-1.5 py-0.5 rounded-full shrink-0">You</span>
                     )}
-                  </p>
+                    {entry.prestige_count > 0 && (
+                      <span className="inline-flex items-center gap-0.5 text-xs font-bold text-yellow-500 shrink-0">
+                        <Star className="w-3 h-3 fill-yellow-400 stroke-yellow-500" />
+                        {entry.prestige_count}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <LevelBadge tier={entry.tier} level={entry.level} />
                     <span className="text-xs text-slate-500">{entry.athlete_class_display}</span>
