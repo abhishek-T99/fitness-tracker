@@ -10,6 +10,9 @@ import {
   CartesianGrid,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import {
   Dumbbell,
@@ -46,10 +49,6 @@ export default function Dashboard() {
   const { data: weight } = useQuery({
     queryKey: ["weightHistory"],
     queryFn: () => measurementsApi.weightHistory(60),
-  });
-  const { data: dailyNutrition } = useQuery({
-    queryKey: ["dailyNutrition"],
-    queryFn: () => mealsApi.dailySummary(),
   });
   const { data: goals } = useQuery({ queryKey: ["goals"], queryFn: goalsApi.list });
   const { data: streak } = useQuery({ queryKey: ["streak"], queryFn: achievementsApi.streak });
@@ -154,34 +153,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <XPCard />
+        <NutritionDonutCard />
         <WeeklyChallengesCard />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="card">
-          <div className="card-header">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Apple className="w-4 h-4 text-emerald-600" /> Today's nutrition
-            </h3>
-            <Link to="/nutrition" className="text-xs text-brand-600 hover:underline">
-              View →
-            </Link>
-          </div>
-          <div className="card-body space-y-3">
-            <Macro
-              label="Calories"
-              value={dailyNutrition?.totals?.calories ?? 0}
-              goal={dailyNutrition?.calorie_goal}
-              unit="kcal"
-            />
-            <Macro label="Protein" value={dailyNutrition?.totals?.protein_g ?? 0} unit="g" />
-            <Macro label="Carbs" value={dailyNutrition?.totals?.carbs_g ?? 0} unit="g" />
-            <Macro label="Fat" value={dailyNutrition?.totals?.fat_g ?? 0} unit="g" />
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card">
           <div className="card-header">
             <h3 className="font-semibold flex items-center gap-2">
@@ -365,22 +343,132 @@ function WeeklyChallengesCard() {
   );
 }
 
-function Macro({ label, value, goal, unit }) {
-  const pct = goal ? Math.min(100, Math.round((value / goal) * 100)) : null;
+const MACRO_CONFIG = [
+  { key: "protein_g", label: "Protein", kcalPerG: 4,  color: "#3b82f6" },
+  { key: "carbs_g",   label: "Carbs",   kcalPerG: 4,  color: "#10b981" },
+  { key: "fat_g",     label: "Fat",     kcalPerG: 9,  color: "#f59e0b" },
+];
+
+function NutritionDonutCard() {
+  const { data: dailyNutrition } = useQuery({
+    queryKey: ["dailyNutrition"],
+    queryFn: () => mealsApi.dailySummary(),
+  });
+
+  const totals      = dailyNutrition?.totals   ?? {};
+  const calories    = totals.calories           ?? 0;
+  const calorieGoal = dailyNutrition?.calorie_goal ?? null;
+
+  const macros = MACRO_CONFIG.map((m) => ({
+    ...m,
+    grams: Math.round(totals[m.key] ?? 0),
+    kcal:  Math.round((totals[m.key] ?? 0) * m.kcalPerG),
+  }));
+
+  const totalMacroKcal = macros.reduce((s, m) => s + m.kcal, 0);
+  const hasData        = totalMacroKcal > 0;
+  const goalPct        = calorieGoal ? Math.min(100, Math.round((calories / calorieGoal) * 100)) : null;
+
+  // Donut segments — fall back to a neutral placeholder ring when no data
+  const chartData = hasData
+    ? macros.map((m) => ({ name: m.label, value: m.kcal, color: m.color }))
+    : [{ name: "empty", value: 1, color: "rgb(var(--c-slate-200))" }];
+
   return (
-    <div>
-      <div className="flex justify-between text-sm mb-1">
-        <span className="text-slate-700">{label}</span>
-        <span className="text-slate-500">
-          {value} {unit}
-          {goal ? ` / ${goal} ${unit}` : ""}
-        </span>
+    <div className="card">
+      <div className="card-header">
+        <h3 className="font-semibold flex items-center gap-2">
+          <Apple className="w-4 h-4 text-emerald-600" /> Today's Macros
+        </h3>
+        <Link to="/nutrition" className="text-xs text-brand-600 hover:underline">
+          View →
+        </Link>
       </div>
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-emerald-500"
-          style={{ width: `${pct ?? Math.min(100, value)}%` }}
-        />
+      <div className="card-body">
+        <div className="flex items-center gap-4">
+          {/* Donut chart */}
+          <div className="relative w-28 h-28 shrink-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={34}
+                  outerRadius={52}
+                  dataKey="value"
+                  startAngle={90}
+                  endAngle={-270}
+                  strokeWidth={0}
+                >
+                  {chartData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                {hasData && <Tooltip formatter={(v, name) => [`${v} kcal`, name]} />}
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Center label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-base font-extrabold text-slate-900 leading-none">
+                {Math.round(calories)}
+              </span>
+              <span className="text-[10px] text-slate-500 mt-0.5">kcal</span>
+            </div>
+          </div>
+
+          {/* Macro legend with mini proportion bars */}
+          <div className="flex-1 space-y-2.5 min-w-0">
+            {macros.map((m) => {
+              const pct = totalMacroKcal > 0 ? Math.round((m.kcal / totalMacroKcal) * 100) : 0;
+              return (
+                <div key={m.key}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.color }} />
+                      <span className="text-slate-600">{m.label}</span>
+                    </div>
+                    <span className="font-semibold text-slate-700 tabular-nums">
+                      {m.grams}g
+                      <span className="text-slate-400 font-normal ml-1">{pct}%</span>
+                    </span>
+                  </div>
+                  <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: m.color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Calorie goal progress */}
+        {calorieGoal && (
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+              <span>Daily goal</span>
+              <span className={goalPct >= 100 ? "text-emerald-600 font-semibold" : ""}>
+                {Math.round(calories)} / {calorieGoal} kcal
+                {goalPct != null && <span className="ml-1 text-slate-400">({goalPct}%)</span>}
+              </span>
+            </div>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${goalPct >= 100 ? "bg-emerald-500" : "bg-brand-500"}`}
+                style={{ width: `${goalPct}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {!hasData && (
+          <p className="text-xs text-slate-400 text-center mt-3">
+            Log a meal to see your macro breakdown.
+          </p>
+        )}
       </div>
     </div>
   );
