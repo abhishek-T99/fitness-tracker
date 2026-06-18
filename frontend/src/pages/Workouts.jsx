@@ -92,6 +92,36 @@ function WorkoutCard({ w }) {
   );
 }
 
+function SkeletonPulse({ className = "" }) {
+  return <div className={`animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700/50 ${className}`} />;
+}
+
+function WorkoutsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="card p-5 space-y-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-2 flex-1">
+              <SkeletonPulse className="h-3 w-28" />
+              <SkeletonPulse className="h-4 w-40" />
+            </div>
+            <SkeletonPulse className="h-5 w-16 rounded-full" />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[1, 2, 3].map((j) => (
+              <div key={j} className="bg-slate-50 dark:bg-slate-100/5 rounded-lg px-3 py-2 space-y-1.5">
+                <SkeletonPulse className="h-2.5 w-12" />
+                <SkeletonPulse className="h-4 w-8" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Workouts() {
   const [page, setPage] = useState(1);
 
@@ -117,7 +147,7 @@ export default function Workouts() {
       />
 
       {isLoading ? (
-        <p className="text-slate-500">Loading…</p>
+        <WorkoutsSkeleton />
       ) : items.length === 0 && page === 1 ? (
         <EmptyState
           icon={Dumbbell}

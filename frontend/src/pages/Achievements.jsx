@@ -96,12 +96,46 @@ function CategoryProgress({ achievements, unlockedIds }) {
   );
 }
 
+function AchievementsSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="card p-5 flex items-center gap-6 flex-wrap animate-pulse">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="text-center min-w-[72px] space-y-2">
+            <div className="h-8 w-12 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded-lg" />
+            <div className="h-3 w-16 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded" />
+          </div>
+        ))}
+        <div className="flex-1 min-w-[160px] space-y-2">
+          <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700/50 rounded" />
+          <div className="h-2 w-full bg-slate-200 dark:bg-slate-700/50 rounded-full" />
+        </div>
+      </div>
+      {[1, 2].map((section) => (
+        <div key={section} className="space-y-4">
+          <div className="h-5 w-40 bg-slate-200 dark:bg-slate-700/50 rounded animate-pulse" />
+          <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5 flex flex-col items-center gap-3 animate-pulse">
+                <div className="h-14 w-14 rounded-full bg-slate-200 dark:bg-slate-700/50" />
+                <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700/50 rounded" />
+                <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700/50 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Achievements() {
-  const { data: catalog } = useQuery({
+  const { data: catalog, isLoading: catalogLoading } = useQuery({
     queryKey: ["achievementCatalog"],
     queryFn: achievementsApi.catalog,
   });
-  const { data: unlocked } = useQuery({
+  const { data: unlocked, isLoading: unlockedLoading } = useQuery({
     queryKey: ["userAchievements"],
     queryFn: achievementsApi.unlocked,
   });
@@ -109,6 +143,8 @@ export default function Achievements() {
     queryKey: ["streak"],
     queryFn: achievementsApi.streak,
   });
+
+  const isLoading = catalogLoading || unlockedLoading;
 
   const catalogList  = catalog?.results  || catalog  || [];
   const unlockedList = unlocked?.results || unlocked || [];
@@ -125,6 +161,15 @@ export default function Achievements() {
   const totalEarned = unlockedIds.size;
   const totalBadges = catalogList.length;
   const overallPct  = totalBadges > 0 ? Math.round((totalEarned / totalBadges) * 100) : 0;
+
+  if (isLoading) {
+    return (
+      <div>
+        <PageHeader title="Achievements" subtitle="Loading your badges…" />
+        <AchievementsSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div>
