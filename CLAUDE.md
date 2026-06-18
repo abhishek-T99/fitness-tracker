@@ -97,10 +97,30 @@ To switch to Postgres: add a `postgres` service, point `DATABASES["default"]` at
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+This project has a live knowledge graph at `graphify-out/` covering all backend and frontend source. It is the **primary navigation tool** — use it before reaching for grep, glob, or raw file reads.
 
-Rules:
-- ALWAYS read graphify-out/GRAPH_REPORT.md before reading any source files, running grep/glob searches, or answering codebase questions. The graph is your primary map of the codebase.
-- IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
-- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+### Step 1 — Orient before every task
+
+Before reading any source file, running a search, or answering an architecture question:
+
+1. Read **`graphify-out/GRAPH_REPORT.md`** — god nodes, community clusters, cross-file edges at a glance.
+
+### Step 2 — Search with graphify, not grep
+
+| When you need to… | Use |
+|---|---|
+| Understand how a feature/module works | `graphify query "<question>"` |
+| Trace a call chain or data flow | `graphify query "<question>" --dfs` |
+| Find the shortest link between two concepts | `graphify path "<A>" "<B>"` |
+| Get a plain-English explanation of a node | `graphify explain "<concept>"` |
+| Wide context sweep | `graphify query "<question>" --budget 1500` |
+
+Only fall back to `Grep` / `Glob` when you need an exact symbol name or line number that graphify doesn't return.
+
+### Step 3 — Keep the graph current after edits
+
+Run **`graphify update .`** after every batch of file edits (AST-only, no API cost, ~2 s). A `PostToolUse` hook in `.claude/settings.json` fires this automatically after each `Edit` or `Write` call. If you make several changes before querying, or the hook fails, run it manually:
+
+```bash
+graphify update .
+```
