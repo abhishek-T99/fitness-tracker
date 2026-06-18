@@ -104,7 +104,6 @@ This project has a live knowledge graph at `graphify-out/` covering all backend 
 Before reading any source file, running a search, or answering an architecture question:
 
 1. Read **`graphify-out/GRAPH_REPORT.md`** — god nodes, community clusters, cross-file edges at a glance.
-2. If **`graphify-out/wiki/index.md`** exists, navigate the wiki articles (one per community) instead of raw files.
 
 ### Step 2 — Search with graphify, not grep
 
