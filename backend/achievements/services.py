@@ -10,6 +10,10 @@ def _update_streak(user, workout_date) -> Streak:
     streak, _ = Streak.objects.get_or_create(user=user)
     if streak.last_workout_date == workout_date:
         return streak
+    # Ignore backdated workouts (e.g. synced from Strava) so they never
+    # reset a streak that is already ahead of this workout's date.
+    if streak.last_workout_date and workout_date < streak.last_workout_date:
+        return streak
     if streak.last_workout_date and streak.last_workout_date == workout_date - timedelta(days=1):
         streak.current_days += 1
     else:
