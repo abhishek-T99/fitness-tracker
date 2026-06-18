@@ -10,7 +10,7 @@
  *            never see a tiny cluster in a huge empty card.
  */
 import { useMemo, useState } from "react";
-import { format, parseISO, subDays, startOfWeek, addDays, differenceInCalendarDays } from "date-fns";
+import { format, parseISO, subDays, addWeeks, startOfWeek, addDays, differenceInCalendarDays } from "date-fns";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -40,7 +40,7 @@ const LEGEND_CLASSES = [
   "bg-brand-700 dark:bg-brand-400",
 ];
 
-export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16 }) {
+export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16, futureWeeks = 16 }) {
   const [tooltip, setTooltip] = useState(null);
 
   const byDate = useMemo(() => {
@@ -50,6 +50,7 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16 }
   }, [data]);
 
   const today      = new Date();
+  const gridEnd    = addWeeks(today, futureWeeks);        // extend forward N weeks
   const maxOrigin  = subDays(today, days - 1);           // furthest back (365 d)
   const minOrigin  = subDays(today, minWeeks * 7 - 1);   // minimum grid width
 
@@ -73,7 +74,7 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16 }
   }
 
   const gridStart  = startOfWeek(origin, { weekStartsOn: 0 });
-  const totalDays  = differenceInCalendarDays(today, gridStart) + 1;
+  const totalDays  = differenceInCalendarDays(gridEnd, gridStart) + 1;
   const totalWeeks = Math.ceil(totalDays / 7);
 
   const grid = useMemo(() => {
@@ -83,13 +84,14 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16 }
       for (let d = 0; d < 7; d++) {
         const cellDate = addDays(gridStart, w * 7 + d);
         const iso = format(cellDate, "yyyy-MM-dd");
-        const inRange = cellDate >= origin && cellDate <= today;
-        col.push({ date: cellDate, iso, inRange, entry: byDate[iso] || null });
+        const inRange = cellDate >= origin && cellDate <= gridEnd;
+        const isFuture = cellDate > today;
+        col.push({ date: cellDate, iso, inRange, isFuture, entry: byDate[iso] || null });
       }
       cols.push(col);
     }
     return cols;
-  }, [byDate, gridStart, origin, totalWeeks]);
+  }, [byDate, gridStart, gridEnd, origin, totalWeeks]);
 
   const monthLabels = useMemo(() => {
     const labels = [];
@@ -156,15 +158,17 @@ export default function WorkoutCalendar({ data = [], days = 365, minWeeks = 16 }
                     />
                   );
                 }
-                const cls = cell.entry
-                  ? CELL_CLASSES[intensityClass(cell.entry.total_volume_kg)]
-                  : CELL_CLASSES["rest-cell"];
+                const cls = cell.isFuture
+                  ? "bg-slate-100/50 dark:bg-ink-800/30 border border-dashed border-slate-300/50 dark:border-ink-600/40"
+                  : cell.entry
+                    ? CELL_CLASSES[intensityClass(cell.entry.total_volume_kg)]
+                    : CELL_CLASSES["rest-cell"];
                 return (
                   <div
                     key={cell.iso}
-                    className={`rounded-sm cursor-default transition-all duration-100 ${cls} ${tooltip?.iso === cell.iso ? "ring-1 ring-brand-500 scale-110" : "hover:scale-110"}`}
+                    className={`rounded-sm transition-all duration-100 ${cls} ${cell.isFuture ? "cursor-default opacity-60" : `cursor-default ${tooltip?.iso === cell.iso ? "ring-1 ring-brand-500 scale-110" : "hover:scale-110"}`}`}
                     style={{ width: CELL, height: CELL }}
-                    onMouseEnter={() => setTooltip({ ...cell })}
+                    onMouseEnter={() => !cell.isFuture && setTooltip({ ...cell })}
                     onMouseLeave={() => setTooltip(null)}
                   />
                 );
