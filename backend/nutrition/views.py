@@ -129,7 +129,11 @@ class WaterLogViewSet(viewsets.ModelViewSet):
     serializer_class = WaterLogSerializer
 
     def get_queryset(self):
-        return WaterLog.objects.filter(user=self.request.user)
+        qs = WaterLog.objects.filter(user=self.request.user)
+        date = self.request.query_params.get("date")
+        if date:
+            qs = qs.filter(logged_at__date=date)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
