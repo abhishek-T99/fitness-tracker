@@ -115,6 +115,8 @@ def estimate_calories(workout) -> int | None:
         .prefetch_related("sets")
     )
 
+    active_secs = 0.0
+
     for we in exercises:
         ex          = we.exercise
         met         = float(ex.met_value) if ex.met_value else _DEFAULT_MET
@@ -130,10 +132,24 @@ def estimate_calories(workout) -> int | None:
         # Active calories (time under tension / cardio duration)
         for s in completed:
             total += _kcal_for_set(s, met, weight_kg, is_compound)
+            # Accumulate active seconds for rest-time derivation below
+            if s.duration_sec:
+                active_secs += s.duration_sec
+            elif s.reps:
+                active_secs += s.reps * (_SECS_PER_REP_COMPOUND if is_compound else _SECS_PER_REP_ISOLATION)
+            elif s.distance_m:
+                active_secs += (s.distance_m / 1000) * 300
 
-        # Rest calories: n_sets rest periods at a reduced MET
-        rest_hours = (n_sets * _DEFAULT_REST_SEC) / 3600
-        total += (met * _REST_MET_FRACTION) * weight_kg * rest_hours
+        # Rest calories: fixed default when no workout duration is recorded
+        if not workout.duration_min:
+            rest_hours = (n_sets * _DEFAULT_REST_SEC) / 3600
+            total += (met * _REST_MET_FRACTION) * weight_kg * rest_hours
+
+    # When the user has recorded workout duration, derive rest time from it so
+    # a 30-min vs 90-min session produces proportionally different estimates.
+    if has_data and workout.duration_min:
+        rest_secs = max(0.0, workout.duration_min * 60 - active_secs)
+        total += (_DEFAULT_MET * _REST_MET_FRACTION) * weight_kg * (rest_secs / 3600)
 
     # Fallback: no set data but we know the workout duration
     if not has_data and workout.duration_min:
