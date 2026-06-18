@@ -89,7 +89,21 @@ function ThemeToggle() {
 function SidebarXP({ collapsed }) {
   const ctx = useLevelContext();
   const profile = ctx?.profile;
-  if (!profile || collapsed) return null;
+  if (!profile) return null;
+
+  // Collapsed desktop: show just the level number as a compact badge
+  if (collapsed) {
+    return (
+      <div className="hidden lg:flex shrink-0 border-t border-ink-800 py-3 justify-center">
+        <div
+          className="h-8 w-8 rounded-full bg-brand-500/20 ring-1 ring-brand-500/40 flex items-center justify-center"
+          title={`Level ${profile.level} ${profile.tier}`}
+        >
+          <span className="text-xs font-bold text-brand-400">{profile.level}</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="shrink-0 border-t border-ink-800 px-3 py-3 space-y-2">

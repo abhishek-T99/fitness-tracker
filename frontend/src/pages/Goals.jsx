@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Target, Trash2, Check, Pencil, RotateCcw } from "lucide-react";
@@ -25,6 +25,7 @@ export default function Goals() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [localItems, setLocalItems] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const { data } = useQuery({ queryKey: ["goals"], queryFn: goalsApi.list });
   const serverItems = data?.results || data || [];
@@ -34,7 +35,12 @@ export default function Goals() {
     mutationFn: (id) => goalsApi.remove(id),
     onSuccess: () => {
       toast.success("Goal removed");
+      setDeletingId(null);
       queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+    onError: () => {
+      toast.error("Could not delete goal");
+      setDeletingId(null);
     },
   });
 
@@ -139,15 +145,31 @@ export default function Goals() {
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => {
-                      if (confirm("Delete this goal?")) remove.mutate(g.id);
-                    }}
-                    className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-1.5 rounded-lg transition-colors"
-                    title="Delete goal"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {deletingId === g.id ? (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => remove.mutate(g.id)}
+                        disabled={remove.isPending}
+                        className="text-xs font-medium px-2 py-1 rounded-lg bg-rose-500 text-white hover:bg-rose-600 transition-colors disabled:opacity-50"
+                      >
+                        {remove.isPending ? "…" : "Delete"}
+                      </button>
+                      <button
+                        onClick={() => setDeletingId(null)}
+                        className="text-xs font-medium px-2 py-1 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeletingId(g.id)}
+                      className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-1.5 rounded-lg transition-colors"
+                      title="Delete goal"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="mb-2">
@@ -225,6 +247,12 @@ function badgeFor(status) {
 
 function GoalModal({ goal = null, onClose, onSaved }) {
   const isEditing = !!goal;
+
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {

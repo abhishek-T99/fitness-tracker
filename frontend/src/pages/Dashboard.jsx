@@ -76,7 +76,7 @@ export default function Dashboard() {
         subtitle="Here's your fitness snapshot."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
           icon={Dumbbell}
           label="Workouts this week"
@@ -113,7 +113,7 @@ export default function Dashboard() {
           <div className="card-body h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                 <Tooltip />
@@ -129,13 +129,14 @@ export default function Dashboard() {
           </div>
           <div className="card-body h-72">
             {weightData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-sm">
-                Log a measurement to see your trend.
+              <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+                <TrendingUp className="w-8 h-8 opacity-40" />
+                <p className="text-sm">Log a measurement to see your trend.</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={weightData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
                   <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                   <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11 }} />
                   <Tooltip />
