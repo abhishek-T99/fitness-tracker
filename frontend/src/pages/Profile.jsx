@@ -390,7 +390,7 @@ function FitnessReports({ user, onSaved }) {
       </div>
       <form onSubmit={handleSubmit((d) => save.mutate(d))} className="card-body space-y-4">
         {/* Enable toggle */}
-        <label className="flex items-center gap-3 cursor-pointer select-none">
+        <label className="flex items-center gap-3 cursor-pointer select-none" data-testid="reports-toggle-label">
           <div className="relative">
             <input
               type="checkbox"
