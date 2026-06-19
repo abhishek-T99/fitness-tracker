@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+# Imported at module level so tests can patch them at their canonical paths.
+from reports.pdf_generator import generate_pdf          # noqa: E402
+from reports.report_service import collect_report_data  # noqa: E402
+
 
 def _period_bounds(period_type: str, ref_date: date | None = None) -> tuple[date, date]:
     """Return (period_start, period_end) for the completed period just before ref_date."""
@@ -42,9 +46,7 @@ def _period_bounds(period_type: str, ref_date: date | None = None) -> tuple[date
 )
 def generate_and_email_report(user_id: int, period_type: str, ref_date_iso: str | None = None):
     """Generate a PDF fitness report for one user and email it."""
-    from .models import FitnessReport
-    from .pdf_generator import generate_pdf
-    from .report_service import collect_report_data
+    from reports.models import FitnessReport  # deferred to avoid circular import at module load
 
     try:
         user = User.objects.select_related("profile").get(pk=user_id, is_active=True)
@@ -60,7 +62,7 @@ def generate_and_email_report(user_id: int, period_type: str, ref_date_iso: str 
         period_type, user.username, period_start, period_end,
     )
 
-    # Collect stats and build PDF
+    # collect_report_data and generate_pdf are module-level imports — patchable in tests.
     report_data = collect_report_data(user, period_start, period_end)
     pdf_bytes   = generate_pdf(report_data, period_type)
 
