@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "integrations",
     "meal_plans",
     "levels",
+    "reports",
 ]
 
 MIDDLEWARE = [
@@ -442,5 +443,17 @@ CELERY_BEAT_SCHEDULE = {
     "update-athlete-classes-weekly": {
         "task": "levels.tasks.update_athlete_classes",
         "schedule": crontab(hour=3, minute=0, day_of_week="mon"),  # Mon 03:00 UTC
+    },
+    "dispatch-weekly-reports-monday": {
+        "task": "reports.tasks.dispatch_weekly_reports",
+        "schedule": crontab(hour=7, minute=0, day_of_week="mon"),  # Mon 07:00 UTC
+    },
+    "dispatch-monthly-reports-first": {
+        "task": "reports.tasks.dispatch_monthly_reports",
+        "schedule": crontab(hour=7, minute=0, day_of_month="1"),   # 1st of month 07:00 UTC
+    },
+    "dispatch-yearly-reports-new-year": {
+        "task": "reports.tasks.dispatch_yearly_reports",
+        "schedule": crontab(hour=7, minute=0, day_of_month="1", month_of_year="1"),  # Jan 1 07:00 UTC
     },
 }
