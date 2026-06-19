@@ -106,7 +106,7 @@ function AvatarUpload({ user, onUploaded }) {
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   useEffect(() => {
     if (user) {
@@ -123,7 +123,7 @@ export default function Profile() {
           units: user.profile?.units || "metric",
           daily_calorie_goal: user.profile?.daily_calorie_goal || "",
           weekly_workout_goal: user.profile?.weekly_workout_goal || 3,
-          timezone: user.profile?.timezone || "UTC",
+          timezone: user.profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
         },
       });
     }
@@ -214,7 +214,28 @@ export default function Profile() {
               </div>
               <div>
                 <label className="label">Timezone</label>
-                <input className="input" {...register("profile.timezone")} />
+                <div className="flex gap-2">
+                  <input
+                    className="input flex-1"
+                    placeholder="e.g. Asia/Kathmandu"
+                    {...register("profile.timezone")}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary text-xs px-3 shrink-0"
+                    onClick={() =>
+                      setValue(
+                        "profile.timezone",
+                        Intl.DateTimeFormat().resolvedOptions().timeZone,
+                      )
+                    }
+                  >
+                    Detect
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Used to fire reminders at the correct local time.
+                </p>
               </div>
               <div>
                 <label className="label">Daily calorie goal</label>

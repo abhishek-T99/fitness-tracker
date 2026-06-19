@@ -14,6 +14,18 @@ export function AuthProvider({ children }) {
   const fetchMe = useCallback(async () => {
     try {
       const me = await authApi.me();
+      // Auto-correct the timezone when it is still the factory default "UTC".
+      // Intl.DateTimeFormat picks up the OS/browser timezone without any
+      // permission prompt, so this is always available.
+      const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (me.profile?.timezone === "UTC" && browserTz && browserTz !== "UTC") {
+        try {
+          await authApi.updateMe({ profile: { timezone: browserTz } });
+          me.profile.timezone = browserTz;
+        } catch {
+          // Non-critical — reminder dispatch degrades gracefully, not a hard error.
+        }
+      }
       setUser(me);
     } catch {
       // The axios interceptor already attempted a token refresh before this
