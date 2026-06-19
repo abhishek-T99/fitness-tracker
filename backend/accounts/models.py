@@ -31,6 +31,11 @@ class Profile(models.Model):
         METRIC = "metric", "Metric (kg / cm)"
         IMPERIAL = "imperial", "Imperial (lb / in)"
 
+    class ReportFrequency(models.TextChoices):
+        WEEKLY = "weekly", "Weekly"
+        MONTHLY = "monthly", "Monthly"
+        YEARLY = "yearly", "Yearly"
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     bio = models.TextField(blank=True)
     date_of_birth = models.DateField(blank=True, null=True)
@@ -50,6 +55,14 @@ class Profile(models.Model):
     # Updated by ActivityTrackingMiddleware on every authenticated request.
     # Used to enforce the 5-day inactivity auto-logout policy.
     last_activity = models.DateTimeField(blank=True, null=True)
+    # Fitness report preferences
+    reports_enabled = models.BooleanField(default=False)
+    report_frequency = models.CharField(
+        max_length=10,
+        choices=ReportFrequency.choices,
+        default=ReportFrequency.WEEKLY,
+    )
+    last_report_sent_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -20,7 +20,11 @@ class ProfileSerializer(serializers.ModelSerializer):
             "daily_calorie_goal",
             "weekly_workout_goal",
             "timezone",
+            "reports_enabled",
+            "report_frequency",
+            "last_report_sent_at",
         ]
+        read_only_fields = ["age", "last_report_sent_at"]
 
 
 class UserSerializer(serializers.ModelSerializer):
