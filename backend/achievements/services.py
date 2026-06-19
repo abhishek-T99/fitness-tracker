@@ -2,6 +2,7 @@
 from datetime import timedelta
 
 from django.db.models import Sum
+from django.utils import timezone
 
 from .models import Achievement, Streak, UserAchievement
 
@@ -35,7 +36,9 @@ def evaluate_after_workout(workout):
     from goals.models import Goal
 
     user = workout.user
-    streak = _update_streak(user, workout.started_at.date())
+    # Use the server-local date (matches timezone.localdate() used by decay task)
+    # so that a workout logged near midnight is dated consistently on both sides.
+    streak = _update_streak(user, timezone.localtime(workout.started_at).date())
 
     completed_qs = Workout.objects.filter(user=user, status=Workout.Status.COMPLETED)
 
@@ -50,9 +53,16 @@ def evaluate_after_workout(workout):
     total_calories = agg["total_calories"] or 0
     total_distance = int(agg["total_distance"] or 0)
 
-    # Time-of-day counts (based on UTC hour of started_at)
-    early_bird_count = completed_qs.filter(started_at__hour__lt=7).count()
-    night_owl_count  = completed_qs.filter(started_at__hour__gte=21).count()
+    # Time-of-day counts in server-local time so the thresholds mean the same
+    # wall-clock hour regardless of where UTC midnight falls.
+    early_bird_count = sum(
+        1 for w in completed_qs.only("started_at")
+        if timezone.localtime(w.started_at).hour < 7
+    )
+    night_owl_count = sum(
+        1 for w in completed_qs.only("started_at")
+        if timezone.localtime(w.started_at).hour >= 21
+    )
 
     # Total lifted volume — must iterate because total_volume is a @property
     total_volume = sum(
