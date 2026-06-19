@@ -49,7 +49,7 @@ def _styles():
         ),
         "stat_value": ParagraphStyle(
             "stat_value", fontName="Helvetica-Bold", fontSize=20,
-            textColor=SLATE_800, alignment=TA_CENTER,
+            textColor=SLATE_800, alignment=TA_CENTER, leading=24,
         ),
         "stat_unit": ParagraphStyle(
             "stat_unit", fontName="Helvetica", fontSize=9,
@@ -87,30 +87,39 @@ def _hr():
                       spaceAfter=4, spaceBefore=4)
 
 
-def _stat_cell(value: str, label: str, unit: str = "", styles=None) -> list:
-    return [
-        Paragraph(value, styles["stat_value"]),
-        Paragraph(unit, styles["stat_unit"]),
-        Paragraph(label, styles["stat_label"]),
-    ]
-
-
 def _stat_row(items: list[tuple], styles) -> Table:
-    """Build a 1-row table of big-number stat cells."""
-    cells = [_stat_cell(v, l, u, styles) for v, l, u in items]
-    col_w = (A4[0] - 4 * cm) / len(cells)
-    t = Table([cells], colWidths=[col_w] * len(cells), rowHeights=None)
+    """Build a stat-card table with three dedicated rows: context / value / label.
+
+    Each (value, label, unit) tuple maps to:
+      row 0 — unit   (small gray, e.g. "completed", "burned")  → aligned to bottom
+      row 1 — value  (big bold number)                          → vertically centred
+      row 2 — label  (small gray description)                   → aligned to top
+    """
+    col_w = (A4[0] - 4 * cm) / len(items)
+    col_widths = [col_w] * len(items)
+
+    row_unit  = [Paragraph(u or "", styles["stat_unit"])  for _, _, u in items]
+    row_value = [Paragraph(v or "", styles["stat_value"]) for v, _, _ in items]
+    row_label = [Paragraph(l or "", styles["stat_label"]) for _, l, _ in items]
+
+    t = Table([row_unit, row_value, row_label], colWidths=col_widths)
     t.setStyle(TableStyle([
-        ("ALIGN",    (0, 0), (-1, -1), "CENTER"),
-        ("VALIGN",   (0, 0), (-1, -1), "MIDDLE"),
-        ("BOX",      (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
-        ("INNERGRID",(0, 0), (-1, -1), 0.3, colors.HexColor("#f1f5f9")),
-        ("BACKGROUND",(0, 0),(-1, -1), colors.HexColor("#f8fafc")),
-        ("TOPPADDING",   (0, 0), (-1, -1), 10),
-        ("BOTTOMPADDING",(0, 0), (-1, -1), 10),
-        ("LEFTPADDING",  (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("ROUNDEDCORNERS", [4]),
+        ("ALIGN",         (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN",        (0, 0), (-1, 0),  "BOTTOM"),
+        ("VALIGN",        (0, 1), (-1, 1),  "MIDDLE"),
+        ("VALIGN",        (0, 2), (-1, 2),  "TOP"),
+        ("BOX",           (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+        # vertical dividers only — no horizontal lines between the three internal rows
+        ("LINEAFTER",     (0, 0), (-2, -1), 0.3, colors.HexColor("#f1f5f9")),
+        ("BACKGROUND",    (0, 0), (-1, -1), colors.HexColor("#f8fafc")),
+        ("TOPPADDING",    (0, 0), (-1, 0),  8),
+        ("BOTTOMPADDING", (0, 0), (-1, 0),  1),
+        ("TOPPADDING",    (0, 1), (-1, 1),  2),
+        ("BOTTOMPADDING", (0, 1), (-1, 1),  2),
+        ("TOPPADDING",    (0, 2), (-1, 2),  1),
+        ("BOTTOMPADDING", (0, 2), (-1, 2),  8),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 6),
     ]))
     return t
 
@@ -220,8 +229,8 @@ def _nutrition_section(data: dict, styles: dict) -> list:
 
     story.append(_stat_row([
         (f"{n['avg_water_l']:.1f}L",      "Avg Daily Water",    "intake"),
-        (f"{n['logged_days']}/{n['period_days']}", "Days Logged", "nutrition"),
-        (str(n["days_on_target"]),         "Days on Target",     "± 10 % of goal"),
+        (f"{n['logged_days']}/{n['period_days']}", "Days Logged", "of period"),
+        (str(n["days_on_target"]),         "Days on Target",     "±10% of goal"),
         (
             f"{round(n['days_on_target'] / max(n['logged_days'], 1) * 100)}%",
             "Goal Adherence",
@@ -281,7 +290,6 @@ def _goals_section(data: dict, styles: dict) -> list:
         (str(g["active_count"]),          "Active Goals",   ""),
         (f"{g['avg_progress_percent']}%", "Avg Progress",   "across active goals"),
         (str(g["achieved_in_period"]),    "Achieved",       "this period"),
-        ("",                              "",               ""),
     ], styles))
 
     if g["active_goals"]:
@@ -337,8 +345,6 @@ def _achievements_section(data: dict, styles: dict) -> list:
     story.append(_stat_row([
         (str(a["new_count"]),   "New Badges",        "this period"),
         (str(a["total_count"]), "Total Achievements", "all time"),
-        ("", "", ""),
-        ("", "", ""),
     ], styles))
 
     if a["new_badges"]:
