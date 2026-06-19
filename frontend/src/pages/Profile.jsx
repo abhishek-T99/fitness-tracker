@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Camera, Zap, Star } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Camera, FileText, Loader2, Mail, Zap, Star } from "lucide-react";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import ConnectedApps from "../components/ConnectedApps.jsx";
 import LevelBadge from "../components/LevelBadge.jsx";
-import { authApi, levelsApi } from "../api/endpoints.js";
+import { authApi, levelsApi, reportsApi } from "../api/endpoints.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useLevelContext } from "../contexts/LevelContext.jsx";
 
@@ -238,6 +238,8 @@ export default function Profile() {
           </div>
         </form>
 
+        <FitnessReports user={user} onSaved={refreshUser} />
+
         <ChangePassword />
 
         <ConnectedApps />
@@ -321,6 +323,180 @@ function LevelCard() {
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+const FREQ_LABELS = {
+  weekly:  "Every Monday — covers the previous week",
+  monthly: "1st of each month — covers the previous month",
+  yearly:  "January 1st — covers the previous year",
+};
+
+function FitnessReports({ user, onSaved }) {
+  const { register, handleSubmit, watch, reset } = useForm();
+  const queryClient = useQueryClient();
+
+  const enabled    = watch("profile.reports_enabled");
+  const frequency  = watch("profile.report_frequency");
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        profile: {
+          reports_enabled:  user.profile?.reports_enabled  ?? false,
+          report_frequency: user.profile?.report_frequency ?? "weekly",
+        },
+      });
+    }
+  }, [user, reset]);
+
+  const save = useMutation({
+    mutationFn: (data) => authApi.updateMe(data),
+    onSuccess: async () => {
+      toast.success("Report preferences saved");
+      await onSaved();
+    },
+    onError: () => toast.error("Could not save report preferences"),
+  });
+
+  const trigger = useMutation({
+    mutationFn: (period_type) => reportsApi.trigger(period_type),
+    onSuccess: (_, period_type) => {
+      toast.success(`${period_type.charAt(0).toUpperCase() + period_type.slice(1)} report is being generated — check your email shortly.`);
+      queryClient.invalidateQueries({ queryKey: ["fitnessReports"] });
+    },
+    onError: (err) =>
+      toast.error(err?.response?.data?.detail || "Could not trigger report"),
+  });
+
+  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+    queryKey: ["fitnessReports"],
+    queryFn:  reportsApi.list,
+  });
+
+  const lastSent = user?.profile?.last_report_sent_at
+    ? new Date(user.profile.last_report_sent_at).toLocaleDateString(undefined, {
+        year: "numeric", month: "short", day: "numeric",
+      })
+    : null;
+
+  return (
+    <div className="card" data-testid="fitness-reports-card">
+      <div className="card-header">
+        <h3 className="font-semibold flex items-center gap-2">
+          <FileText className="w-4 h-4 text-brand-500" /> Fitness Reports
+        </h3>
+      </div>
+      <form onSubmit={handleSubmit((d) => save.mutate(d))} className="card-body space-y-4">
+        {/* Enable toggle */}
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only"
+              data-testid="reports-enabled-toggle"
+              {...register("profile.reports_enabled")}
+            />
+            <div className={`w-10 h-6 rounded-full transition-colors ${enabled ? "bg-brand-500" : "bg-slate-200"}`} />
+            <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-4" : ""}`} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-800">Enable fitness reports</p>
+            <p className="text-xs text-slate-500">Receive a PDF report of your activity by email</p>
+          </div>
+        </label>
+
+        {/* Frequency selector — only shown when enabled */}
+        {enabled && (
+          <div>
+            <label className="label">Report frequency</label>
+            <select
+              className="input"
+              data-testid="report-frequency-select"
+              {...register("profile.report_frequency")}
+            >
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            {frequency && (
+              <p className="text-xs text-slate-400 mt-1">{FREQ_LABELS[frequency]}</p>
+            )}
+          </div>
+        )}
+
+        {lastSent && (
+          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5" />
+            Last report sent: <span className="font-medium">{lastSent}</span>
+          </p>
+        )}
+
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <button type="submit" className="btn-primary" disabled={save.isPending}>
+            {save.isPending ? "Saving…" : "Save preferences"}
+          </button>
+
+          <div className="flex gap-2">
+            {["weekly", "monthly", "yearly"].map((pt) => (
+              <button
+                key={pt}
+                type="button"
+                data-testid={`trigger-report-${pt}`}
+                className="btn-secondary text-xs"
+                disabled={trigger.isPending}
+                onClick={() => trigger.mutate(pt)}
+                title={`Send a ${pt} report now`}
+              >
+                {trigger.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  `Send ${pt}`
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Report history */}
+        {reports.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-slate-600 mb-2">Report history</p>
+            <div className="divide-y divide-slate-100 border border-slate-100 rounded-lg overflow-hidden" data-testid="report-history">
+              {reports.slice(0, 5).map((r) => (
+                <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs bg-white hover:bg-slate-50">
+                  <span className="capitalize font-medium text-slate-700">{r.period_type}</span>
+                  <span className="text-slate-500">
+                    {new Date(r.period_start).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    {" – "}
+                    {new Date(r.period_end).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                  {r.pdf_url ? (
+                    <a
+                      href={r.pdf_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-brand-600 hover:underline font-medium"
+                      data-testid="report-download-link"
+                    >
+                      Download
+                    </a>
+                  ) : (
+                    <span className="text-slate-400">No file</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reportsLoading && (
+          <div className="flex justify-center py-3">
+            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+        )}
+      </form>
     </div>
   );
 }

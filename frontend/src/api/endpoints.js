@@ -201,6 +201,13 @@ export const levelsApi = {
   prestige:     ()       => api.post("/levels/prestige/").then((r) => r.data),
 };
 
+// Fitness Reports
+export const reportsApi = {
+  list: () => api.get("/reports/").then((r) => r.data),
+  trigger: (period_type) =>
+    api.post("/reports/trigger/", { period_type }).then((r) => r.data),
+};
+
 // Notifications
 export const notificationsApi = {
   list: (params) => api.get("/notifications/", { params }).then((r) => r.data),
