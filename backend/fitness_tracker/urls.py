@@ -20,6 +20,7 @@ api_v1 = [
     path("integrations/", include("integrations.urls")),
     path("", include("meal_plans.urls")),
     path("levels/", include("levels.urls")),
+    path("reports/", include("reports.urls")),
 ]
 
 urlpatterns = [
