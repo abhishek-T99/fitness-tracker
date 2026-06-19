@@ -23,7 +23,7 @@ class TestAchievementCatalog:
         AchievementFactory.create_batch(3)
         res = auth_client.get(CATALOG_URL)
         assert res.status_code == 200
-        assert res.data["count"] == 3
+        assert len(res.data) == 3
 
     def test_detail_returns_achievement(self, auth_client, achievement):
         res = auth_client.get(catalog_url(achievement.pk))
@@ -42,12 +42,12 @@ class TestUnlockedAchievements:
         UserAchievementFactory(user=other_user, achievement=AchievementFactory())
         res = auth_client.get(UNLOCKED_URL)
         assert res.status_code == 200
-        assert res.data["count"] == 1
+        assert len(res.data) == 1
 
     def test_empty_when_no_achievements_unlocked(self, auth_client):
         res = auth_client.get(UNLOCKED_URL)
         assert res.status_code == 200
-        assert res.data["count"] == 0
+        assert len(res.data) == 0
 
 
 @pytest.mark.django_db
