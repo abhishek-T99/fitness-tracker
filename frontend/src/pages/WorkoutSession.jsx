@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 
 import RestTimer from "../components/RestTimer.jsx";
 import ExerciseTutorialSheet, { TutorialTrigger } from "../components/ExerciseTutorialSheet.jsx";
+import WorkoutProgressSidebar from "../components/WorkoutProgressSidebar.jsx";
 import useWorkoutSession, { getProgressionSuggestion } from "../hooks/useWorkoutSession.js";
 import { routinesApi, workoutsApi } from "../api/endpoints.js";
 
@@ -447,9 +448,9 @@ export default function WorkoutSession() {
     // Rest screen is intentionally dark regardless of theme —
     // it's a focused, immersive pause between sets.
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: "#0f172a" }}>
+      <div className="h-screen flex flex-col" style={{ background: "#0f172a" }}>
         {/* Minimal header */}
-        <div className="px-4 py-4 flex items-center justify-between">
+        <div className="px-4 py-4 flex items-center justify-between shrink-0">
           <div>
             <p className="text-xs text-white/40 uppercase tracking-widest">Just completed</p>
             <p className="text-sm font-semibold text-white/80 truncate mt-0.5">
@@ -462,16 +463,19 @@ export default function WorkoutSession() {
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-full max-w-sm px-4">
-            <RestTimer
-              secondsLeft={session.restSecondsLeft}
-              secondsTotal={session.restSecondsTotal}
-              nextLabel={nextLabel}
-              onSkip={skipRest}
-              onAdd={addRestTime}
-            />
+        <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-sm px-4">
+              <RestTimer
+                secondsLeft={session.restSecondsLeft}
+                secondsTotal={session.restSecondsTotal}
+                nextLabel={nextLabel}
+                onSkip={skipRest}
+                onAdd={addRestTime}
+              />
+            </div>
           </div>
+          <WorkoutProgressSidebar session={session} />
         </div>
       </div>
     );
@@ -483,10 +487,10 @@ export default function WorkoutSession() {
   const exHistory = session.history?.[String(currentItem?.exercise)];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-50 flex flex-col">
+    <div className="h-screen bg-slate-50 dark:bg-slate-50 flex flex-col">
 
       {/* Header */}
-      <div className="sticky top-0 bg-surface border-b border-slate-200 px-4 py-3 flex items-center gap-3">
+      <div className="shrink-0 bg-surface border-b border-slate-200 px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => setConfirmAbandon(true)}
           className="text-slate-400 hover:text-slate-600"
@@ -508,75 +512,81 @@ export default function WorkoutSession() {
         <ExerciseProgress currentIdx={currentExIdx} total={totalExercises} />
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
+      {/* Body: scrollable main content + sidebar */}
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
 
-          {/* Exercise info */}
-          <div className="text-center space-y-1">
-            <p className="text-xs text-slate-400 capitalize">
-              {muscleLabel(currentItem?.exercise_detail?.primary_muscle)}
-              {currentItem?.exercise_detail?.equipment && ` · ${currentItem.exercise_detail.equipment}`}
-            </p>
-            <div className="flex justify-center">
-              <SetDots
-                total={totalSets}
-                completed={completedSetsForEx}
-                current={currentSetIdx}
-              />
-            </div>
-            <p className="text-sm font-medium text-slate-700">
-              Set {currentSetIdx + 1} of {totalSets}
-            </p>
-          </div>
-
-          {/* Previous performance */}
-          {exHistory && (
-            <PrevPerformance history={exHistory} item={currentItem} />
-          )}
-
-          {/* Input controls */}
-          <div className="card p-6 space-y-6">
-            <BigInput
-              label="Reps"
-              value={session.currentReps}
-              onChange={setCurrentReps}
-              step={1}
-              min={0}
-            />
-            <BigInput
-              label="Weight (kg)"
-              value={session.currentWeight}
-              onChange={setCurrentWeight}
-              step={2.5}
-              min={0}
-            />
-            <RpePicker value={session.currentRpe} onChange={setCurrentRpe} />
-          </div>
-
-          {/* Up next preview */}
-          {currentItem && (() => {
-            const nextIsNextSet = currentSetIdx + 1 < totalSets;
-            const nextEx = nextIsNextSet
-              ? currentItem
-              : r?.items?.[currentExIdx + 1];
-            if (!nextEx) return null;
-            return (
-              <div className="flex items-center gap-2 text-xs text-slate-500 px-1">
-                <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-                <span>
-                  Next: {nextIsNextSet
-                    ? `Set ${currentSetIdx + 2} of ${totalSets}`
-                    : nextEx.exercise_detail?.name
-                  }
-                </span>
+            {/* Exercise info */}
+            <div className="text-center space-y-1">
+              <p className="text-xs text-slate-400 capitalize">
+                {muscleLabel(currentItem?.exercise_detail?.primary_muscle)}
+                {currentItem?.exercise_detail?.equipment && ` · ${currentItem.exercise_detail.equipment}`}
+              </p>
+              <div className="flex justify-center">
+                <SetDots
+                  total={totalSets}
+                  completed={completedSetsForEx}
+                  current={currentSetIdx}
+                />
               </div>
-            );
-          })()}
+              <p className="text-sm font-medium text-slate-700">
+                Set {currentSetIdx + 1} of {totalSets}
+              </p>
+            </div>
+
+            {/* Previous performance */}
+            {exHistory && (
+              <PrevPerformance history={exHistory} item={currentItem} />
+            )}
+
+            {/* Input controls */}
+            <div className="card p-6 space-y-6">
+              <BigInput
+                label="Reps"
+                value={session.currentReps}
+                onChange={setCurrentReps}
+                step={1}
+                min={0}
+              />
+              <BigInput
+                label="Weight (kg)"
+                value={session.currentWeight}
+                onChange={setCurrentWeight}
+                step={2.5}
+                min={0}
+              />
+              <RpePicker value={session.currentRpe} onChange={setCurrentRpe} />
+            </div>
+
+            {/* Up next preview */}
+            {currentItem && (() => {
+              const nextIsNextSet = currentSetIdx + 1 < totalSets;
+              const nextEx = nextIsNextSet
+                ? currentItem
+                : r?.items?.[currentExIdx + 1];
+              if (!nextEx) return null;
+              return (
+                <div className="flex items-center gap-2 text-xs text-slate-500 px-1">
+                  <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                  <span>
+                    Next: {nextIsNextSet
+                      ? `Set ${currentSetIdx + 2} of ${totalSets}`
+                      : nextEx.exercise_detail?.name
+                    }
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
         </div>
+
+        {/* Progress sidebar — visible lg+ */}
+        <WorkoutProgressSidebar session={session} />
       </div>
 
       {/* CTA */}
-      <div className="sticky bottom-0 bg-surface border-t border-slate-200 p-4">
+      <div className="shrink-0 bg-surface border-t border-slate-200 p-4">
         <button
           onClick={completeSet}
           className="btn-primary w-full py-3 text-base gap-2"
