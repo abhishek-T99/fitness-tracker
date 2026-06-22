@@ -19,6 +19,7 @@ import { TrendingUp, Scale, Dumbbell, BarChart2, Search } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import WorkoutCalendar from "../components/WorkoutCalendar.jsx";
 import { progressApi, exercisesApi, achievementsApi } from "../api/endpoints.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 // ── Colour palette for muscle groups ─────────────────────────────────────────
 const MUSCLE_COLORS = {
@@ -477,9 +478,22 @@ export default function Progress() {
   const [days,  setDays]  = useState(90);
   const [weeks, setWeeks] = useState(12);
 
+  const { user } = useAuth();
+
+  const HEATMAP_START = user?.date_joined ? new Date(user.date_joined) : null;
+  const HEATMAP_END   = HEATMAP_START
+    ? new Date(new Date(HEATMAP_START).setFullYear(HEATMAP_START.getFullYear() + 1))
+    : null;
+
+  // Days from registration to today — covers all past activity in the range
+  const heatmapDays = HEATMAP_START
+    ? Math.min(Math.max(Math.ceil((Date.now() - HEATMAP_START.getTime()) / 86_400_000), 1), 730)
+    : 365;
+
   const { data: heatmapData = [] } = useQuery({
-    queryKey: ["activityHeatmap"],
-    queryFn: () => progressApi.activityHeatmap(365),
+    queryKey: ["activityHeatmap", heatmapDays],
+    queryFn: () => progressApi.activityHeatmap(heatmapDays),
+    enabled: !!HEATMAP_START,
   });
 
   const { data: streak = {} } = useQuery({
@@ -500,7 +514,11 @@ export default function Progress() {
         <h3 className="font-semibold mb-4 text-sm text-slate-700">Workout Activity</h3>
         <div className="flex items-start">
           <div className="flex-1 min-w-0 overflow-x-auto">
-            <WorkoutCalendar data={heatmapData} />
+            <WorkoutCalendar
+              data={heatmapData}
+              gridStartDate={HEATMAP_START}
+              gridEndDate={HEATMAP_END}
+            />
           </div>
           <CalendarStatsSidebar streak={streak} heatmapData={heatmapData} />
         </div>
