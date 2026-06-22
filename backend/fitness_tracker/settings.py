@@ -26,7 +26,7 @@ def env_list(name: str, default: list[str]) -> list[str]:
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-key-change-me")
 DEBUG = env_bool("DEBUG", True)
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "fitnesstracker.local"])
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "fittrack.local"])
 
 INSTALLED_APPS = [
     "jazzmin",           # must be before django.contrib.admin
@@ -320,13 +320,13 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
-    ["https://fitnesstracker.local", "http://localhost:5173", "http://127.0.0.1:5173"],
+    ["https://fittrack.local", "http://localhost:5173", "http://127.0.0.1:5173"],
 )
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
-    ["https://fitnesstracker.local", "http://localhost:5173", "http://127.0.0.1:5173"],
+    ["https://fittrack.local", "http://localhost:5173", "http://127.0.0.1:5173"],
 )
 
 # Trust the X-Forwarded-Proto header set by Nginx so Django knows the

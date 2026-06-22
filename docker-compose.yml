@@ -89,7 +89,7 @@ services:
     container_name: fittrack-frontend
     env_file: .env
     # Port 5173 remains accessible on the host for direct dev access.
-    # Nginx proxies the same Vite server at https://fitnesstracker.local.
+    # Nginx proxies the same Vite server at https://fittrack.local.
     ports:
       - "5173:5173"
     volumes:
@@ -111,9 +111,9 @@ services:
       - "443:443"
     volumes:
       # Bind-mount the mkcert-generated certs from the host.
-      # Generate them once with: mkcert -key-file nginx/certs/fitnesstracker.local.key
-      #                                  -cert-file nginx/certs/fitnesstracker.local.crt
-      #                                  fitnesstracker.local localhost
+      # Generate them once with: mkcert -key-file nginx/certs/fittrack.local.key
+      #                                  -cert-file nginx/certs/fittrack.local.crt
+      #                                  fittrack.local localhost
       - ./nginx/certs:/etc/nginx/certs
     depends_on:
       backend:
