@@ -37,8 +37,6 @@ export const exercisesApi = {
 // Workouts
 export const workoutsApi = {
   list: (params) => api.get("/workouts/", { params }).then((r) => r.data),
-  recalculateCalories: (id) =>
-    api.post(`/workouts/${id}/recalculate-calories/`).then((r) => r.data),
   exerciseHistory: (exerciseIds) =>
     api.get("/workouts/exercise-history/", {
       params: { exercise_ids: exerciseIds.join(",") },

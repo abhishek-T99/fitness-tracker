@@ -87,7 +87,7 @@ class ChallengesView(APIView):
         ).select_related("challenge")
 
         reset_date     = week_start + timedelta(days=7)
-        reset_dt       = dt.datetime.combine(reset_date, dt.time.min).replace(tzinfo=dt.timezone.utc)
+        reset_dt       = timezone.make_aware(dt.datetime.combine(reset_date, dt.time.min))
         resets_in_secs = max(int((reset_dt - timezone.now()).total_seconds()), 0)
 
         return Response({

@@ -17,23 +17,28 @@ Override policy
 ───────────────
 Auto-calculation only runs when workout.calories_burned is None.
 If the user (or a device sync) has already set it, we never overwrite it.
-The `recalculate_calories` viewset action lets the user reset to auto.
 """
 import logging
 
 logger = logging.getLogger(__name__)
 
 # Seconds a lifter spends under tension per rep for each exercise type.
-_SECS_PER_REP_COMPOUND  = 3    # e.g. squat, bench, deadlift
-_SECS_PER_REP_ISOLATION = 2    # e.g. curl, lateral raise
+# Includes the eccentric phase, concentric phase, and brief setup between reps.
+_SECS_PER_REP_COMPOUND  = 4    # e.g. squat, bench, deadlift
+_SECS_PER_REP_ISOLATION = 3    # e.g. curl, lateral raise
 
-# Fraction of active MET applied during rest periods.
-# Resting burns ~1 MET; we model it as 25 % of the active MET as a
-# conservative mid-point between sitting still and walking.
-_REST_MET_FRACTION = 0.25
+# Fixed MET applied during rest periods (~1.3× BMR — elevated above true rest
+# because the body remains in an active, thermogenic state between sets).
+_REST_MET = 1.3
 
-# Assumed rest between sets when ExerciseSet.rest_sec is not stored.
-_DEFAULT_REST_SEC = 90
+# Default rest between sets when ExerciseSet.rest_sec is not stored.
+_DEFAULT_REST_SEC_COMPOUND  = 120   # 2 min typical for heavy compound lifts
+_DEFAULT_REST_SEC_ISOLATION = 60    # 1 min typical for isolation exercises
+
+# EPOC (Excess Post-exercise Oxygen Consumption) multiplier.
+# Accounts for the elevated calorie burn in the hours after a session.
+# ~7 % is the research midpoint for moderate-intensity strength training.
+_EPOC_FACTOR = 1.07
 
 # Fallback MET when an exercise has no met_value.
 _DEFAULT_MET = 4.5
@@ -142,14 +147,15 @@ def estimate_calories(workout) -> int | None:
 
         # Rest calories: fixed default when no workout duration is recorded
         if not workout.duration_min:
-            rest_hours = (n_sets * _DEFAULT_REST_SEC) / 3600
-            total += (met * _REST_MET_FRACTION) * weight_kg * rest_hours
+            default_rest = _DEFAULT_REST_SEC_COMPOUND if is_compound else _DEFAULT_REST_SEC_ISOLATION
+            rest_hours = (n_sets * default_rest) / 3600
+            total += _REST_MET * weight_kg * rest_hours
 
     # When the user has recorded workout duration, derive rest time from it so
     # a 30-min vs 90-min session produces proportionally different estimates.
     if has_data and workout.duration_min:
         rest_secs = max(0.0, workout.duration_min * 60 - active_secs)
-        total += (_DEFAULT_MET * _REST_MET_FRACTION) * weight_kg * (rest_secs / 3600)
+        total += _REST_MET * weight_kg * (rest_secs / 3600)
 
     # Fallback: no set data but we know the workout duration
     if not has_data and workout.duration_min:
@@ -159,7 +165,7 @@ def estimate_calories(workout) -> int | None:
     if not has_data or total <= 0:
         return None
 
-    return max(1, round(total))
+    return max(1, round(total * _EPOC_FACTOR))
 
 
 # ── Public entry point ────────────────────────────────────────────────────────

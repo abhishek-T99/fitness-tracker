@@ -1,16 +1,19 @@
 /**
- * WorkoutCalendar — forward-looking heatmap starting from the current week.
+ * WorkoutCalendar — GitHub-style activity heatmap.
  *
  * Props
  * ─────
- *  data         Array of { date: "YYYY-MM-DD", workout_count, total_volume_kg, total_duration_min }
- *  futureWeeks  How many weeks ahead to show (default 52).
+ *  data          Array of { date: "YYYY-MM-DD", workout_count, total_volume_kg, total_duration_min }
+ *  gridStartDate Date — first day of the grid (snapped to its Sunday). Defaults to start of current week.
+ *  gridEndDate   Date — last day to show (inclusive). Defaults to 52 weeks after gridStartDate.
  */
 import { useMemo, useState } from "react";
-import { format, isSameDay, addWeeks, startOfWeek, addDays } from "date-fns";
+import { format, isSameDay, startOfWeek, addDays } from "date-fns";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 function intensityClass(volume) {
   if (!volume) return "rest-cell";
@@ -36,12 +39,11 @@ const LEGEND_CLASSES = [
   "bg-brand-700 dark:bg-brand-400",
 ];
 
-// Cell size + gap (px)
 const CELL     = 12;
 const GAP      = 3;
 const COL_STEP = CELL + GAP;
 
-export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
+export default function WorkoutCalendar({ data = [], gridStartDate = null, gridEndDate = null }) {
   const [tooltip, setTooltip] = useState(null);
 
   const byDate = useMemo(() => {
@@ -51,31 +53,33 @@ export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
   }, [data]);
 
   const today      = new Date();
-  // Grid runs from Sunday of the current week → futureWeeks more columns
-  const gridStart  = startOfWeek(today, { weekStartsOn: 0 });
-  const totalWeeks = futureWeeks + 1; // current week + N future weeks
+  const gridStart  = startOfWeek(gridStartDate ?? today, { weekStartsOn: 0 });
+  const gridEnd    = gridEndDate ?? addDays(gridStart, 52 * 7);
+
+  // Number of Sunday-aligned columns needed to cover gridStart → gridEnd
+  const totalWeeks = Math.ceil(Math.max(1, (gridEnd - gridStart) / MS_PER_WEEK));
 
   const grid = useMemo(() => {
     const cols = [];
     for (let w = 0; w < totalWeeks; w++) {
       const col = [];
       for (let d = 0; d < 7; d++) {
-        const cellDate = addDays(gridStart, w * 7 + d);
-        const iso      = format(cellDate, "yyyy-MM-dd");
-        const isFuture = cellDate > today;
-        const isToday  = isSameDay(cellDate, today);
-        col.push({ date: cellDate, iso, isFuture, isToday, entry: byDate[iso] || null });
+        const cellDate   = addDays(gridStart, w * 7 + d);
+        const iso        = format(cellDate, "yyyy-MM-dd");
+        const isFuture   = cellDate > today;
+        const isAfterEnd = cellDate > gridEnd;
+        const isToday    = isSameDay(cellDate, today);
+        col.push({ date: cellDate, iso, isFuture, isAfterEnd, isToday, entry: byDate[iso] || null });
       }
       cols.push(col);
     }
     return cols;
-  }, [byDate, gridStart, totalWeeks]);
+  }, [byDate, gridStart, gridEnd, totalWeeks]);
 
-  // Month labels — only emit one per month, skip if too close to the previous label
   const monthLabels = useMemo(() => {
     const labels = [];
     let lastMonth = -1;
-    let lastWi    = -4; // enforce minimum 4-column gap before first label
+    let lastWi    = -4;
     grid.forEach((col, wi) => {
       const m = col[0].date.getMonth();
       if (m !== lastMonth && wi - lastWi >= 3) {
@@ -124,6 +128,11 @@ export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
           {grid.map((col, wi) => (
             <div key={wi} className="flex flex-col" style={{ gap: GAP }}>
               {col.map((cell) => {
+                // Days past the end date: invisible placeholder keeps column width stable
+                if (cell.isAfterEnd) {
+                  return <div key={cell.iso} style={{ width: CELL, height: CELL }} />;
+                }
+
                 let cls;
                 if (cell.isFuture) {
                   cls = "bg-slate-200/50 dark:bg-ink-600/50";
@@ -142,7 +151,11 @@ export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
                 return (
                   <div
                     key={cell.iso}
-                    className={`rounded-sm transition-all duration-100 ${cls} ${cell.isFuture ? "opacity-60" : `cursor-default ${ring}`}`}
+                    className={`rounded-sm transition-all duration-100 ${cls} ${
+                      cell.isFuture
+                        ? "opacity-40"
+                        : `cursor-default ${ring}`
+                    }`}
                     style={{ width: CELL, height: CELL }}
                     onMouseEnter={() => !cell.isFuture && setTooltip({ ...cell })}
                     onMouseLeave={() => setTooltip(null)}
@@ -156,10 +169,10 @@ export default function WorkoutCalendar({ data = [], futureWeeks = 52 }) {
 
       {/* Tooltip */}
       {tooltip && (
-        <div className="mt-2 text-xs text-ink-900 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-lg inline-block">
+        <div className="mt-2 text-xs text-ink-900 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-lg inline-block dark:bg-ink-800 dark:border-ink-600 dark:text-ink-100">
           <span className="font-semibold">{format(tooltip.date, "EEE, MMM d yyyy")}</span>
           {tooltip.entry ? (
-            <span className="ml-2 text-ink-500">
+            <span className="ml-2 text-ink-500 dark:text-ink-300">
               {tooltip.entry.workout_count} workout{tooltip.entry.workout_count !== 1 ? "s" : ""}
               {" · "}
               {Math.round(tooltip.entry.total_volume_kg).toLocaleString()} kg
