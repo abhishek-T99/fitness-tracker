@@ -2,8 +2,8 @@
 set -e
 
 CERT_DIR=/etc/nginx/certs
-KEY="$CERT_DIR/fitnesstracker.local.key"
-CRT="$CERT_DIR/fitnesstracker.local.crt"
+KEY="$CERT_DIR/fittrack.local.key"
+CRT="$CERT_DIR/fittrack.local.crt"
 
 if [ ! -f "$KEY" ] || [ ! -f "$CRT" ]; then
     mkdir -p "$CERT_DIR"
@@ -20,10 +20,10 @@ C  = US
 ST = Dev
 L  = Local
 O  = FitTrack
-CN = fitnesstracker.local
+CN = fittrack.local
 
 [v3_req]
-subjectAltName = DNS:fitnesstracker.local, DNS:localhost
+subjectAltName = DNS:fittrack.local, DNS:localhost
 EOF
 
     openssl req -x509 -nodes -newkey rsa:2048 \
@@ -33,7 +33,7 @@ EOF
         -config /tmp/openssl.cnf
 
     rm /tmp/openssl.cnf
-    echo "[nginx] Self-signed certificate generated for fitnesstracker.local"
+    echo "[nginx] Self-signed certificate generated for fittrack.local"
 fi
 
 exec nginx -g "daemon off;"

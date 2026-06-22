@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       host: true, // bind 0.0.0.0 so docker exposes us on the host
-      allowedHosts: ["fitnesstracker.local"],
+      allowedHosts: ["fittrack.local"],
       port: 5173,
       strictPort: true,
       watch: {
@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
       // No clientPort override: with hmr=true Vite's client connects back on
       // whatever host:port the page was loaded from. That makes HMR work both
       // directly (http://localhost:5173) and behind Nginx
-      // (https://fitnesstracker.local → wss on 443), with no env switching.
+      // (https://fittrack.local → wss on 443), with no env switching.
       hmr: true,
     },
   };
