@@ -789,6 +789,297 @@ FOODS = [
      "calories":  75, "protein_g":  0.0, "carbs_g":  0.0, "fat_g":  0.0, "fiber_g": 0.0,
      # Traditional Newari home-distilled spirit; served at all Newari celebrations
     },
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # NEPALI TARKARI / CURRY — EXTENDED CATALOG
+    # Sources: USDA FoodData Central individual ingredients + standard South-Asian
+    # nutritional tables (NAST) adjusted for typical Nepali mustard-oil cooking.
+    # All values are per stated cooked serving.
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # ── Vegetable Tarkaris ────────────────────────────────────────────────────
+    {"name": "Lauka ko Tarkari (bottle gourd curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  68, "protein_g":  1.5, "carbs_g":  8.5, "fat_g":  3.0, "fiber_g": 2.0,
+     # Mild gourd cooked with tomato, cumin, and turmeric; lightest everyday sabzi
+    },
+    {"name": "Mula ko Tarkari (white radish curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  72, "protein_g":  2.0, "carbs_g":  9.0, "fat_g":  3.0, "fiber_g": 2.5,
+     # Daikon radish in a thin spiced gravy; popular winter side dish
+    },
+    {"name": "Gajar ko Tarkari (carrot curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  95, "protein_g":  1.5, "carbs_g": 13.5, "fat_g":  3.5, "fiber_g": 3.5,
+     # Sweet carrots cooked with peas, cumin, and coriander; often a mixed dish
+    },
+    {"name": "Ningro ko Tarkari (wild fern / fiddlehead curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  78, "protein_g":  4.0, "carbs_g":  8.0, "fat_g":  3.5, "fiber_g": 4.5,
+     # Foraged fiddlehead ferns sautéed with garlic and mustard oil; hill-region delicacy
+    },
+    {"name": "Sisnu ko Tarkari (stinging nettle curry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  52, "protein_g":  3.5, "carbs_g":  5.5, "fat_g":  2.0, "fiber_g": 3.0,
+     # Young nettles blanched and cooked like saag; iron and protein-rich hill food
+    },
+    {"name": "Methi ko Saag (fenugreek leaves stir-fry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  49, "protein_g":  3.0, "carbs_g":  5.0, "fat_g":  2.0, "fiber_g": 3.5,
+     # Slightly bitter fenugreek greens with garlic; prized for blood-sugar benefits
+    },
+    {"name": "Tori ko Saag (rapeseed greens stir-fry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  38, "protein_g":  2.8, "carbs_g":  3.5, "fat_g":  1.5, "fiber_g": 3.0,
+     # Tender mustard/canola shoots cooked with garlic and dried chilli; winter favourite
+    },
+    {"name": "Chamsur ko Saag (garden cress stir-fry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  45, "protein_g":  3.5, "carbs_g":  4.0, "fat_g":  2.0, "fiber_g": 2.5,
+     # Peppery garden cress sautéed with garlic; nutrient-dense leafy green
+    },
+    {"name": "Bhanta ko Bhurta (smoked eggplant mash)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  82, "protein_g":  1.5, "carbs_g":  8.0, "fat_g":  5.0, "fiber_g": 3.5,
+     # Whole eggplant charred over flame, mashed with mustard oil, green chilli, garlic
+    },
+    {"name": "Alu ko Bhurta (spiced mashed potato)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 105, "protein_g":  2.0, "carbs_g": 15.5, "fat_g":  4.0, "fiber_g": 2.0,
+     # Boiled potato mashed with mustard oil, green chilli, and fresh coriander
+    },
+    {"name": "Tareko Bhanta (pan-fried eggplant slices)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 110, "protein_g":  1.5, "carbs_g": 10.0, "fat_g":  7.5, "fiber_g": 3.0,
+     # Eggplant rounds shallow-fried with salt and turmeric; common side
+    },
+    {"name": "Tareko Alu (fried spiced potato)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 145, "protein_g":  2.0, "carbs_g": 22.0, "fat_g":  5.5, "fiber_g": 2.0,
+     # Cubed or sliced potato shallow-fried with cumin and chilli; ubiquitous Nepali side
+    },
+    {"name": "Tareko Kauli (pan-fried cauliflower)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  98, "protein_g":  2.5, "carbs_g": 10.0, "fat_g":  6.0, "fiber_g": 2.5,
+     # Cauliflower florets stir-fried dry with turmeric, cumin, and coriander
+    },
+    {"name": "Golbheda ko Tarkari (fresh tomato curry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  65, "protein_g":  1.5, "carbs_g":  8.0, "fat_g":  3.0, "fiber_g": 1.5,
+     # Simple tomato gravy base; doubles as a sauce for other vegetables
+    },
+    {"name": "Alu Golbheda Tarkari (potato and tomato curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 125, "protein_g":  2.5, "carbs_g": 18.0, "fat_g":  4.5, "fiber_g": 2.5,
+     # Everyday dal-bhat side; potato simmered in a tomato-onion-cumin gravy
+    },
+    {"name": "Korailo / Saijnu ko Tarkari (drumstick pod curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  80, "protein_g":  3.5, "carbs_g":  9.0, "fat_g":  3.5, "fiber_g": 4.5,
+     # Moringa pods cooked in thin curry; nutritionally dense, common in Terai
+    },
+    {"name": "Tarul ko Tarkari (yam curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 160, "protein_g":  2.5, "carbs_g": 28.0, "fat_g":  4.5, "fiber_g": 3.5,
+     # Purple or white yam in a spiced gravy; traditional winter staple
+    },
+    {"name": "Githa ko Tarkari (wild yam curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 148, "protein_g":  2.0, "carbs_g": 26.0, "fat_g":  4.0, "fiber_g": 3.0,
+     # Bitter wild yam boiled well and cooked in gravy; eaten in hill regions
+    },
+    {"name": "Matar Paneer (green pea and paneer curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 220, "protein_g": 10.0, "carbs_g": 12.0, "fat_g": 14.5, "fiber_g": 3.5,
+     # Rich onion-tomato gravy with green peas and fresh paneer cubes
+    },
+    {"name": "Palak Paneer (spinach and paneer curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 185, "protein_g":  9.5, "carbs_g":  7.0, "fat_g": 13.5, "fiber_g": 3.0,
+     # Pureed spinach gravy with paneer; popular at restaurants and homes alike
+    },
+    {"name": "Alu Bodi Tama (potato, black-eyed pea and bamboo shoot curry)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 180, "protein_g":  8.0, "carbs_g": 26.0, "fat_g":  4.5, "fiber_g": 6.5,
+     # Classic Nepali tri-ingredient curry; the sour fermented tama is the star flavour
+    },
+    {"name": "Mixed Vegetable Tarkari (Mismaas Tarkari)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  90, "protein_g":  2.5, "carbs_g": 11.0, "fat_g":  4.0, "fiber_g": 3.0,
+     # Seasonal mix of potato, cauliflower, carrot, peas in a light cumin-tomato gravy
+    },
+    {"name": "Alu Dum (whole spiced baby potatoes)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 155, "protein_g":  3.0, "carbs_g": 22.5, "fat_g":  6.0, "fiber_g": 3.0,
+     # Small whole potatoes slow-cooked in a thick spiced yogurt-tomato gravy
+    },
+
+    # ── Dal & Legume Dishes ────────────────────────────────────────────────────
+    {"name": "Gahat ko Dal (horse gram soup, cooked)",
+     "serving_size": 150, "serving_unit": "ml",
+     "calories": 105, "protein_g":  8.5, "carbs_g": 16.0, "fat_g":  1.5, "fiber_g": 5.0,
+     # Dense nutty-flavoured horse gram; believed to dissolve kidney stones; mountain staple
+    },
+    {"name": "Pahelo Moong ko Dal (whole yellow mung soup, cooked)",
+     "serving_size": 150, "serving_unit": "ml",
+     "calories": 115, "protein_g":  7.5, "carbs_g": 18.0, "fat_g":  1.5, "fiber_g": 4.0,
+     # Whole mung beans cooked with turmeric and tempered with mustard seeds; easy to digest
+    },
+    {"name": "Masyaura ko Tarkari (sun-dried lentil fritter curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 195, "protein_g": 10.5, "carbs_g": 22.0, "fat_g":  7.0, "fiber_g": 5.0,
+     # Dried black-gram fritters (masyaura) rehydrated and cooked in a spiced gravy
+    },
+    {"name": "Tareko Maas (fried whole black lentils)",
+     "serving_size": 50, "serving_unit": "g",
+     "calories": 175, "protein_g": 12.0, "carbs_g": 20.0, "fat_g":  5.0, "fiber_g": 5.5,
+     # Whole urad lentils shallow-fried until crispy; protein-rich snack or side
+    },
+    {"name": "Sukeko Gundruk ko Jhol (fermented dried greens soup)",
+     "serving_size": 200, "serving_unit": "ml",
+     "calories":  35, "protein_g":  2.0, "carbs_g":  4.0, "fat_g":  1.0, "fiber_g": 2.0,
+     # Dried gundruk simmered into a thin tangy broth; comforting cold-weather soup
+    },
+    {"name": "Bodi ko Sadeko (marinated black-eyed pea salad)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 125, "protein_g":  8.0, "carbs_g": 18.0, "fat_g":  3.5, "fiber_g": 5.5,
+     # Cooked beans dressed with mustard oil, green chilli, ginger, and lemon
+    },
+
+    # ── Meat Curries ──────────────────────────────────────────────────────────
+    {"name": "Bheda ko Masu Tarkari (mutton / sheep curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 275, "protein_g": 27.0, "carbs_g":  6.5, "fat_g": 15.5, "fiber_g": 0.5,
+     # Bone-in sheep meat slow-cooked in a rich onion-tomato masala
+    },
+    {"name": "Haans ko Masu Tarkari (duck curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 290, "protein_g": 26.0, "carbs_g":  6.0, "fat_g": 17.5, "fiber_g": 0.5,
+     # Duck meat curry; fattier and richer than chicken; popular at special occasions
+    },
+    {"name": "Kalejo ko Tarkari (liver curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 185, "protein_g": 28.0, "carbs_g":  7.0, "fat_g":  5.5, "fiber_g": 0.5,
+     # Chicken or buff liver in spiced gravy; very high in iron and vitamin A
+    },
+    {"name": "Bhutan (Nepali spiced offal stir-fry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 165, "protein_g": 22.0, "carbs_g":  4.0, "fat_g":  7.5, "fiber_g": 0.5,
+     # Mixed offal (liver, kidney, tripe) stir-fried with ginger, garlic, and spices
+    },
+    {"name": "Chicken Jhol (thin Nepali chicken curry)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 180, "protein_g": 22.0, "carbs_g":  5.0, "fat_g":  8.5, "fiber_g": 0.5,
+     # Light watery chicken curry; everyday home cooking rather than restaurant-style
+    },
+    {"name": "Mutton Jhol (thin spiced mutton soup curry)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 210, "protein_g": 24.0, "carbs_g":  5.5, "fat_g": 11.0, "fiber_g": 0.5,
+     # Bone-in mutton pieces simmered in a thin spiced broth; served over rice
+    },
+    {"name": "Sukuti ko Tarkari (dried meat curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 225, "protein_g": 30.0, "carbs_g":  7.5, "fat_g":  9.0, "fiber_g": 1.0,
+     # Sukuti (dried buffalo/yak) rehydrated and cooked with tomato, chilli, and spices
+    },
+    {"name": "Yak Masu Tarkari (yak meat curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 240, "protein_g": 34.0, "carbs_g":  5.5, "fat_g":  9.5, "fiber_g": 0.5,
+     # Lean high-altitude yak meat in a thick masala; Sherpa and mountain-region dish
+    },
+    {"name": "Rabbit Curry (Kharo ko Masu)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 195, "protein_g": 30.0, "carbs_g":  5.0, "fat_g":  6.5, "fiber_g": 0.5,
+     # Very lean rabbit meat cooked with onion, ginger, and tomato; rural hill dish
+    },
+
+    # ── Fish & Seafood ────────────────────────────────────────────────────────
+    {"name": "Maachha ko Jhol (fresh fish curry)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 155, "protein_g": 18.5, "carbs_g":  5.5, "fat_g":  6.0, "fiber_g": 1.0,
+     # Thin turmeric-tomato fish curry; classic Terai and river-valley preparation
+    },
+    {"name": "Sukeko Maachha ko Tarkari (dried fish curry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 170, "protein_g": 22.0, "carbs_g":  5.0, "fat_g":  7.0, "fiber_g": 0.5,
+     # Dried salted fish rehydrated in a strongly spiced gravy; pungent and flavourful
+    },
+    {"name": "Jhinge Maachha Tarkari (small prawn / river shrimp curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 135, "protein_g": 18.0, "carbs_g":  4.5, "fat_g":  4.5, "fiber_g": 0.5,
+     # Tiny river shrimp cooked with tomato and green chilli; Terai speciality
+    },
+
+    # ── Newari & Regional Specialties ────────────────────────────────────────
+    {"name": "Kachila (Newari raw spiced minced buff)",
+     "serving_size": 80, "serving_unit": "g",
+     "calories": 145, "protein_g": 21.0, "carbs_g":  2.5, "fat_g":  5.5, "fiber_g": 0.5,
+     # Finely minced raw buffalo dressed with mustard oil, timur, and ginger; Newari ritual dish
+    },
+    {"name": "Ghonghi ko Tarkari (river snail curry, Terai)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  82, "protein_g": 12.5, "carbs_g":  3.5, "fat_g":  2.0, "fiber_g": 0.5,
+     # Fresh-water snails cooked with spices; traditional Terai and Tharu community dish
+    },
+    {"name": "Dhikri (Tharu steamed rice cake)",
+     "serving_size": 80, "serving_unit": "g",
+     "calories": 145, "protein_g":  2.5, "carbs_g": 32.0, "fat_g":  0.5, "fiber_g": 0.5,
+     # Plain steamed rice-flour dumpling; Tharu staple eaten with dal or chutney
+    },
+
+    # ── Sides, Salads & Chutneys ──────────────────────────────────────────────
+    {"name": "Bhatmas Sadeko (spiced soybean salad)",
+     "serving_size": 50, "serving_unit": "g",
+     "calories": 110, "protein_g":  9.5, "carbs_g":  7.5, "fat_g":  4.5, "fiber_g": 2.5,
+     # Boiled soybeans tossed with mustard oil, chilli, ginger, and green onion
+    },
+    {"name": "Alu Sadeko (Nepali spiced potato salad)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 120, "protein_g":  2.0, "carbs_g": 18.5, "fat_g":  4.5, "fiber_g": 2.0,
+     # Boiled potato dressed with mustard oil, timur, and green chilli; cold side dish
+    },
+    {"name": "Til ko Chutney (sesame seed chutney)",
+     "serving_size": 20, "serving_unit": "g",
+     "calories": 112, "protein_g":  3.5, "carbs_g":  4.0, "fat_g":  9.5, "fiber_g": 1.5,
+     # Ground roasted sesame with tomato, chilli, and garlic; rich nutty condiment
+    },
+    {"name": "Golbheda ko Achar (roasted tomato chutney)",
+     "serving_size": 30, "serving_unit": "g",
+     "calories":  30, "protein_g":  1.0, "carbs_g":  5.0, "fat_g":  1.0, "fiber_g": 1.5,
+     # Fire-roasted tomatoes blended with chilli and garlic; smokier than fresh achar
+    },
+    {"name": "Hariyo Dhania ko Chutney (cilantro chutney)",
+     "serving_size": 20, "serving_unit": "g",
+     "calories":  15, "protein_g":  0.5, "carbs_g":  2.5, "fat_g":  0.3, "fiber_g": 0.8,
+     # Blended fresh coriander, green chilli, garlic, and lemon; bright green condiment
+    },
+    {"name": "Hariyo Khursani ko Achar (green chilli pickle)",
+     "serving_size": 10, "serving_unit": "g",
+     "calories":  10, "protein_g":  0.3, "carbs_g":  2.0, "fat_g":  0.2, "fiber_g": 0.5,
+     # Sliced green chillies pickled with mustard oil and salt; hot table condiment
+    },
+
+    # ── Breakfast & Sweet Dishes ──────────────────────────────────────────────
+    {"name": "Dahi Chiura (yogurt with beaten rice)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 215, "protein_g":  6.5, "carbs_g": 38.0, "fat_g":  4.5, "fiber_g": 0.5,
+     # Chiura soaked briefly in whole-milk yogurt with a pinch of salt; quick Nepali breakfast
+    },
+    {"name": "Jeri / Jalebi (fried syrup-soaked sweet)",
+     "serving_size": 50, "serving_unit": "g",
+     "calories": 150, "protein_g":  1.5, "carbs_g": 30.0, "fat_g":  3.5, "fiber_g": 0.0, "sugar_g": 20.0,
+     # Spiral-shaped wheat-flour fritters soaked in sugar syrup; festival and morning treat
+    },
+    {"name": "Aloo Tarkari (dry stir-fry, Chura Tarkari style)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 118, "protein_g":  2.0, "carbs_g": 17.0, "fat_g":  4.5, "fiber_g": 2.0,
+     # Drier potato subzi served specifically with chiura; less gravy than regular aloo tarkari
+    },
+    {"name": "Fidevo (vermicelli stir-fry, Nepali style)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 210, "protein_g":  5.5, "carbs_g": 36.0, "fat_g":  5.5, "fiber_g": 1.5,
+     # Thin wheat vermicelli stir-fried with vegetables and egg; popular tiffin/snack
+    },
 ]
 
 
