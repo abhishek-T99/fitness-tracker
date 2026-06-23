@@ -3,6 +3,7 @@ import * as Icons from "lucide-react";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { achievementsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 // ── Category display metadata ─────────────────────────────────────────────────
 const CATEGORIES = {
@@ -132,15 +133,15 @@ function AchievementsSkeleton() {
 
 export default function Achievements() {
   const { data: catalog, isLoading: catalogLoading } = useQuery({
-    queryKey: ["achievementCatalog"],
+    queryKey: qk.achievements.catalog(),
     queryFn: achievementsApi.catalog,
   });
   const { data: unlocked, isLoading: unlockedLoading } = useQuery({
-    queryKey: ["userAchievements"],
+    queryKey: qk.achievements.unlocked(),
     queryFn: achievementsApi.unlocked,
   });
   const { data: streak } = useQuery({
-    queryKey: ["streak"],
+    queryKey: qk.achievements.streak(),
     queryFn: achievementsApi.streak,
   });
 

@@ -10,15 +10,16 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { measurementsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 export default function Measurements() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  const { data: list } = useQuery({ queryKey: ["measurements"], queryFn: measurementsApi.list });
+  const { data: list } = useQuery({ queryKey: qk.measurements.all(), queryFn: measurementsApi.list });
   const { data: history } = useQuery({
-    queryKey: ["weightHistory"],
+    queryKey: qk.measurements.weightHistory(),
     queryFn: () => measurementsApi.weightHistory(180),
   });
   const items = list?.results || list || [];
@@ -27,8 +28,8 @@ export default function Measurements() {
     mutationFn: (id) => measurementsApi.remove(id),
     onSuccess: () => {
       toast.success("Deleted");
-      queryClient.invalidateQueries({ queryKey: ["measurements"] });
-      queryClient.invalidateQueries({ queryKey: ["weightHistory"] });
+      queryClient.invalidateQueries({ queryKey: qk.measurements.all() });
+      queryClient.invalidateQueries({ queryKey: qk.measurements.weightHistory() });
     },
   });
 
@@ -38,8 +39,8 @@ export default function Measurements() {
   }));
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["measurements"] });
-    queryClient.invalidateQueries({ queryKey: ["weightHistory"] });
+    queryClient.invalidateQueries({ queryKey: qk.measurements.all() });
+    queryClient.invalidateQueries({ queryKey: qk.measurements.weightHistory() });
   };
 
   return (
@@ -207,7 +208,7 @@ function MeasurementModal({ measurement = null, onClose, onSaved }) {
 
   // We call the latest-endpoint to get user profile data for the estimate
   const { data: latestData } = useQuery({
-    queryKey: ["measurementLatest"],
+    queryKey: qk.measurements.latest(),
     queryFn: measurementsApi.latest,
     staleTime: 60_000,
   });

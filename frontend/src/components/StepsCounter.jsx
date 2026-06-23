@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Footprints, Heart, Zap, Moon, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { wellnessApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const STEP_GOAL = 10_000;
 
@@ -56,7 +57,7 @@ function WellnessStat({ icon: Icon, label, value, unit, color }) {
 
 export default function StepsCounter() {
   const { data, isLoading, dataUpdatedAt, refetch, isFetching } = useQuery({
-    queryKey: ["todayWellness"],
+    queryKey: qk.wellness.today(),
     queryFn: wellnessApi.today,
     refetchInterval: 5 * 60 * 1000,   // poll every 5 minutes
     staleTime: 4 * 60 * 1000,

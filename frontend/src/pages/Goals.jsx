@@ -9,6 +9,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import SortableList, { DragHandle, SortableItem } from "../components/SortableList.jsx";
 import { goalsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const GOAL_TYPES = [
   { value: "weight_loss", label: "Weight loss" },
@@ -27,7 +28,7 @@ export default function Goals() {
   const [localItems, setLocalItems] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  const { data } = useQuery({ queryKey: ["goals"], queryFn: goalsApi.list });
+  const { data } = useQuery({ queryKey: qk.goals.all(), queryFn: goalsApi.list });
   const serverItems = data?.results || data || [];
   const items = localItems ?? serverItems;
 
@@ -36,7 +37,7 @@ export default function Goals() {
     onSuccess: () => {
       toast.success("Goal removed");
       setDeletingId(null);
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: qk.goals.all() });
     },
     onError: () => {
       toast.error("Could not delete goal");
@@ -48,7 +49,7 @@ export default function Goals() {
     mutationFn: (id) => goalsApi.update(id, { status: "achieved" }),
     onSuccess: () => {
       toast.success("Goal marked as achieved!");
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: qk.goals.all() });
     },
   });
 
@@ -56,13 +57,13 @@ export default function Goals() {
     mutationFn: (id) => goalsApi.update(id, { status: "active" }),
     onSuccess: () => {
       toast.success("Goal reactivated.");
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: qk.goals.all() });
     },
   });
 
   const updateCurrent = useMutation({
     mutationFn: ({ id, current_value }) => goalsApi.update(id, { current_value }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["goals"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.goals.all() }),
   });
 
   function handleReorder(newIds) {
@@ -218,7 +219,7 @@ export default function Goals() {
           onClose={() => setOpen(false)}
           onSaved={() => {
             setOpen(false);
-            queryClient.invalidateQueries({ queryKey: ["goals"] });
+            queryClient.invalidateQueries({ queryKey: qk.goals.all() });
           }}
         />
       )}
@@ -229,7 +230,7 @@ export default function Goals() {
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
-            queryClient.invalidateQueries({ queryKey: ["goals"] });
+            queryClient.invalidateQueries({ queryKey: qk.goals.all() });
           }}
         />
       )}

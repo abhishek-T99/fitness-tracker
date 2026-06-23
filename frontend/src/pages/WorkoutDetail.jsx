@@ -6,13 +6,14 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { workoutsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 export default function WorkoutDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: w, isLoading } = useQuery({
-    queryKey: ["workout", id],
+    queryKey: qk.workouts.detail(id),
     queryFn: () => workoutsApi.retrieve(id),
   });
 
@@ -20,7 +21,7 @@ export default function WorkoutDetail() {
     mutationFn: () => workoutsApi.remove(id),
     onSuccess: () => {
       toast.success("Workout deleted");
-      queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: qk.workouts.all() });
       navigate("/workouts");
     },
   });

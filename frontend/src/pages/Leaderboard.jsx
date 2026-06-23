@@ -3,6 +3,7 @@ import { Crown, Medal, Users, Star } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import LevelBadge from "../components/LevelBadge.jsx";
 import { levelsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 function RankIcon({ rank }) {
   if (rank === 1) return <Crown className="w-5 h-5 text-yellow-400" aria-label="1st place" />;
@@ -30,7 +31,7 @@ function UserInitials({ displayName, avatar }) {
 
 export default function Leaderboard() {
   const { data: entries = [], isLoading } = useQuery({
-    queryKey: ["leaderboard"],
+    queryKey: qk.levels.leaderboard(),
     queryFn: levelsApi.leaderboard,
     staleTime: 60_000,
   });

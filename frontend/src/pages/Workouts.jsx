@@ -8,6 +8,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import Pagination from "../components/Pagination.jsx";
 import { workoutsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const PAGE_SIZE = 12;
 
@@ -126,7 +127,7 @@ export default function Workouts() {
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ["workouts", page],
+    queryKey: qk.workouts.list(page),
     queryFn: () => workoutsApi.list({ page, page_size: PAGE_SIZE }),
     keepPreviousData: true,
   });

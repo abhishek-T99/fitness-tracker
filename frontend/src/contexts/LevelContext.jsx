@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { useQuery } from "@tanstack/react-query";
 import { levelsApi } from "../api/endpoints.js";
 import { useAuth } from "./AuthContext.jsx";
+import { qk } from "../api/queryKeys.js";
 
 const LevelContext = createContext(null);
 const LS_KEY = "fittrack_level";
@@ -11,7 +12,7 @@ export function LevelProvider({ children }) {
   const [levelUp, setLevelUp] = useState(null); // { from, to }
 
   const { data: profile, refetch } = useQuery({
-    queryKey: ["levelProfile"],
+    queryKey: qk.levels.profile(),
     queryFn: levelsApi.profile,
     enabled: !!user,
     refetchInterval: 30_000,

@@ -18,6 +18,7 @@ import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
 import clsx from "clsx";
 
 import { notificationsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 // Icon + colour per notification type
 const TYPE_META = {
@@ -68,7 +69,7 @@ export default function NotificationBell() {
 
   // Poll unread count every 60 s
   const { data: countData } = useQuery({
-    queryKey: ["notifications", "unread_count"],
+    queryKey: qk.notifications.unreadCount(),
     queryFn:  notificationsApi.unreadCount,
     refetchInterval: 60_000,
   });
@@ -76,7 +77,7 @@ export default function NotificationBell() {
 
   // Fetch list only when open
   const { data: listData, isLoading } = useQuery({
-    queryKey: ["notifications", "list"],
+    queryKey: qk.notifications.list(),
     queryFn:  () => notificationsApi.list({ page_size: 30 }),
     enabled:  open,
   });
@@ -86,12 +87,12 @@ export default function NotificationBell() {
 
   const markRead = useMutation({
     mutationFn: (id) => notificationsApi.markRead(id),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: qk.notifications.all() }),
   });
 
   const markAll = useMutation({
     mutationFn: notificationsApi.markAllRead,
-    onSuccess:  () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: qk.notifications.all() }),
   });
 
   // Close on outside click

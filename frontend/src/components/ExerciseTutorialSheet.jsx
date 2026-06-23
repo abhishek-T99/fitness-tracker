@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import { exerciseTutorialsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -159,7 +160,7 @@ export default function ExerciseTutorialSheet({ exercise, isFirstSession, onClos
   const [activeVideoId, setActiveVideoId] = useState(null);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["exerciseTutorials", exercise?.slug],
+    queryKey: qk.exercises.tutorials(exercise?.slug),
     queryFn: () => exerciseTutorialsApi.fetch(exercise.slug),
     enabled: !!exercise?.slug,
     staleTime: 60 * 60 * 1000,  // treat as fresh for 1 h (backend caches 24 h)

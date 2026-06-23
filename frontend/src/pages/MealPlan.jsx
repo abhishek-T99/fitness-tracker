@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { foodsApi, mealPlanApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const DAYS        = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MEAL_TYPES  = ["breakfast", "lunch", "dinner", "snack"];
@@ -61,7 +62,7 @@ function FoodPicker({ onPick, onClose }) {
   const [selected, setSelected] = useState(null);
 
   const { data } = useQuery({
-    queryKey: ["foodPicker", search],
+    queryKey: qk.nutrition.foodPicker(search),
     queryFn: () => foodsApi.list({ search, page_size: 20 }),
     enabled: search.length > 0,
   });
@@ -274,7 +275,7 @@ export default function MealPlan() {
 
   // Fetch or create plan for this week
   const { data: plans, isLoading } = useQuery({
-    queryKey: ["mealPlans", weekStartStr],
+    queryKey: qk.mealPlans.list(weekStartStr),
     queryFn: () => mealPlanApi.list({ week_start: weekStartStr }),
   });
 
@@ -282,14 +283,14 @@ export default function MealPlan() {
   const plan     = planList[0] ?? null;
 
   const { data: summary } = useQuery({
-    queryKey: ["mealPlanSummary", plan?.id],
+    queryKey: qk.mealPlans.summary(plan?.id),
     queryFn: () => mealPlanApi.summary(plan.id),
     enabled: !!plan?.id,
   });
 
   const createPlan = useMutation({
     mutationFn: () => mealPlanApi.create({ name: `Week of ${weekStartStr}`, week_start: weekStartStr }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["mealPlans", weekStartStr] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.mealPlans.list(weekStartStr) }),
     onError: () => toast.error("Could not create plan"),
   });
 
@@ -306,8 +307,8 @@ export default function MealPlan() {
     mutationFn: (day) => mealPlanApi.logDay(plan.id, { day }),
     onSuccess: () => {
       toast.success("Today's meals logged to the nutrition tracker!");
-      queryClient.invalidateQueries({ queryKey: ["meals"] });
-      queryClient.invalidateQueries({ queryKey: ["dailyNutrition"] });
+      queryClient.invalidateQueries({ queryKey: qk.nutrition.meals() });
+      queryClient.invalidateQueries({ queryKey: qk.nutrition.dailySummary() });
     },
     onError: (err) => {
       const msg = err?.response?.data?.detail || "Could not log day";
@@ -316,8 +317,8 @@ export default function MealPlan() {
   });
 
   function invalidate() {
-    queryClient.invalidateQueries({ queryKey: ["mealPlans", weekStartStr] });
-    queryClient.invalidateQueries({ queryKey: ["mealPlanSummary", plan?.id] });
+    queryClient.invalidateQueries({ queryKey: qk.mealPlans.list(weekStartStr) });
+    queryClient.invalidateQueries({ queryKey: qk.mealPlans.summary(plan?.id) });
   }
 
   const weekDates = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));

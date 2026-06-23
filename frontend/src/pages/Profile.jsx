@@ -8,6 +8,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import ConnectedApps from "../components/ConnectedApps.jsx";
 import LevelBadge from "../components/LevelBadge.jsx";
 import { authApi, levelsApi, reportsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useLevelContext } from "../contexts/LevelContext.jsx";
 
@@ -278,7 +279,7 @@ function LevelCard() {
     mutationFn: levelsApi.prestige,
     onSuccess: () => {
       toast.success("Prestige unlocked! You're back to Level 1.");
-      queryClient.invalidateQueries({ queryKey: ["levelProfile"] });
+      queryClient.invalidateQueries({ queryKey: qk.levels.profile() });
       ctx?.refetch?.();
     },
     onError: (err) => toast.error(err?.response?.data?.detail || "Prestige failed"),
@@ -385,14 +386,14 @@ function FitnessReports({ user, onSaved }) {
     mutationFn: (period_type) => reportsApi.trigger(period_type),
     onSuccess: (_, period_type) => {
       toast.success(`${period_type.charAt(0).toUpperCase() + period_type.slice(1)} report is being generated — check your email shortly.`);
-      queryClient.invalidateQueries({ queryKey: ["fitnessReports"] });
+      queryClient.invalidateQueries({ queryKey: qk.reports.all() });
     },
     onError: (err) =>
       toast.error(err?.response?.data?.detail || "Could not trigger report"),
   });
 
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
-    queryKey: ["fitnessReports"],
+    queryKey: qk.reports.all(),
     queryFn:  reportsApi.list,
   });
 

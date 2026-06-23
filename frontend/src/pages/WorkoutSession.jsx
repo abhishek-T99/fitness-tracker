@@ -24,6 +24,7 @@ import ExerciseTutorialSheet, { TutorialTrigger } from "../components/ExerciseTu
 import WorkoutProgressSidebar from "../components/WorkoutProgressSidebar.jsx";
 import useWorkoutSession, { getProgressionSuggestion } from "../hooks/useWorkoutSession.js";
 import { routinesApi, workoutsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 // ── Stopwatch ─────────────────────────────────────────────────────────────────
 
@@ -225,7 +226,7 @@ export default function WorkoutSession() {
 
   // Load routine and exercise history in parallel
   const { data: routine, isLoading: routineLoading } = useQuery({
-    queryKey: ["routine", routineId],
+    queryKey: qk.routines.detail(routineId),
     queryFn: () => routinesApi.retrieve(routineId),
     enabled: !session || session.routineId !== Number(routineId),
   });
@@ -236,7 +237,7 @@ export default function WorkoutSession() {
   }, [routine, session?.routine]);
 
   const { data: history = {} } = useQuery({
-    queryKey: ["exerciseHistory", exerciseIds],
+    queryKey: qk.workouts.exerciseHistory(exerciseIds),
     queryFn: () => workoutsApi.exerciseHistory(exerciseIds),
     enabled: exerciseIds.length > 0 && (!session || session.routineId !== Number(routineId)),
   });
