@@ -846,6 +846,698 @@ EXERCISES = [
                      "Trains the fast-twitch fibres of the pelvic floor (important for coughing, sneezing, and sudden load). "
                      "Always follow quick flicks with a full, conscious relaxation of the pelvic floor. "
                      "Perform after long holds in the same session."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CHEST — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Pec Deck",
+     "category": S, "primary_muscle": CHEST,
+     "equipment": MA, "met_value": "4.0",
+     "instructions": "Sit upright, forearms on pads. Bring pads together in a wide arc, squeezing the pecs at full adduction. "
+                     "Keep elbows at shoulder height and resist the weight on the return — do not let it slam back. "
+                     "Good isolation finisher; the machine path keeps tension through the inner range where free weights drop off."},
+
+    {"name": "Incline Cable Fly",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["shoulders"],
+     "equipment": CB, "met_value": "4.0",
+     "instructions": "Set an adjustable bench to 30–45° between two low pulleys. Hold a handle in each hand, arms slightly bent. "
+                     "Drive the handles upward and inward in a hugging arc, meeting above the chest. "
+                     "Emphasises the upper pec clavicular head; cable provides constant tension unlike a barbell."},
+
+    {"name": "Svend Press",
+     "category": S, "primary_muscle": CHEST,
+     "equipment": OT, "met_value": "3.5",
+     "instructions": "Stand holding two weight plates pressed together at chest height. "
+                     "Push them straight out to arm's length, squeezing the plates together as hard as possible throughout. "
+                     "Return slowly. The inward squeeze creates continuous inner-chest activation without heavy loads."},
+
+    {"name": "Landmine Press",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["shoulders", "triceps"],
+     "equipment": BB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Anchor one end of a barbell in a corner or landmine attachment. "
+                     "Hold the free end at shoulder height with one or both hands. Press the bar forward and up in an arc to full extension, lower under control. "
+                     "The arc of motion closely mimics a push-up and is very shoulder-friendly."},
+
+    {"name": "Wide Push-up",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["shoulders", "triceps"],
+     "equipment": BW, "is_compound": True, "met_value": "3.8",
+     "instructions": "Hands placed 1.5–2× shoulder-width apart, fingers angled outward 30–45°. "
+                     "Lower chest to floor, elbows travel outward. Press back to lockout. "
+                     "Wider hand position emphasises the outer/lower pec and reduces tricep contribution vs standard push-up."},
+
+    {"name": "Archer Push-up",
+     "category": S, "primary_muscle": CHEST, "secondary_muscles": ["triceps", "core"],
+     "equipment": BW, "is_compound": True, "met_value": "4.5",
+     "instructions": "Wide push-up stance. As you lower, shift weight entirely to one arm — that arm bends fully while the opposite arm stays straight and acts as a guide. "
+                     "Alternate sides each rep. Bridges the gap between push-up and one-arm push-up."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BACK — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "T-Bar Row",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["biceps", "rear delts"],
+     "equipment": BB, "is_compound": True, "met_value": "5.0",
+     "instructions": "Straddle a landmine barbell or T-bar station. Hinge forward, grip the handle with a neutral or overhand grip. "
+                     "Row the bar to your chest, driving elbows back and squeezing the shoulder blades together. "
+                     "Keep the spine neutral and avoid jerking the torso."},
+
+    {"name": "Inverted Row",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["biceps", "core"],
+     "equipment": BW, "is_compound": True, "met_value": "4.0",
+     "instructions": "Lie under a bar set at hip height (Smith machine or squat rack). Grip overhand, body in a straight line, heels on the floor. "
+                     "Pull chest to bar, leading with the elbows, squeeze shoulder blades at the top. "
+                     "Lower the bar or elevate feet to adjust difficulty. An accessible pull-up regression."},
+
+    {"name": "Straight-arm Pulldown",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["core"],
+     "equipment": CB, "met_value": "3.5",
+     "instructions": "High pulley, rope or straight bar. Stand back, arms extended at eye level. "
+                     "With elbows locked, pull the handle down to your hips in a wide arc — the movement comes entirely from the lat, not the bicep. "
+                     "Squeeze hard at the bottom and return slowly. A powerful lat isolation that teaches the muscle-mind connection before rows."},
+
+    {"name": "Rack Pull",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["glutes", "hamstrings", "traps"],
+     "equipment": BB, "is_compound": True, "met_value": "5.5",
+     "instructions": "Set bar in a rack at just below knee height. Deadlift from this elevated position. "
+                     "The shortened ROM allows heavier loads, overloading the upper back, traps, and lockout. "
+                     "Keep the same tight brace and hip-drive cues as a conventional deadlift."},
+
+    {"name": "Meadows Row",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["biceps", "rear delts"],
+     "equipment": BB, "is_compound": True, "met_value": "5.0",
+     "instructions": "Stand perpendicular to a landmine barbell, feet staggered. Take a staggered stance — lead foot forward on the same side as the working arm. "
+                     "Hinge and grip the sleeve of the bar with one hand using a pronated grip. "
+                     "Row the bar up and slightly back toward your hip. The angle provides a unique stretch and a high elbow finish that hammers the upper back."},
+
+    {"name": "Single-arm Lat Pulldown",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["biceps"],
+     "equipment": CB, "is_compound": True, "met_value": "4.0",
+     "instructions": "Single handle on a high pulley. Sit or kneel, pull handle to shoulder with one arm. "
+                     "Focus on pulling the elbow down and back — the same cue as a pull-up — rather than pulling with the hand. "
+                     "Unilateral work exposes and corrects left-right strength imbalances."},
+
+    {"name": "Dumbbell Shrug",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["back"],
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Stand holding heavy dumbbells at sides. Elevate shoulders straight toward the ears as high as possible, hold 1 s at the top, lower fully. "
+                     "Neutral dumbbell grip reduces wrist strain vs a barbell and allows freer scapular movement."},
+
+    {"name": "Cable Pull-through",
+     "category": S, "primary_muscle": GLUT, "secondary_muscles": ["hamstrings", "back"],
+     "equipment": CB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Face away from a low pulley, rope between your legs. Hip-hinge forward with soft knees until you feel the glute and hamstring stretch. "
+                     "Drive the hips forward to stand, squeezing the glutes at lockout — do not use the arms to pull. "
+                     "Teaches the hip-hinge pattern with less lower-back loading than a deadlift."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SHOULDERS — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Dumbbell Front Raise",
+     "category": S, "primary_muscle": SHLD,
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Stand with dumbbells at thighs, palms facing back. Raise both arms forward to shoulder height, slight bend in the elbow, thumbs up. "
+                     "Lower under control. Isolates the anterior deltoid. Avoid swinging the torso; if you must, the weight is too heavy."},
+
+    {"name": "Plate Front Raise",
+     "category": S, "primary_muscle": SHLD,
+     "equipment": OT, "met_value": "3.5",
+     "instructions": "Hold a weight plate at the 3 and 9 o'clock positions. Raise it to shoulder height with arms nearly straight, lower slowly. "
+                     "The neutral-width grip and plate diameter create a slightly different stimulus than dumbbells and the grip challenge is higher."},
+
+    {"name": "Band Pull-Apart",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["back"],
+     "equipment": BA, "met_value": "2.5",
+     "instructions": "Hold a light resistance band at arm's length in front at shoulder height. Pull it apart to a T, squeezing the rear delts and mid-traps. "
+                     "Return under control — do not let the band snap back. Exceptional shoulder-health prehab and warm-up; do 20–30 reps per set."},
+
+    {"name": "Pike Push-up",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["triceps", "chest"],
+     "equipment": BW, "is_compound": True, "met_value": "4.0",
+     "instructions": "Hips-up push-up position forming an inverted V. Lower the top of your head toward the floor between your hands, press back to start. "
+                     "The angled torso shifts emphasis heavily toward the shoulders. It is the key regression for the handstand push-up."},
+
+    {"name": "Handstand Push-up",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["triceps", "core"],
+     "equipment": BW, "is_compound": True, "met_value": "6.0",
+     "instructions": "Kick up into a handstand against a wall, hands shoulder-width. Lower the crown of your head to the floor, press back to lockout. "
+                     "Build with wall pike push-ups and partial range first. One of the most demanding pressing movements — develops elite shoulder and tricep strength."},
+
+    {"name": "Cuban Press",
+     "category": S, "primary_muscle": SHLD,
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Hang dumbbells at sides, internally rotated. Perform an upright row to shoulder height, pause; externally rotate so hands face forward (like a front-squat rack); press overhead; reverse. "
+                     "Works external rotation strength and is excellent shoulder prehab for overhead athletes."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BICEPS — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "EZ-bar Curl",
+     "category": S, "primary_muscle": BICE,
+     "equipment": BB, "met_value": "3.5",
+     "instructions": "Grip the angled inner grips of an EZ bar, palms semi-supinated. Curl to the upper chest, lower fully. "
+                     "The angled grip reduces wrist and elbow stress vs a straight bar while still hitting both bicep heads effectively."},
+
+    {"name": "Zottman Curl",
+     "category": S, "primary_muscle": BICE, "secondary_muscles": ["forearms"],
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Curl dumbbells with a supinated grip (bicep concentric), rotate to pronated at the top, lower with a reverse-curl (eccentric). "
+                     "Each rep trains both the bicep (curling up) and the brachioradialis/forearm extensors (lowering down) — two movements for the price of one."},
+
+    {"name": "Spider Curl",
+     "category": S, "primary_muscle": BICE,
+     "equipment": BB, "met_value": "3.5",
+     "instructions": "Lie prone on a 45° incline bench. Let arms hang straight down and curl the bar up to full contraction. "
+                     "Gravity keeps tension on the bicep through the entire range — both the peak contraction and the stretched position are fully loaded."},
+
+    {"name": "Reverse Curl",
+     "category": S, "primary_muscle": FORE, "secondary_muscles": ["biceps"],
+     "equipment": BB, "met_value": "3.0",
+     "instructions": "Overhand (pronated) grip on a barbell. Curl to full contraction, lower under control. "
+                     "Transfers emphasis to the brachioradialis and brachialis — the muscles that fill the upper arm under the bicep. Builds forearm mass and grip strength."},
+
+    {"name": "Cross-body Hammer Curl",
+     "category": S, "primary_muscle": BICE, "secondary_muscles": ["forearms"],
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Neutral grip. Instead of curling straight up, curl the dumbbell diagonally across the body toward the opposite shoulder. "
+                     "Alternate arms. The angle increases brachialis recruitment and provides a longer moment arm through the mid-range."},
+
+    {"name": "Bayesian Curl",
+     "category": S, "primary_muscle": BICE,
+     "equipment": CB, "met_value": "3.5",
+     "instructions": "Set a single cable behind you at hip height. Step forward to create tension, arm extended back. "
+                     "Curl the handle forward and up to full contraction. The cable behind the body provides peak tension at the stretched/bottom position — "
+                     "where free weights are weakest — making it highly effective for bicep development."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # TRICEPS — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Single-arm Overhead Cable Extension",
+     "category": S, "primary_muscle": TRIC,
+     "equipment": CB, "met_value": "3.5",
+     "instructions": "Set pulley high, grip a single handle, face away from the stack. Hold handle behind head, elbow pointed forward. "
+                     "Extend the forearm to full lockout, squeeze the tricep, return slowly. Fully stretches the long head of the tricep at the start position."},
+
+    {"name": "Tate Press",
+     "category": S, "primary_muscle": TRIC, "secondary_muscles": ["chest"],
+     "equipment": DB, "met_value": "3.5",
+     "instructions": "Lie on a bench, dumbbells over chest with elbows flared wide. Bend elbows to lower the dumbbells toward the inner chest — not the forehead. "
+                     "Press back up from the chest. The wide-elbow path creates a unique loading angle on the tricep medial head."},
+
+    {"name": "JM Press",
+     "category": S, "primary_muscle": TRIC, "secondary_muscles": ["chest"],
+     "equipment": BB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Lie on a bench, grip slightly inside shoulder-width. Lower the bar toward the chin/throat — a hybrid path between a skull crusher and a close-grip press. "
+                     "The bar path should feel like the forearms fold toward the face. Press back to lockout. Heavy tricep builder popularised in powerlifting."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FOREARMS — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Dead Hang",
+     "category": S, "primary_muscle": FORE, "secondary_muscles": ["back", "shoulders"],
+     "equipment": BW, "met_value": "2.5",
+     "instructions": "Hang from a pull-up bar with straight arms and relaxed shoulders (do not actively pull shoulder blades down). "
+                     "Hold for time. Builds grip endurance, decompresses the spine, and gently stretches the lat and shoulder. "
+                     "Progress from 30 s to 60 s+ and add weight via a dumbbell between the feet."},
+
+    {"name": "Wrist Roller",
+     "category": S, "primary_muscle": FORE,
+     "equipment": OT, "met_value": "3.0",
+     "instructions": "Hold a wrist-roller at arm's length. Roll the weight up by alternately winding each wrist forward, then unwind back down. "
+                     "Equally works both the flexors (rolling up) and the extensors (lowering down). "
+                     "One of the most effective forearm developers — the full range pump is unmatched."},
+
+    {"name": "Plate Pinch",
+     "category": S, "primary_muscle": FORE,
+     "equipment": OT, "met_value": "2.5",
+     "instructions": "Pinch two smooth-faced weight plates together with one hand, fingers on one side and thumb on the other. "
+                     "Hold for time or carry for distance. Trains the thumb-opposing pinch-grip strength that grip-intensive sports demand."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # LEGS — QUADS additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Zercher Squat",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "core", "back"],
+     "equipment": BB, "is_compound": True, "met_value": "6.0",
+     "instructions": "Rest the bar in the crooks of the elbows, arms bent and crossed at the chest. Squat to full depth — the bar position forces an upright torso. "
+                     "Stand back up, keeping elbows high. Brutal core and upper-back demand; also excellent for quad depth."},
+
+    {"name": "Cyclist Squat",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes"],
+     "equipment": BW, "is_compound": True, "met_value": "5.0",
+     "instructions": "Elevate your heels on weight plates or a wedge, feet close together. Squat to full depth — the heel elevation dramatically shifts the load onto the quads. "
+                     "Add a goblet hold or barbell for load. Often used for quad hypertrophy when knee-over-toe range is the goal."},
+
+    {"name": "Lateral Lunge",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "inner thigh"],
+     "equipment": BW, "is_compound": True, "met_value": "4.5",
+     "instructions": "Step out wide to one side, bend that knee and push the hips back — the other leg stays straight. "
+                     "Drive through the heel to return to standing. Add dumbbells for load. Works the adductors and VMO through a lateral plane of motion."},
+
+    {"name": "Wall Sit",
+     "category": S, "primary_muscle": QUAD,
+     "equipment": BW, "met_value": "4.0",
+     "instructions": "Back flat against a wall, slide down until thighs are parallel to the floor (90° knee angle). Hold for time. "
+                     "Pure quad isometric — great for building endurance, racing against a timer, or as a finisher on leg day."},
+
+    {"name": "Jump Squat",
+     "category": C, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "calves"],
+     "equipment": BW, "is_compound": True, "met_value": "8.0",
+     "instructions": "Squat to parallel, then explode upward off both feet as high as possible. Land softly, absorb through hips and knees, and go straight into the next rep. "
+                     "Develops lower-body power and raises the heart rate quickly. Can add a light barbell or dumbbells once bodyweight is mastered."},
+
+    {"name": "Pause Squat",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "core"],
+     "equipment": BB, "is_compound": True, "met_value": "6.0",
+     "instructions": "Perform a back squat but pause at the bottom (hips below parallel) for 2–3 seconds before driving up. "
+                     "The pause eliminates stretch-reflex and builds strength out of the hole. "
+                     "Reduces load by 10–20% vs regular squat; keep the brace, do not relax at the bottom."},
+
+    {"name": "Dumbbell Lunge",
+     "category": S, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "hamstrings"],
+     "equipment": DB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Stand with dumbbells at sides. Step forward, lower back knee toward the floor, keep front shin vertical. "
+                     "Return to standing either by stepping back or stepping through into the next lunge. "
+                     "The loaded stationary lunge — more controlled than a walking lunge, better for focusing on single-leg strength."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # LEGS — HAMSTRINGS additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Glute-Ham Raise",
+     "category": S, "primary_muscle": HAMS, "secondary_muscles": ["glutes", "core"],
+     "equipment": MA, "met_value": "5.0",
+     "instructions": "Kneel on a GHD machine with feet anchored and thighs against the pad. Lower your torso forward under control by flexing at the knee, "
+                     "using the hamstrings to resist gravity. At the bottom push up with the hands, then drive back to upright using only the hamstrings and glutes. "
+                     "One of the most effective hamstring mass builders; start with band assistance."},
+
+    {"name": "Stability Ball Leg Curl",
+     "category": S, "primary_muscle": HAMS, "secondary_muscles": ["glutes", "core"],
+     "equipment": OT, "met_value": "4.0",
+     "instructions": "Lie on your back, heels resting on a stability ball, hips extended. "
+                     "Curl the ball toward your glutes by bending the knees, keeping hips up throughout. "
+                     "Extend back out under control. A low-equipment hamstring isolation exercise that also challenges the core anti-extension."},
+
+    {"name": "Stiff-leg Deadlift",
+     "category": S, "primary_muscle": HAMS, "secondary_muscles": ["back", "glutes"],
+     "equipment": BB, "is_compound": True, "met_value": "5.0",
+     "instructions": "Stand with knees completely locked. Hinge forward at the hips, lowering the bar along the legs until you feel maximum hamstring tension (usually mid-shin). "
+                     "Drive the hips forward to return. Unlike the RDL, the knees do not bend — this creates greater hamstring stretch but demands more lower-back stability."},
+
+    {"name": "Single-leg Dumbbell RDL",
+     "category": S, "primary_muscle": HAMS, "secondary_muscles": ["glutes", "core"],
+     "equipment": DB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Stand on one leg, soft knee. Hinge forward as the free leg extends behind, lowering the dumbbell along the standing leg until you feel the hamstring load. "
+                     "Return by driving the hip forward — use the glute, not the lower back. "
+                     "Corrects left-right imbalances and develops unilateral hip-hinge control."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # LEGS — GLUTES additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Donkey Kick",
+     "category": S, "primary_muscle": GLUT,
+     "equipment": BW, "met_value": "3.0",
+     "instructions": "On hands and knees, spine neutral. Keeping the knee bent at 90°, drive one heel toward the ceiling until the hip is fully extended. "
+                     "Squeeze the glute at the top, lower under control. Add ankle weight or cable attachment for load. "
+                     "Targets the gluteus maximus with minimal hamstring contribution."},
+
+    {"name": "Lateral Band Walk",
+     "category": F, "primary_muscle": GLUT, "secondary_muscles": ["core"],
+     "equipment": BA, "met_value": "3.0",
+     "instructions": "Place a resistance band just above the knees or around the ankles. Slightly bend the hips and knees into an athletic stance. "
+                     "Step sideways against the band resistance — lead foot steps out, trail foot follows. "
+                     "Keep constant tension in the band; do not let knees cave inward. "
+                     "Classic glute medius activation drill for knee-stability prehab."},
+
+    {"name": "Frog Pump",
+     "category": S, "primary_muscle": GLUT,
+     "equipment": BW, "met_value": "3.0",
+     "instructions": "Lie on your back, soles of feet pressed together with knees flared out (butterfly position). "
+                     "Drive hips up into full extension, squeezing the glutes hard, lower to just above the floor. "
+                     "The externally-rotated leg position pre-positions the glute for maximal contraction. "
+                     "Light but intense — sets of 20–30 reps are common."},
+
+    {"name": "Reverse Hyper",
+     "category": S, "primary_muscle": GLUT, "secondary_muscles": ["hamstrings", "back"],
+     "equipment": MA, "met_value": "3.5",
+     "instructions": "Lie face down on the reverse hyper machine with hips at the edge, feet in the strap. "
+                     "Swing legs up until the body is horizontal, squeezing glutes at the top, lower under control with a slight pendulum swing. "
+                     "Decompresses the lumbar spine on the way down while strengthening the posterior chain on the way up. "
+                     "Excellent recovery and strength tool for the lower back and glutes."},
+
+    {"name": "Monster Walk",
+     "category": F, "primary_muscle": GLUT,
+     "equipment": BA, "met_value": "3.0",
+     "instructions": "Band around ankles, athletic quarter-squat position. Walk forward diagonally — lead foot steps forward and out, trail foot follows while maintaining band tension. "
+                     "Then walk backward to start. Trains hip abductors and external rotators in a dynamic pattern that mirrors athletic movement."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # LEGS — CALVES additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Tibialis Raise",
+     "category": S, "primary_muscle": CALV,
+     "equipment": BW, "met_value": "2.5",
+     "instructions": "Stand with your back and heels against a wall, feet a few inches out. "
+                     "Raise the toes and forefoot as high as possible (dorsiflexion), hold 1 s, lower. "
+                     "Strengthens the tibialis anterior — the shin muscle — which is the most under-trained lower-leg muscle. "
+                     "Directly prevents and rehabilitates shin splints. Progress to weighted ankle-over-ankle version."},
+
+    {"name": "Donkey Calf Raise",
+     "category": S, "primary_muscle": CALV,
+     "equipment": OT, "met_value": "3.0",
+     "instructions": "Hinge forward at the hips, supporting the torso on a bench. Have a partner sit across the hips or use a dedicated machine. "
+                     "Rise on the balls of the feet to full extension, pause, lower heel below the step. "
+                     "The hipped-over position stretches the calf more than standing raises — studies show the highest gastrocnemius activation of any calf variation."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CORE — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Crunch",
+     "category": S, "primary_muscle": CORE,
+     "equipment": BW, "met_value": "3.0",
+     "instructions": "Lie on back, knees bent, feet flat, hands lightly behind head. "
+                     "Curl only the shoulder blades off the floor — the lower back stays down. "
+                     "Exhale on the way up, inhale on the way down. Small range but high muscle activation when done slowly and with intention."},
+
+    {"name": "Sit-up",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["hip flexors"],
+     "equipment": BW, "met_value": "3.5",
+     "instructions": "Lie on back, knees bent, feet anchored. Curl the torso all the way up until elbows touch knees, lower under control. "
+                     "Greater range than a crunch; includes hip flexors through the full range. "
+                     "Add a twist at the top for oblique involvement."},
+
+    {"name": "Reverse Crunch",
+     "category": S, "primary_muscle": CORE,
+     "equipment": BW, "met_value": "3.5",
+     "instructions": "Lie on back, hands at sides or under hips. Bring knees to 90°. "
+                     "Use the lower abs to curl the pelvis off the floor, drawing the knees toward the chest. Lower under control. "
+                     "Emphasises the lower portion of the rectus abdominis and hip flexors without compressing the lumbar spine."},
+
+    {"name": "Flutter Kicks",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["hip flexors"],
+     "equipment": BW, "met_value": "4.0",
+     "instructions": "Lie on back, lower back pressed to the floor, legs extended and lifted 6 inches. "
+                     "Rapidly alternate kicking each leg up and down in a small scissor motion. "
+                     "Keep the lower back pinned — if it arches, raise the legs slightly. Hold for time or reps."},
+
+    {"name": "Windshield Wiper",
+     "category": S, "primary_muscle": CORE,
+     "equipment": BW, "met_value": "4.5",
+     "instructions": "Hang from a bar, legs raised to horizontal (or vertical for advanced). "
+                     "Rotate both legs together side to side in a slow, controlled arc like windshield wipers. "
+                     "The further the legs from vertical, the greater the demand. Exceptional oblique and anti-rotation strength builder."},
+
+    {"name": "Dragon Flag",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["back", "hip flexors"],
+     "equipment": BW, "met_value": "5.0",
+     "instructions": "Lie on a bench, grip the bench behind your head. Brace the entire body into a straight line from shoulders to feet and raise it off the bench. "
+                     "Lower under full control — only the upper back stays on the bench. Return to top without breaking the straight body position. "
+                     "One of the most demanding core exercises; build up through tuck and single-leg progressions."},
+
+    {"name": "L-sit",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["triceps", "hip flexors"],
+     "equipment": BW, "met_value": "4.5",
+     "instructions": "Support on parallel bars, dip bars, or floor with hands. Compress the core and lift both legs to horizontal — forming an L. "
+                     "Hold for time. Demands simultaneous hip-flexor strength and core compression. "
+                     "Regress by bending one or both knees, progressing toward full extension."},
+
+    {"name": "Stir the Pot",
+     "category": S, "primary_muscle": CORE,
+     "equipment": OT, "met_value": "4.0",
+     "instructions": "Forearms on a stability ball, body in a straight plank line. "
+                     "Draw small clockwise circles with the elbows — as if stirring a large pot — maintaining a rigid trunk with zero hip or pelvis movement. "
+                     "Reverse direction after each set. One of the highest-EMG core exercises; the unstable surface forces constant adjustment."},
+
+    {"name": "Cable Woodchop",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["shoulders"],
+     "equipment": CB, "met_value": "4.0",
+     "instructions": "Set cable high on one side. Stand perpendicular, feet shoulder-width. "
+                     "Pull the handle diagonally down and across the body from high to low, rotating through the hips and trunk. "
+                     "Resist the return under control. Trains rotational power and obliques in a functional diagonal plane."},
+
+    {"name": "Landmine Rotation",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["shoulders", "back"],
+     "equipment": BB, "met_value": "4.0",
+     "instructions": "Stand over the anchor end of a landmine barbell, gripping the free end with both hands at arm's length. "
+                     "Rotate the bar from hip to hip in a wide arc, pivoting on the feet and hips — the trunk rotates but the spine stays neutral. "
+                     "Trains rotational power through a large range. Effective and shoulder-friendly."},
+
+    {"name": "Toes to Bar",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["hip flexors", "back"],
+     "equipment": BW, "met_value": "4.5",
+     "instructions": "Dead hang from a pull-up bar. Engage the core, bring toes up to touch the bar by simultaneously flexing the hips and crunching the abs. "
+                     "Lower with control. Requires lat engagement at the top to stabilise the shoulder. "
+                     "Regress to knees-to-chest; progress to strict, no-swing reps."},
+
+    {"name": "Superman",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["glutes"],
+     "equipment": BW, "met_value": "2.5",
+     "instructions": "Lie face down, arms extended overhead. Simultaneously lift arms, chest, and legs off the floor as high as possible, squeezing the glutes and back. "
+                     "Hold 2 s at the top, lower slowly. Trains the erector spinae and glutes in extension. "
+                     "A gentle but effective lower-back strengthener with no equipment required."},
+
+    {"name": "Bird Dog",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["back", "glutes"],
+     "equipment": BW, "met_value": "2.5",
+     "instructions": "On hands and knees, spine neutral. Extend the opposite arm and leg simultaneously until both are horizontal. "
+                     "Hold 2 s, return without touching the floor, repeat. "
+                     "Builds anti-rotation and spinal stability; a foundational rehabilitation and warm-up movement."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # KETTLEBELL — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Kettlebell Snatch",
+     "category": S, "primary_muscle": FULL, "secondary_muscles": ["glutes", "back", "shoulders"],
+     "equipment": KB, "is_compound": True, "met_value": "9.0",
+     "instructions": "Hinge and hike the KB back. Drive the hips explosively, keeping the bell close to the body — guide it up the forearm (not in an arc) and punch through to lockout overhead in one fluid movement. "
+                     "The bell should float to the top without banging the wrist. Lock out overhead with a straight arm and stable shoulder. "
+                     "The gold standard of kettlebell conditioning: full-body power, grip, and endurance in one movement."},
+
+    {"name": "Kettlebell Press",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["triceps", "core"],
+     "equipment": KB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Clean the KB to rack position (knuckles at collarbone, elbow tucked, forearm vertical). "
+                     "Brace the core and press straight overhead to full lockout. "
+                     "The offset center of mass of the kettlebell creates greater instability than a dumbbell, demanding more rotator-cuff and lat involvement. Lower under control back to rack."},
+
+    {"name": "Kettlebell Row",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["biceps"],
+     "equipment": KB, "is_compound": True, "met_value": "4.5",
+     "instructions": "Place one hand on a bench for support. Hold a kettlebell in the other hand, arm hanging straight. "
+                     "Row the bell to the hip, leading with the elbow, squeezing the shoulder blade at the top. "
+                     "The KB handle position allows a deeper stretch at the bottom vs a dumbbell."},
+
+    {"name": "Kettlebell Deadlift",
+     "category": S, "primary_muscle": BACK, "secondary_muscles": ["glutes", "hamstrings"],
+     "equipment": KB, "is_compound": True, "met_value": "5.0",
+     "instructions": "Stand over a kettlebell, feet shoulder-width. Hip-hinge with neutral spine to grip the handle. "
+                     "Drive through the floor, extend hips to lockout. Lower by hinging back. "
+                     "The single handle encourages a narrow grip which trains the lats to protect the spine — a great teaching deadlift for beginners."},
+
+    {"name": "Kettlebell Windmill",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["shoulders", "glutes"],
+     "equipment": KB, "met_value": "4.0",
+     "instructions": "Press a kettlebell overhead with one arm. Push the hip out to the same side as the bell. "
+                     "Keeping eyes on the KB, bend laterally and reach the opposite hand toward the inside of the foot. Return to standing. "
+                     "Simultaneously demands shoulder stability, lateral core strength, and hip mobility."},
+
+    {"name": "Kettlebell Halo",
+     "category": S, "primary_muscle": SHLD, "secondary_muscles": ["core"],
+     "equipment": KB, "met_value": "3.0",
+     "instructions": "Hold a kettlebell by the horns (upside down, bell up) at chest height. "
+                     "Circle the bell slowly around the head in as wide an arc as possible, keeping the core braced and torso still. "
+                     "Reverse direction each rep. An excellent shoulder-mobility and rotator-cuff warm-up movement."},
+
+    {"name": "Kettlebell Figure-8",
+     "category": S, "primary_muscle": CORE, "secondary_muscles": ["back", "forearms"],
+     "equipment": KB, "is_compound": True, "met_value": "5.5",
+     "instructions": "Stand in a wide stance with soft knees. Pass the kettlebell in a figure-8 pattern around and between both legs, handing off between hands behind and in front. "
+                     "Stay low and keep the core braced throughout. Builds rotational core strength, grip endurance, and hip mobility simultaneously."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CARDIO — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Walking",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["glutes", "calves"],
+     "equipment": CV, "met_value": "3.5",
+     "instructions": "Walk at a brisk pace (5–6 km/h). Keep posture upright, arms swinging naturally. "
+                     "Daily low-intensity movement (LISS) is highly underrated for recovery, fat oxidation, and cardiovascular health. "
+                     "Target 7,000–10,000 steps per day for baseline health."},
+
+    {"name": "Swimming",
+     "category": C, "primary_muscle": FULL, "secondary_muscles": ["back", "shoulders", "core"],
+     "equipment": CV, "met_value": "8.0",
+     "instructions": "Freestyle, breaststroke, or backstroke laps at steady pace. "
+                     "The water provides full-body resistance with zero joint impact — ideal for injury rehabilitation and active recovery. "
+                     "Steady-state for 20–40 min or interval sets (25–50 m sprints with rest) for conditioning."},
+
+    {"name": "Hiking",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["glutes", "quads", "calves"],
+     "equipment": CV, "met_value": "6.0",
+     "instructions": "Walk on uneven terrain or incline at a sustained pace. The grade and surface changes increase caloric expenditure and demand more from the glutes, quads, and calves vs flat walking. "
+                     "Add a loaded pack (rucking) to further increase intensity. Excellent low-impact cardio and mental-health benefit."},
+
+    {"name": "Sprint Intervals",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["glutes", "hamstrings"],
+     "equipment": CV, "met_value": "14.0",
+     "instructions": "Alternate maximum-effort sprints (10–30 s) with full-recovery walking or standing rest (60–120 s). "
+                     "Sprint at 90–100% of top speed on a track, grass, or treadmill. "
+                     "As few as 4–6 sprint efforts per session produce significant VO2 max and anaerobic capacity improvements."},
+
+    {"name": "Speed Skaters",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["glutes", "inner thigh"],
+     "equipment": BW, "met_value": "7.5",
+     "instructions": "Leap laterally from one foot to the other, landing on the outer foot and sweeping the trailing leg behind. "
+                     "Reach the opposite hand toward the landing foot. Mimic a speed skater's gliding motion. "
+                     "Trains lateral power and hip abductor strength while spiking the heart rate."},
+
+    {"name": "Sled Pull",
+     "category": C, "primary_muscle": FULL, "secondary_muscles": ["back", "biceps"],
+     "equipment": OT, "is_compound": True, "met_value": "8.0",
+     "instructions": "Attach a rope to a loaded sled behind you. Walk or drive backward, pulling the rope hand over hand to drag the sled toward you. "
+                     "Or face the sled and row the rope to pull it forward. "
+                     "Sled pulls with a rope hit the upper body and posterior chain differently from sled pushes and are more joint-friendly than heavy barbell rows."},
+
+    {"name": "Rucking",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["glutes", "back", "core"],
+     "equipment": OT, "met_value": "6.0",
+     "instructions": "Walk at a brisk pace with a weighted backpack (rucksack). Start with 10% of bodyweight and build to 20–30%. "
+                     "Keep posture upright — resist the pack's pull on the shoulders. "
+                     "Rucking builds aerobic capacity, muscular endurance, and bone density with minimal injury risk."},
+
+    {"name": "Shadow Boxing",
+     "category": C, "primary_muscle": CARD, "secondary_muscles": ["shoulders", "core"],
+     "equipment": BW, "met_value": "7.0",
+     "instructions": "Move around an open space throwing jabs, crosses, hooks, and uppercuts at a non-existent opponent. "
+                     "Stay on the balls of your feet, rotate the hips with each punch, keep the guard up. "
+                     "Work 2–3 minute rounds with 60 s rest. Improves cardio, coordination, and shoulder endurance."},
+
+    {"name": "Tire Flip",
+     "category": C, "primary_muscle": FULL, "secondary_muscles": ["glutes", "back", "shoulders"],
+     "equipment": OT, "is_compound": True, "met_value": "8.0",
+     "instructions": "Drive fingers under the tire, hips low. Explosively drive through the legs, transitioning from a deadlift to a pressing movement as the tire rises. "
+                     "Push the tire over and reset. "
+                     "A full-body conditioning movement that combines lower-body power, upper-body pressing, and cardiovascular demand."},
+
+    {"name": "Ski Erg",
+     "category": C, "primary_muscle": FULL, "secondary_muscles": ["back", "core", "shoulders"],
+     "equipment": CV, "met_value": "9.5",
+     "instructions": "Grip handles overhead, brace core. Pull the handles down and back in a double-arm motion — hinge the hips slightly as the handles pass the waist. "
+                     "Return to start with control. A total-body conditioning tool that emphasises the lats, core, and arms. "
+                     "Excellent for HIIT intervals: 10–20 s max-effort pulls."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FLEXIBILITY / MOBILITY — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Standing Quad Stretch",
+     "category": F, "primary_muscle": QUAD,
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Stand on one foot. Bend the other knee and hold the ankle, pulling the heel toward the glute. "
+                     "Stand tall, squeeze the glute of the stretching leg and tuck the pelvis slightly to increase the hip-flexor component. "
+                     "Hold 30–45 s per side. Do after any quad-dominant session."},
+
+    {"name": "Couch Stretch",
+     "category": F, "primary_muscle": QUAD, "secondary_muscles": ["hip flexors"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Kneel with your back shin resting up a wall or couch, front leg in a lunge. "
+                     "Drive the hips forward and down, squeezing the glute of the back leg. "
+                     "One of the most effective hip-flexor and rectus-femoris stretches, especially important for people who sit for long hours."},
+
+    {"name": "Thread the Needle",
+     "category": F, "primary_muscle": BACK, "secondary_muscles": ["shoulders"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "On hands and knees. Slide one arm under the body as far as possible — shoulder and head follow, rotating the thoracic spine. "
+                     "Hold 30 s, return and repeat on the other side. "
+                     "Excellent upper-back rotation mobility drill; counteracts desk posture."},
+
+    {"name": "Supine Spinal Twist",
+     "category": F, "primary_muscle": BACK, "secondary_muscles": ["glutes"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Lie on your back, bring one knee to the chest. Guide it across the body with the opposite hand, letting it fall toward the floor. "
+                     "Extend the same-side arm out to the side, look away from the knee. "
+                     "Hold 60 s per side. Releases the lower back and thoracic spine; ideal post-session or morning mobility."},
+
+    {"name": "Doorway Pec Stretch",
+     "category": F, "primary_muscle": CHEST, "secondary_muscles": ["shoulders"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Stand in a doorway, place forearms on the frame at 90° elbows. "
+                     "Step one foot forward and lean gently through the doorway until you feel the pec and front deltoid stretch. "
+                     "Hold 30–60 s. Critical for anyone who bench-presses heavily or works at a desk."},
+
+    {"name": "Standing Calf Stretch",
+     "category": F, "primary_muscle": CALV,
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Stand facing a wall, hands on wall. Place one foot behind, heel flat on the floor. "
+                     "Lean forward until you feel the calf stretch. Straighten the back knee for gastrocnemius; bend it slightly for soleus. "
+                     "Hold 30–45 s each position per side. Essential after any running or calf-training session."},
+
+    {"name": "Shoulder Cross-body Stretch",
+     "category": F, "primary_muscle": SHLD, "secondary_muscles": ["back"],
+     "equipment": BW, "met_value": "1.5",
+     "instructions": "Bring one arm across the chest. Use the opposite hand or forearm to press the arm gently closer to the chest. "
+                     "Hold 30 s per side. Targets the posterior capsule of the shoulder and the rear deltoid. "
+                     "Essential for lifters who press heavily — restores internal rotation range."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BALANCE / FUNCTIONAL — additional
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Pistol Squat",
+     "category": B, "primary_muscle": QUAD, "secondary_muscles": ["glutes", "core", "hamstrings"],
+     "equipment": BW, "is_compound": True, "met_value": "5.0",
+     "instructions": "Stand on one leg, the other extended forward. Descend into a full single-leg squat until the standing heel is on the floor and the hamstring touches the calf, "
+                     "other leg floating horizontally. Drive back up to standing. "
+                     "Requires exceptional quad strength, ankle mobility, and balance. "
+                     "Regress with box pistols, assisted, or counterweight."},
+
+    {"name": "Single-leg Stand (Balance)",
+     "category": B, "primary_muscle": CORE, "secondary_muscles": ["glutes", "calves"],
+     "equipment": BW, "met_value": "2.0",
+     "instructions": "Stand on one foot with a soft knee. Progress through: eyes open on a firm surface → eyes closed → eyes open on a foam pad → eyes closed on foam pad. "
+                     "Hold each stage for 30–60 s per side. Trains proprioception and ankle stability foundational to every lower-body movement."},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # OLYMPIC / FULL-BODY POWER
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Power Clean",
+     "category": S, "primary_muscle": FULL, "secondary_muscles": ["glutes", "hamstrings", "back", "shoulders"],
+     "equipment": BB, "is_compound": True, "met_value": "8.0",
+     "instructions": "Bar over mid-foot, hips above knees. First pull: drive through the floor until bar passes knees. "
+                     "Second pull: explosively extend hips, shrug, and pull the bar close to the body. "
+                     "Third pull: drop under the bar, rotate elbows forward to catch in a front-squat rack position. Stand to finish. "
+                     "Develops full-body explosive power; the foundation of Olympic weightlifting."},
+
+    {"name": "Hang Power Clean",
+     "category": S, "primary_muscle": FULL, "secondary_muscles": ["glutes", "hamstrings", "back", "shoulders"],
+     "equipment": BB, "is_compound": True, "met_value": "7.5",
+     "instructions": "Start with the bar at mid-thigh (hanging position). Hinge hips back, then explosively extend — same second and third pull as the power clean but without the floor start. "
+                     "Easier to teach the hip-drive mechanics without the complexity of the first pull. "
+                     "A staple in team sports and CrossFit programming."},
+
+    {"name": "Thruster",
+     "category": S, "primary_muscle": FULL, "secondary_muscles": ["quads", "glutes", "shoulders", "triceps"],
+     "equipment": BB, "is_compound": True, "met_value": "8.0",
+     "instructions": "Hold bar in front-squat rack position. Squat to full depth, and as you drive out of the hole use the momentum to press the bar overhead in one continuous movement. "
+                     "Lower back to rack as you descend into the next squat. "
+                     "A brutal conditioning movement combining a front squat and push-press; produces enormous metabolic demand."},
+
+    {"name": "Devil Press",
+     "category": C, "primary_muscle": FULL, "secondary_muscles": ["shoulders", "core", "glutes"],
+     "equipment": DB, "is_compound": True, "met_value": "9.0",
+     "instructions": "Hold a dumbbell in each hand. Perform a burpee (jump or step back to push-up, push-up optional, jump feet to hands). "
+                     "From the bottom of the deadlift position, swing the dumbbells back between the legs and then explosively swing them overhead — like a double KB snatch. "
+                     "A full-body conditioning movement combining a burpee, a swing, and a snatch."},
+
+    {"name": "Man Maker",
+     "category": C, "primary_muscle": FULL, "secondary_muscles": ["chest", "back", "shoulders", "core"],
+     "equipment": DB, "is_compound": True, "met_value": "9.0",
+     "instructions": "Hold dumbbells in a push-up position. Perform a push-up, then row one dumbbell to the hip (renegade row), then the other. "
+                     "Jump or step feet forward into a squat, perform a squat clean to standing, then press overhead. "
+                     "Lower and repeat. Every major muscle group is loaded in a single complex — the ultimate conditioning movement."},
+
+    {"name": "Clean and Press",
+     "category": S, "primary_muscle": FULL, "secondary_muscles": ["glutes", "hamstrings", "back", "shoulders", "triceps"],
+     "equipment": BB, "is_compound": True, "met_value": "7.0",
+     "instructions": "Deadlift the bar to hip height, then perform a hang power clean to bring it to the front-rack position. "
+                     "Without pausing, press the bar overhead to full lockout. Lower to rack, then drop the bar back to the hips and repeat. "
+                     "A classic barbell complex that develops total-body strength, power, and conditioning in a single movement."},
 ]
 
 
