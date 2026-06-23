@@ -24,8 +24,19 @@ def env_list(name: str, default: list[str]) -> list[str]:
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-key-change-me")
-DEBUG = env_bool("DEBUG", True)
+# Resolve DEBUG first so we can gate the SECRET_KEY fallback on it.
+DEBUG = env_bool("DEBUG", False)
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        # Insecure placeholder — acceptable in local dev, never in production.
+        SECRET_KEY = "dev-insecure-key-do-not-use-in-production"  # noqa: S105
+    else:
+        raise RuntimeError(
+            "SECRET_KEY environment variable must be set when DEBUG=False."
+        )
+
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "fittrack.local"])
 
 INSTALLED_APPS = [
@@ -333,6 +344,20 @@ CSRF_TRUSTED_ORIGINS = env_list(
 # original request was HTTPS even though Nginx talks to it over HTTP.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
+
+# ── Security hardening ────────────────────────────────────────────────────────
+# HttpOnly prevents JS access to session/CSRF cookies (XSS mitigation).
+# Secure flags are gated on DEBUG=False so local HTTP dev still works.
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Nginx terminates TLS, so we don't redirect here — avoid double-redirect.
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # ---------------------------------------------------------------------------
 # Cache (Redis-backed via django-redis)
