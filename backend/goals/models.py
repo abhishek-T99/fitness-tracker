@@ -33,6 +33,9 @@ class Goal(models.Model):
 
     class Meta:
         ordering = ["order", "-created_at"]
+        indexes = [
+            models.Index(fields=["user", "status"], name="goal_user_status_idx"),
+        ]
 
     @property
     def progress_percent(self):

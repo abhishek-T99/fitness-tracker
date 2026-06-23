@@ -46,6 +46,12 @@ class Meal(models.Model):
 
     class Meta:
         ordering = ["-consumed_at"]
+        indexes = [
+            models.Index(fields=["user", "consumed_at"], name="meal_user_consumed_at_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.meal_type} on {self.consumed_at:%Y-%m-%d} ({self.user_id})"
 
     @property
     def totals(self):
@@ -91,3 +97,6 @@ class WaterLog(models.Model):
 
     class Meta:
         ordering = ["-logged_at"]
+
+    def __str__(self):
+        return f"{self.amount_ml}ml on {self.logged_at:%Y-%m-%d} ({self.user_id})"

@@ -66,6 +66,9 @@ class Workout(models.Model):
 
     class Meta:
         ordering = ["-started_at"]
+        indexes = [
+            models.Index(fields=["user", "status", "-started_at"], name="workout_user_status_date_idx"),
+        ]
 
     def __str__(self):
         return f"{self.name or 'Workout'} on {self.started_at:%Y-%m-%d}"
