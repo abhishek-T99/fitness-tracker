@@ -9,6 +9,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            "vendor-react":  ["react", "react-dom", "react-router-dom"],
+            "vendor-query":  ["@tanstack/react-query"],
+            "vendor-charts": ["recharts"],
+            "vendor-ui":     ["lucide-react", "react-hot-toast"],
+          },
+        },
+      },
+    },
     server: {
       host: true, // bind 0.0.0.0 so docker exposes us on the host
       allowedHosts: ["fittrack.local"],

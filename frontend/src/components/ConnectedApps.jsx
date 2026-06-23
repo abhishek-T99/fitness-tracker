@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { integrationsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 // ── Brand logos ───────────────────────────────────────────────────────────────
 
@@ -178,7 +179,7 @@ function IntervalsSection({ integration }) {
     mutationFn: integrationsApi.intervalsDisconnect,
     onSuccess: () => {
       toast.success("Intervals.icu disconnected.");
-      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: qk.integrations.all() });
     },
     onError: () => toast.error("Could not disconnect."),
   });
@@ -188,7 +189,7 @@ function IntervalsSection({ integration }) {
     try {
       await integrationsApi.intervalsSync({ days_back: 7 });
       toast.success("Sync started — new workouts will appear shortly.");
-      setTimeout(() => queryClient.invalidateQueries({ queryKey: ["integrations"] }), 3000);
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: qk.integrations.all() }), 3000);
     } catch {
       toast.error("Sync failed. Try again.");
     } finally {
@@ -237,7 +238,7 @@ function IntervalsSection({ integration }) {
         <IntervalsConnectForm
           onSuccess={() => {
             setShowForm(false);
-            queryClient.invalidateQueries({ queryKey: ["integrations"] });
+            queryClient.invalidateQueries({ queryKey: qk.integrations.all() });
           }}
         />
       )}
@@ -257,7 +258,7 @@ function StravaSection({ integration }) {
     if (params.get("strava_connected") === "true") {
       toast.success("Strava connected!");
       window.history.replaceState({}, "", window.location.pathname);
-      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: qk.integrations.all() });
     }
     if (params.get("strava_error")) {
       toast.error("Could not connect to Strava. Please try again.");
@@ -269,7 +270,7 @@ function StravaSection({ integration }) {
     mutationFn: integrationsApi.stravaDisconnect,
     onSuccess: () => {
       toast.success("Strava disconnected.");
-      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: qk.integrations.all() });
     },
     onError: () => toast.error("Could not disconnect."),
   });
@@ -332,7 +333,7 @@ function StravaSection({ integration }) {
 
 export default function ConnectedApps() {
   const { data: integrations = [], isLoading } = useQuery({
-    queryKey: ["integrations"],
+    queryKey: qk.integrations.all(),
     queryFn: integrationsApi.list,
   });
 

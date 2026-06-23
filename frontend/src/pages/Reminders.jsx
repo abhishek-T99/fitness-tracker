@@ -11,6 +11,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import SortableList, { DragHandle, SortableItem } from "../components/SortableList.jsx";
 import { remindersApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
@@ -138,7 +139,7 @@ export default function Reminders() {
   const [editing, setEditing] = useState(null);  // reminder object = edit mode
   const [localItems, setLocalItems] = useState(null);
 
-  const { data } = useQuery({ queryKey: ["reminders"], queryFn: remindersApi.list });
+  const { data } = useQuery({ queryKey: qk.reminders.all(), queryFn: remindersApi.list });
   const serverItems = data?.results || data || [];
   const items = localItems ?? serverItems;
 
@@ -154,14 +155,14 @@ export default function Reminders() {
 
   const toggleActive = useMutation({
     mutationFn: ({ id, is_active }) => remindersApi.update(id, { is_active }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reminders"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.reminders.all() }),
   });
 
   const remove = useMutation({
     mutationFn: (id) => remindersApi.remove(id),
     onSuccess: () => {
       toast.success("Reminder deleted");
-      queryClient.invalidateQueries({ queryKey: ["reminders"] });
+      queryClient.invalidateQueries({ queryKey: qk.reminders.all() });
     },
   });
 
@@ -216,7 +217,7 @@ export default function Reminders() {
           onClose={() => setOpen(false)}
           onSaved={() => {
             setOpen(false);
-            queryClient.invalidateQueries({ queryKey: ["reminders"] });
+            queryClient.invalidateQueries({ queryKey: qk.reminders.all() });
           }}
         />
       )}
@@ -228,7 +229,7 @@ export default function Reminders() {
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
-            queryClient.invalidateQueries({ queryKey: ["reminders"] });
+            queryClient.invalidateQueries({ queryKey: qk.reminders.all() });
           }}
         />
       )}

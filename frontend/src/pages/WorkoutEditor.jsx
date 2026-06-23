@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { exercisesApi, workoutsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 function blankSet(n) {
   return { set_number: n, reps: "", weight: "", rpe: "", is_warmup: false, completed: true };
@@ -27,7 +28,7 @@ export default function WorkoutEditor() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const { data: existing } = useQuery({
-    queryKey: ["workout", id],
+    queryKey: qk.workouts.detail(id),
     queryFn: () => workoutsApi.retrieve(id),
     enabled: editing,
   });
@@ -64,9 +65,9 @@ export default function WorkoutEditor() {
       editing ? workoutsApi.update(id, payload) : workoutsApi.create(payload),
     onSuccess: (res) => {
       toast.success(editing ? "Workout updated" : "Workout saved");
-      queryClient.invalidateQueries({ queryKey: ["workouts"] });
-      queryClient.invalidateQueries({ queryKey: ["workoutStats"] });
-      queryClient.invalidateQueries({ queryKey: ["streak"] });
+      queryClient.invalidateQueries({ queryKey: qk.workouts.all() });
+      queryClient.invalidateQueries({ queryKey: qk.workouts.stats() });
+      queryClient.invalidateQueries({ queryKey: qk.achievements.streak() });
       navigate(`/workouts/${res.id}`);
     },
     onError: (err) => {
@@ -347,7 +348,7 @@ export default function WorkoutEditor() {
 function ExercisePicker({ onPick, onClose }) {
   const [search, setSearch] = useState("");
   const { data } = useQuery({
-    queryKey: ["exercisePicker", search],
+    queryKey: qk.workouts.exercisePicker(search),
     queryFn: () => exercisesApi.list({ search, page_size: 50 }),
   });
   const items = data?.results || [];

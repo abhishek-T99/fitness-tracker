@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { socialApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 export default function Social() {
   const [tab, setTab] = useState("feed");
@@ -41,7 +42,7 @@ export default function Social() {
 function Feed() {
   const queryClient = useQueryClient();
   const [body, setBody] = useState("");
-  const { data } = useQuery({ queryKey: ["feed"], queryFn: socialApi.feed });
+  const { data } = useQuery({ queryKey: qk.social.feed(), queryFn: socialApi.feed });
   const posts = data?.results || data || [];
 
   const createPost = useMutation({
@@ -49,13 +50,13 @@ function Feed() {
     onSuccess: () => {
       setBody("");
       toast.success("Posted");
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: qk.social.feed() });
     },
   });
 
   const like = useMutation({
     mutationFn: (id) => socialApi.likePost(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["feed"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.social.feed() }),
   });
 
   return (
@@ -140,7 +141,7 @@ function CommentBox({ post }) {
     onSuccess: () => {
       setVal("");
       setOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: qk.social.feed() });
     },
   });
   if (!open) {
@@ -176,11 +177,11 @@ function CommentBox({ post }) {
 function Friends() {
   const queryClient = useQueryClient();
   const { data: friends } = useQuery({
-    queryKey: ["friends"],
+    queryKey: qk.social.friends(),
     queryFn: socialApi.friends,
   });
   const { data: requests } = useQuery({
-    queryKey: ["friendships"],
+    queryKey: qk.social.friendships(),
     queryFn: socialApi.friendships,
   });
   const pending =
@@ -190,13 +191,13 @@ function Friends() {
     mutationFn: (id) => socialApi.acceptRequest(id),
     onSuccess: () => {
       toast.success("Friend added");
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      queryClient.invalidateQueries({ queryKey: ["friendships"] });
+      queryClient.invalidateQueries({ queryKey: qk.social.friends() });
+      queryClient.invalidateQueries({ queryKey: qk.social.friendships() });
     },
   });
   const decline = useMutation({
     mutationFn: (id) => socialApi.declineRequest(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["friendships"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk.social.friendships() }),
   });
 
   return (
@@ -256,7 +257,7 @@ function FindPeople() {
   const queryClient = useQueryClient();
   const [q, setQ] = useState("");
   const { data } = useQuery({
-    queryKey: ["searchUsers", q],
+    queryKey: qk.social.searchUsers(q),
     queryFn: () => socialApi.searchUsers(q),
     enabled: q.length > 1,
   });
@@ -266,7 +267,7 @@ function FindPeople() {
     mutationFn: (id) => socialApi.sendRequest(id),
     onSuccess: () => {
       toast.success("Request sent");
-      queryClient.invalidateQueries({ queryKey: ["friendships"] });
+      queryClient.invalidateQueries({ queryKey: qk.social.friendships() });
     },
   });
 

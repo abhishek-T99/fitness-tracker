@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
 import { foodsApi, mealsApi, waterApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const MEAL_TYPES = [
   { value: "breakfast", label: "Breakfast" },
@@ -25,25 +26,25 @@ export default function Nutrition() {
   const [editingWater, setEditingWater] = useState(null);
 
   const { data: summary } = useQuery({
-    queryKey: ["dailyNutrition", date],
+    queryKey: qk.nutrition.dailySummary(date),
     queryFn: () => mealsApi.dailySummary(date),
   });
   const { data: meals } = useQuery({
-    queryKey: ["meals", date],
+    queryKey: qk.nutrition.meals(date),
     queryFn: () => mealsApi.list({ date }),
   });
   const { data: waterData } = useQuery({
-    queryKey: ["water", date],
+    queryKey: qk.nutrition.water(date),
     queryFn: () => waterApi.list({ date }),
   });
 
   const invalidateNutrition = () => {
-    queryClient.invalidateQueries({ queryKey: ["meals"] });
-    queryClient.invalidateQueries({ queryKey: ["dailyNutrition"] });
+    queryClient.invalidateQueries({ queryKey: qk.nutrition.meals() });
+    queryClient.invalidateQueries({ queryKey: qk.nutrition.dailySummary() });
   };
   const invalidateWater = () => {
-    queryClient.invalidateQueries({ queryKey: ["water"] });
-    queryClient.invalidateQueries({ queryKey: ["dailyNutrition"] });
+    queryClient.invalidateQueries({ queryKey: qk.nutrition.water() });
+    queryClient.invalidateQueries({ queryKey: qk.nutrition.dailySummary() });
   };
 
   const removeMeal = useMutation({
@@ -332,7 +333,7 @@ function MealModal({ date, meal = null, onClose, onSaved }) {
   const [search, setSearch] = useState("");
 
   const { data } = useQuery({
-    queryKey: ["foodSearch", search],
+    queryKey: qk.nutrition.foodSearch(search),
     queryFn: () => foodsApi.list({ search, page_size: 30 }),
     enabled: search.length > 0,
   });

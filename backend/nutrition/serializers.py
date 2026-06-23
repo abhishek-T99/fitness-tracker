@@ -67,8 +67,8 @@ class MealSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         items = validated_data.pop("items", [])
         meal = Meal.objects.create(user=self.context["request"].user, **validated_data)
-        for item in items:
-            MealItem.objects.create(meal=meal, **item)
+        if items:
+            MealItem.objects.bulk_create([MealItem(meal=meal, **item) for item in items])
         return meal
 
     @transaction.atomic
@@ -79,8 +79,8 @@ class MealSerializer(serializers.ModelSerializer):
         instance.save()
         if items is not None:
             instance.items.all().delete()
-            for item in items:
-                MealItem.objects.create(meal=instance, **item)
+            if items:
+                MealItem.objects.bulk_create([MealItem(meal=instance, **item) for item in items])
         return instance
 
 

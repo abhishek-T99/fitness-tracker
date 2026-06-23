@@ -19,6 +19,7 @@ import { TrendingUp, Scale, Dumbbell, BarChart2, Search } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import WorkoutCalendar from "../components/WorkoutCalendar.jsx";
 import { progressApi, exercisesApi, achievementsApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
 // ── Colour palette for muscle groups ─────────────────────────────────────────
@@ -73,7 +74,7 @@ function EmptyChart({ message = "No data yet" }) {
 // ── Tab: Body composition ─────────────────────────────────────────────────────
 function BodyTab({ days, onDaysChange }) {
   const { data = [], isLoading } = useQuery({
-    queryKey: ["bodyComposition", days],
+    queryKey: qk.measurements.bodyComposition(days),
     queryFn: () => progressApi.bodyComposition(days),
   });
 
@@ -165,7 +166,7 @@ function StrengthTab({ days, onDaysChange }) {
   const [selectedEx, setSelected] = useState(null);
 
   const { data: exercises = [] } = useQuery({
-    queryKey: ["exercises", { page_size: 200, category: "strength" }],
+    queryKey: qk.exercises.list({ page_size: 200, category: "strength" }),
     queryFn: () => exercisesApi.list({ page_size: 200, category: "strength" }),
     select: (d) => (d.results ?? d),
   });
@@ -177,7 +178,7 @@ function StrengthTab({ days, onDaysChange }) {
   [exercises, search]);
 
   const { data: history = [], isLoading } = useQuery({
-    queryKey: ["strengthHistory", selectedEx?.id, days],
+    queryKey: qk.workouts.strengthHistory(selectedEx?.id, days),
     queryFn: () => progressApi.strengthHistory(selectedEx.id, days),
     enabled: !!selectedEx,
   });
@@ -283,7 +284,7 @@ function StrengthTab({ days, onDaysChange }) {
 // ── Tab: Volume by muscle ─────────────────────────────────────────────────────
 function VolumeTab({ weeks, onWeeksChange }) {
   const { data = [], isLoading } = useQuery({
-    queryKey: ["volumeByMuscle", weeks],
+    queryKey: qk.workouts.volumeByMuscle(weeks),
     queryFn: () => progressApi.volumeByMuscle(weeks),
   });
 
@@ -491,13 +492,13 @@ export default function Progress() {
     : 365;
 
   const { data: heatmapData = [] } = useQuery({
-    queryKey: ["activityHeatmap", heatmapDays],
+    queryKey: qk.workouts.activityHeatmap(heatmapDays),
     queryFn: () => progressApi.activityHeatmap(heatmapDays),
     enabled: !!HEATMAP_START,
   });
 
   const { data: streak = {} } = useQuery({
-    queryKey: ["streak"],
+    queryKey: qk.achievements.streak(),
     queryFn: achievementsApi.streak,
   });
 

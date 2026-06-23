@@ -58,19 +58,32 @@ class WorkoutSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "total_volume", "source"]
 
     def _write_exercises(self, workout, exercises_data):
+        we_to_create = []
+        sets_by_ex = []  # parallel list: sets_data per exercise
+
         for ex_idx, ex_data in enumerate(exercises_data):
             sets_data = ex_data.pop("sets", [])
-            we = WorkoutExercise.objects.create(
+            sets_by_ex.append(sets_data)
+            we_to_create.append(WorkoutExercise(
                 workout=workout,
                 order=ex_data.get("order", ex_idx),
                 **{k: v for k, v in ex_data.items() if k != "order"},
-            )
+            ))
+
+        # PostgreSQL RETURNING gives us PKs in one round-trip.
+        created_wes = WorkoutExercise.objects.bulk_create(we_to_create)
+
+        all_sets = []
+        for we, sets_data in zip(created_wes, sets_by_ex):
             for set_idx, set_data in enumerate(sets_data):
-                ExerciseSet.objects.create(
+                all_sets.append(ExerciseSet(
                     workout_exercise=we,
                     set_number=set_data.get("set_number", set_idx + 1),
                     **{k: v for k, v in set_data.items() if k != "set_number"},
-                )
+                ))
+
+        if all_sets:
+            ExerciseSet.objects.bulk_create(all_sets)
 
     @transaction.atomic
     def create(self, validated_data):
@@ -139,12 +152,14 @@ class RoutineSerializer(serializers.ModelSerializer):
         return attrs
 
     def _write_items(self, routine, items_data):
-        for idx, item in enumerate(items_data):
-            RoutineExercise.objects.create(
+        RoutineExercise.objects.bulk_create([
+            RoutineExercise(
                 routine=routine,
                 order=item.get("order", idx),
                 **{k: v for k, v in item.items() if k != "order"},
             )
+            for idx, item in enumerate(items_data)
+        ])
 
     @transaction.atomic
     def create(self, validated_data):

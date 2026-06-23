@@ -64,24 +64,24 @@ class WorkoutViewSet(viewsets.ModelViewSet):
             return Response(cached)
 
         now = timezone.now()
-        since = now - timedelta(days=30)
-        qs = self.get_queryset().filter(started_at__gte=since)
+        # Lightweight base queryset — aggregation never needs exercises/sets prefetched.
+        base_qs = Workout.objects.filter(user=request.user)
 
-        weekly = (
-            self.get_queryset()
-            .filter(started_at__gte=now - timedelta(days=7))
-            .aggregate(
-                count=Count("id"),
-                total_minutes=Sum("duration_min"),
-                total_calories=Sum("calories_burned"),
-            )
+        weekly = base_qs.filter(started_at__gte=now - timedelta(days=7)).aggregate(
+            count=Count("id"),
+            total_minutes=Sum("duration_min"),
+            total_calories=Sum("calories_burned"),
         )
-
-        by_day = {}
-        recent = self.get_queryset().filter(started_at__gte=now - timedelta(days=14))
-        for w in recent:
-            day_key = w.started_at.date().isoformat()
-            by_day[day_key] = by_day.get(day_key, 0) + 1
+        last_30 = base_qs.filter(started_at__gte=now - timedelta(days=30)).count()
+        # Single grouped query instead of a Python loop over individual rows.
+        by_day_rows = (
+            base_qs.filter(started_at__gte=now - timedelta(days=14))
+            .annotate(day=TruncDate("started_at"))
+            .values("day")
+            .annotate(cnt=Count("id"))
+            .order_by()
+        )
+        by_day = {r["day"].isoformat(): r["cnt"] for r in by_day_rows}
 
         payload = {
             "this_week": {
@@ -89,7 +89,7 @@ class WorkoutViewSet(viewsets.ModelViewSet):
                 "minutes": weekly["total_minutes"] or 0,
                 "calories": weekly["total_calories"] or 0,
             },
-            "last_30_days": qs.count(),
+            "last_30_days": last_30,
             "daily_counts": by_day,
         }
         cache.set(key, payload, cache_keys.WORKOUT_STATS_TTL)

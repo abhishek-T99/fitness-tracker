@@ -41,17 +41,18 @@ import {
 } from "../api/endpoints.js";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useLevelContext } from "../contexts/LevelContext.jsx";
+import { qk } from "../api/queryKeys.js";
 
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const { data: stats } = useQuery({ queryKey: ["workoutStats"], queryFn: workoutsApi.stats });
+  const { data: stats } = useQuery({ queryKey: qk.workouts.stats(), queryFn: workoutsApi.stats });
   const { data: weight } = useQuery({
-    queryKey: ["weightHistory"],
+    queryKey: qk.measurements.weightHistory(),
     queryFn: () => measurementsApi.weightHistory(60),
   });
-  const { data: goals } = useQuery({ queryKey: ["goals"], queryFn: goalsApi.list });
-  const { data: streak } = useQuery({ queryKey: ["streak"], queryFn: achievementsApi.streak });
+  const { data: goals } = useQuery({ queryKey: qk.goals.all(), queryFn: goalsApi.list });
+  const { data: streak } = useQuery({ queryKey: qk.achievements.streak(), queryFn: achievementsApi.streak });
 
   // Build last-14-days workout count chart
   const dailyCounts = stats?.daily_counts || {};
@@ -282,7 +283,7 @@ function XPCard() {
 
 function WeeklyChallengesCard() {
   const { data } = useQuery({
-    queryKey: ["weeklyChallenges"],
+    queryKey: qk.levels.challenges(),
     queryFn: levelsApi.challenges,
     staleTime: 60_000,
   });
@@ -351,7 +352,7 @@ const MACRO_CONFIG = [
 
 function NutritionDonutCard() {
   const { data: dailyNutrition } = useQuery({
-    queryKey: ["dailyNutrition"],
+    queryKey: qk.nutrition.dailySummary(),
     queryFn: () => mealsApi.dailySummary(),
   });
 

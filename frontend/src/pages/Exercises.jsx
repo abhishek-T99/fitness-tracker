@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import PageHeader from "../components/PageHeader.jsx";
 import Pagination from "../components/Pagination.jsx";
 import { exercisesApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 const PAGE_SIZE = 24;
 
@@ -31,7 +32,7 @@ export default function Exercises() {
   useEffect(() => { setPage(1); }, [search, muscle, category, equipment]);
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ["exercises", search, muscle, category, equipment, page],
+    queryKey: qk.exercises.list(search, muscle, category, equipment, page),
     queryFn: () =>
       exercisesApi.list({
         search:         search    || undefined,

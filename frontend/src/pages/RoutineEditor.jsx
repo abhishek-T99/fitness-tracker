@@ -8,6 +8,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import PageHeader from "../components/PageHeader.jsx";
 import SortableList, { DragHandle, SortableItem } from "../components/SortableList.jsx";
 import { exercisesApi, routinesApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 let _keySeq = 0;
 const makeKey = () => String(++_keySeq);
@@ -26,7 +27,7 @@ export default function RoutineEditor() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const { data: existing } = useQuery({
-    queryKey: ["routine", id],
+    queryKey: qk.routines.detail(id),
     queryFn: () => routinesApi.retrieve(id),
     enabled: editing,
   });
@@ -57,7 +58,7 @@ export default function RoutineEditor() {
       editing ? routinesApi.update(id, payload) : routinesApi.create(payload),
     onSuccess: () => {
       toast.success("Routine saved");
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+      queryClient.invalidateQueries({ queryKey: qk.routines.all() });
       navigate("/routines");
     },
     onError: () => toast.error("Could not save routine"),
@@ -274,7 +275,7 @@ export default function RoutineEditor() {
 function ExercisePickerModal({ onPick, onClose }) {
   const [search, setSearch] = useState("");
   const { data } = useQuery({
-    queryKey: ["routinePicker", search],
+    queryKey: qk.routines.picker(search),
     queryFn: () => exercisesApi.list({ search, page_size: 50 }),
   });
   return (

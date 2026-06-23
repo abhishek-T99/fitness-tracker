@@ -11,6 +11,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import SortableList, { DragHandle, SortableItem } from "../components/SortableList.jsx";
 import { routinesApi } from "../api/endpoints.js";
+import { qk } from "../api/queryKeys.js";
 
 // Colour a muscle-group badge
 const MUSCLE_COLORS = {
@@ -198,7 +199,7 @@ export default function Routines() {
   const [localItems, setLocalItems] = useState(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["routines"],
+    queryKey: qk.routines.all(),
     queryFn: routinesApi.list,
   });
   const serverItems = data?.results || data || [];
@@ -208,7 +209,7 @@ export default function Routines() {
     mutationFn: (id) => routinesApi.remove(id),
     onSuccess: () => {
       toast.success("Routine deleted");
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+      queryClient.invalidateQueries({ queryKey: qk.routines.all() });
     },
   });
 
