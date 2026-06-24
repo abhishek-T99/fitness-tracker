@@ -83,8 +83,15 @@ case "$ROLE" in
     wait_for_postgres
     exec python manage.py migrate --noinput
     ;;
+  flower)
+    wait_for_redis
+    exec celery -A fitness_tracker flower \
+      --port=5555 \
+      --url_prefix=flower \
+      --basic_auth="${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-flower}"
+    ;;
   *)
-    echo "unknown role: $ROLE (expected: web|worker|beat|migrate)" >&2
+    echo "unknown role: $ROLE (expected: web|worker|beat|migrate|flower)" >&2
     exit 1
     ;;
 esac

@@ -82,6 +82,19 @@ services:
       backend:
         condition: service_started
 
+  flower:
+    <<: *backend-base
+    container_name: fittrack-flower
+    command: ["bash", "/usr/local/bin/entrypoint.sh", "flower"]
+    # No host port — nginx proxies https://fittrack.local/flower/
+    depends_on:
+      redis:
+        condition: service_healthy
+      worker:
+        condition: service_started
+    profiles:
+      - monitoring
+
   frontend:
     build:
       context: ./frontend

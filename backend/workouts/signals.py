@@ -22,8 +22,8 @@ def on_workout_saved(sender, instance, created, **kwargs):
     _invalidate_workout_stats(instance.user_id)
     if instance.status != Workout.Status.COMPLETED:
         return
-    from achievements.tasks import evaluate_workout_achievements
-    evaluate_workout_achievements.delay(instance.id)
+    from achievements.services import evaluate_after_workout
+    evaluate_after_workout(instance)
 
     # Auto-estimate calories on save (e.g. session complete, import from device)
     # Only runs when calories_burned is None — never overwrites user/device values.
