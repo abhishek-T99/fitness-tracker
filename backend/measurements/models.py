@@ -26,6 +26,7 @@ class BodyMeasurement(models.Model):
     sleep_score = models.PositiveSmallIntegerField(blank=True, null=True)
     notes = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-recorded_at"]

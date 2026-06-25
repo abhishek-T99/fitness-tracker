@@ -1,18 +1,28 @@
+from decimal import Decimal
+
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
+
+from fitness_tracker.querysets import UserOwnedQuerySet
+
+_NON_NEGATIVE = [MinValueValidator(Decimal("0"))]
+_POSITIVE = [MinValueValidator(Decimal("0.01"))]
 
 
 class Food(models.Model):
     name = models.CharField(max_length=120)
     brand = models.CharField(max_length=80, blank=True)
-    serving_size = models.DecimalField(max_digits=7, decimal_places=2, default=100)
+    serving_size = models.DecimalField(
+        max_digits=7, decimal_places=2, default=100, validators=_POSITIVE
+    )
     serving_unit = models.CharField(max_length=20, default="g")
-    calories = models.DecimalField(max_digits=7, decimal_places=2)
-    protein_g = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    carbs_g = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    fat_g = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    fiber_g = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    sugar_g = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    calories = models.DecimalField(max_digits=7, decimal_places=2, validators=_NON_NEGATIVE)
+    protein_g = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=_NON_NEGATIVE)
+    carbs_g = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=_NON_NEGATIVE)
+    fat_g = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=_NON_NEGATIVE)
+    fiber_g = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=_NON_NEGATIVE)
+    sugar_g = models.DecimalField(max_digits=6, decimal_places=2, default=0, validators=_NON_NEGATIVE)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -44,6 +54,8 @@ class Meal(models.Model):
     notes = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = UserOwnedQuerySet.as_manager()
+
     class Meta:
         ordering = ["-consumed_at"]
         indexes = [
@@ -67,7 +79,9 @@ class Meal(models.Model):
 class MealItem(models.Model):
     meal = models.ForeignKey(Meal, on_delete=models.CASCADE, related_name="items")
     food = models.ForeignKey(Food, on_delete=models.PROTECT)
-    servings = models.DecimalField(max_digits=6, decimal_places=2, default=1)
+    servings = models.DecimalField(
+        max_digits=6, decimal_places=2, default=1, validators=_POSITIVE
+    )
 
     @property
     def _factor(self):
@@ -94,6 +108,8 @@ class WaterLog(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="water_logs")
     amount_ml = models.PositiveIntegerField()
     logged_at = models.DateTimeField()
+
+    objects = UserOwnedQuerySet.as_manager()
 
     class Meta:
         ordering = ["-logged_at"]

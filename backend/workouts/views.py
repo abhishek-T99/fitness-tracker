@@ -46,7 +46,7 @@ class WorkoutViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            Workout.objects.filter(user=self.request.user)
+            Workout.objects.for_user(self.request.user)
             .prefetch_related("exercises__sets", "exercises__exercise")
             .select_related("routine")
         )
@@ -333,7 +333,7 @@ class RoutineViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            Routine.objects.filter(user=self.request.user)
+            Routine.objects.for_user(self.request.user)
             .prefetch_related("items__exercise")
         )
 

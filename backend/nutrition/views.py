@@ -68,7 +68,7 @@ class MealViewSet(viewsets.ModelViewSet):
     ordering_fields = ["consumed_at"]
 
     def get_queryset(self):
-        qs = Meal.objects.filter(user=self.request.user).prefetch_related("items__food")
+        qs = Meal.objects.for_user(self.request.user).prefetch_related("items__food")
         date = self.request.query_params.get("date")
         if date:
             qs = qs.filter(consumed_at__date=date)
@@ -129,7 +129,7 @@ class WaterLogViewSet(viewsets.ModelViewSet):
     serializer_class = WaterLogSerializer
 
     def get_queryset(self):
-        qs = WaterLog.objects.filter(user=self.request.user)
+        qs = WaterLog.objects.for_user(self.request.user)
         date = self.request.query_params.get("date")
         if date:
             qs = qs.filter(logged_at__date=date)

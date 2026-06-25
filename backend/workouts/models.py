@@ -1,5 +1,8 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from fitness_tracker.querysets import UserOwnedQuerySet
 
 
 class Routine(models.Model):
@@ -12,6 +15,8 @@ class Routine(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     order = models.PositiveIntegerField(default=0, db_index=True)
+
+    objects = UserOwnedQuerySet.as_manager()
 
     class Meta:
         ordering = ["order", "-updated_at"]
@@ -52,10 +57,23 @@ class Workout(models.Model):
     notes = models.TextField(blank=True)
     started_at = models.DateTimeField()
     ended_at = models.DateTimeField(blank=True, null=True)
-    duration_min = models.PositiveIntegerField(blank=True, null=True)
-    calories_burned = models.PositiveIntegerField(blank=True, null=True)
+    duration_min = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(1440)],
+        help_text="Workout duration in minutes (1-1440).",
+    )
+    calories_burned = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MaxValueValidator(20000)],
+        help_text="Calories burned (cap 20000 — sanity bound, ultra-endurance worst case).",
+    )
     perceived_exertion = models.PositiveSmallIntegerField(
-        blank=True, null=True, help_text="1-10 RPE"
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="1-10 RPE",
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.COMPLETED)
     # Populated when a workout is imported from a third-party platform
@@ -63,6 +81,8 @@ class Workout(models.Model):
     distance_km = models.DecimalField(max_digits=7, decimal_places=3, blank=True, null=True)
     avg_hr_bpm = models.PositiveSmallIntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = UserOwnedQuerySet.as_manager()
 
     class Meta:
         ordering = ["-started_at"]
