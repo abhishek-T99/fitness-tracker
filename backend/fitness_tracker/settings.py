@@ -422,13 +422,17 @@ FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "")
 # Free tier: 10,000 units/day. Search = 100 units. Results cached 24 h in Redis.
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 
-# Anthropic (AI-assisted features — natural-language food logging, etc.)
+# AI-assisted features (natural-language food logging, etc.)
 # ---------------------------------------------------------------------------
-# Required to enable any /api/v1/ai/ endpoint. Endpoints return 503 when unset
-# so the rest of the API keeps working without it.
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-AI_MODEL = os.getenv("AI_MODEL", "claude-sonnet-4-6")
+# Two providers supported via AI_PROVIDER: "gemini" (default, free tier) or
+# "anthropic" (paid). Endpoints return 503 when the selected provider's key
+# is missing so the rest of the API keeps working without it.
+AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini").lower()
+AI_MODEL = os.getenv("AI_MODEL", "")  # blank → provider default
 AI_DAILY_TOKEN_CAP = int(os.getenv("AI_DAILY_TOKEN_CAP", "250000"))
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Strava integration
 # ---------------------------------------------------------------------------

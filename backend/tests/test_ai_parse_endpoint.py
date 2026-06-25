@@ -76,7 +76,9 @@ class TestNutritionParseEndpoint:
 
     def test_503_when_api_key_missing(self, auth_client, settings, monkeypatch):
         ai_client.set_client_factory(None)
+        monkeypatch.setattr(settings, "GEMINI_API_KEY", "")
         monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", "")
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         res = auth_client.post(PARSE_URL, {"text": "two eggs"})
         assert res.status_code == 503

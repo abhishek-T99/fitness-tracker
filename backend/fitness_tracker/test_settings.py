@@ -31,3 +31,9 @@ FACEBOOK_APP_SECRET = "test-app-secret"
 STRAVA_CLIENT_ID = "test-strava-client-id"
 STRAVA_CLIENT_SECRET = "test-strava-client-secret"
 STRAVA_WEBHOOK_VERIFY_TOKEN = "test-verify-token"
+
+# AI keys are explicitly blanked here so tests never call out to a live LLM
+# even when the dev .env has a real key set. Tests inject a fake client via
+# ai.client.set_client_factory.
+GEMINI_API_KEY = ""
+ANTHROPIC_API_KEY = ""
