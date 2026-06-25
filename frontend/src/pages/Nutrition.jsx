@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Droplets, Pencil } from "lucide-react";
+import { Plus, Trash2, Droplets, Pencil, Sparkles, Send } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
-import { foodsApi, mealsApi, waterApi } from "../api/endpoints.js";
+import { aiApi, foodsApi, mealsApi, waterApi } from "../api/endpoints.js";
 import { qk } from "../api/queryKeys.js";
 
 const MEAL_TYPES = [
@@ -71,6 +71,47 @@ export default function Nutrition() {
     onSuccess: () => { toast.success("Water entry deleted"); invalidateWater(); },
   });
 
+  const undoAiBatch = async (created) => {
+    const tasks = [
+      ...(created.meal_ids ?? []).map((id) => mealsApi.remove(id).catch(() => {})),
+      ...(created.water_log_ids ?? []).map((id) => waterApi.remove(id).catch(() => {})),
+    ];
+    await Promise.all(tasks);
+    invalidateNutrition();
+    invalidateWater();
+    toast.success("Undone");
+  };
+
+  const aiParse = useMutation({
+    mutationFn: (text) => aiApi.nutritionParse({ text, date }),
+    onSuccess: (data) => {
+      invalidateNutrition();
+      invalidateWater();
+      const created = data.created || { meal_ids: [], water_log_ids: [], food_ids: [] };
+      const total = created.meal_ids.length + created.water_log_ids.length;
+      toast.success(
+        (t) => (
+          <span className="flex items-center gap-2">
+            <span>{data.summary || "Logged."}</span>
+            {total > 0 && (
+              <button
+                onClick={() => { toast.dismiss(t.id); undoAiBatch(created); }}
+                className="text-xs underline text-brand-600 hover:text-brand-700"
+              >
+                Undo
+              </button>
+            )}
+          </span>
+        ),
+        { duration: 8000 },
+      );
+    },
+    onError: (err) => {
+      const msg = err?.response?.data?.detail || "Couldn't parse that — try rephrasing.";
+      toast.error(msg);
+    },
+  });
+
   const mealItems = meals?.results || meals || [];
   const waterLogs = waterData?.results || waterData || [];
 
@@ -84,6 +125,12 @@ export default function Nutrition() {
             <Plus className="w-4 h-4" /> Log meal
           </button>
         }
+      />
+
+      {/* AI quick-log */}
+      <AiQuickLog
+        onSubmit={(text) => aiParse.mutate(text)}
+        pending={aiParse.isPending}
       />
 
       {/* Date + water controls */}
@@ -260,6 +307,57 @@ function MacroCard({ label, value, goal, unit, color }) {
           <p className="text-xs text-slate-400 mt-1">Goal: {goal}</p>
         </>
       )}
+    </div>
+  );
+}
+
+// ── AI quick-log ───────────────────────────────────────────────────────────
+
+function AiQuickLog({ onSubmit, pending }) {
+  const [text, setText] = useState("");
+  const submit = () => {
+    const trimmed = text.trim();
+    if (!trimmed || pending) return;
+    onSubmit(trimmed);
+    setText("");
+  };
+  return (
+    <div className="card p-4 mb-4">
+      <label className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-2">
+        <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+        Quick log with AI
+      </label>
+      <div className="flex gap-2">
+        <input
+          className="input flex-1"
+          placeholder='Try "two boiled eggs and 500 ml of water"'
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          disabled={pending}
+        />
+        <button
+          onClick={submit}
+          disabled={pending || !text.trim()}
+          className="btn-primary"
+          title="Parse and log"
+        >
+          {pending ? (
+            <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+      <p className="text-xs text-slate-400 mt-2">
+        Describe what you ate or drank. The agent will look up the foods and log them
+        for {/* current date hint comes from the page */}the selected date.
+      </p>
     </div>
   );
 }

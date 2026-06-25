@@ -213,3 +213,9 @@ export const notificationsApi = {
   markRead: (id) => api.patch(`/notifications/${id}/`, { read: true }).then((r) => r.data),
   markAllRead: () => api.post("/notifications/mark_all_read/").then((r) => r.data),
 };
+
+// AI-assisted features
+export const aiApi = {
+  nutritionParse: ({ text, date }) =>
+    api.post("/ai/nutrition/parse/", { text, date }).then((r) => r.data),
+};
