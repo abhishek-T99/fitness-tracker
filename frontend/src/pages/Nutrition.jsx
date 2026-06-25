@@ -53,8 +53,16 @@ export default function Nutrition() {
   });
 
   const addWater = useMutation({
-    mutationFn: (ml) =>
-      waterApi.create({ amount_ml: ml, logged_at: new Date().toISOString() }),
+    mutationFn: (ml) => {
+      const now = new Date();
+      // When viewing a past/future date, anchor the log to that date at the
+      // current time-of-day so it lands on the day the user is actually
+      // looking at, instead of always defaulting to "right now".
+      const loggedAt = date === today
+        ? now.toISOString()
+        : new Date(`${date}T${format(now, "HH:mm:ss")}`).toISOString();
+      return waterApi.create({ amount_ml: ml, logged_at: loggedAt });
+    },
     onSuccess: () => { toast.success("Water logged"); invalidateWater(); },
   });
 
