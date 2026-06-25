@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "meal_plans",
     "levels",
     "reports",
+    "ai",
 ]
 
 MIDDLEWARE = [
@@ -420,6 +421,14 @@ FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "")
 # Get a free key at https://console.cloud.google.com → Enable YouTube Data API v3
 # Free tier: 10,000 units/day. Search = 100 units. Results cached 24 h in Redis.
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
+
+# Anthropic (AI-assisted features — natural-language food logging, etc.)
+# ---------------------------------------------------------------------------
+# Required to enable any /api/v1/ai/ endpoint. Endpoints return 503 when unset
+# so the rest of the API keeps working without it.
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+AI_MODEL = os.getenv("AI_MODEL", "claude-sonnet-4-6")
+AI_DAILY_TOKEN_CAP = int(os.getenv("AI_DAILY_TOKEN_CAP", "250000"))
 
 # Strava integration
 # ---------------------------------------------------------------------------

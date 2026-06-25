@@ -82,4 +82,7 @@ export const qk = {
   wellness: {
     today: () => ["todayWellness"],
   },
+  ai: {
+    session: (id) => ["aiSession", id],
+  },
 };

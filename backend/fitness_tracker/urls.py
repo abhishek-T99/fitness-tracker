@@ -21,6 +21,7 @@ api_v1 = [
     path("", include("meal_plans.urls")),
     path("levels/", include("levels.urls")),
     path("reports/", include("reports.urls")),
+    path("ai/", include("ai.urls")),
 ]
 
 urlpatterns = [
