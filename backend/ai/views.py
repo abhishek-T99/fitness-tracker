@@ -6,12 +6,31 @@ from rest_framework.views import APIView
 
 from .budgets import BudgetExceeded
 from .client import AIUnavailable
+from .models import AgentSession
 from .prompts.nutrition_parse import SYSTEM_PROMPT as NUTRITION_PARSE_PROMPT
 from .runner import run_agent
 from .serializers import (
     NutritionParseRequestSerializer,
     NutritionParseResponseSerializer,
 )
+
+
+def _friendly_error(raw: str) -> str:
+    """Translate raw Anthropic SDK errors into a user-facing sentence."""
+    lower = raw.lower()
+    if "credit balance is too low" in lower:
+        return (
+            "The site's AI account has run out of credit. Top it up at "
+            "console.anthropic.com/settings/billing to enable AI logging."
+        )
+    if "rate_limit" in lower or "rate limit" in lower:
+        return "The AI service is rate-limited right now. Try again in a minute."
+    if "authentication" in lower or "invalid api key" in lower:
+        return "The AI service rejected the configured API key. Check ANTHROPIC_API_KEY."
+    if "overloaded" in lower:
+        return "The AI service is overloaded. Try again in a moment."
+    # Fallback — strip any class-name prefix the runner stored.
+    return raw.split(": ", 1)[-1] if ": " in raw else raw
 
 
 NUTRITION_TOOLS = [
@@ -69,6 +88,15 @@ class NutritionParseView(APIView):
         except BudgetExceeded as exc:
             return Response(
                 {"detail": str(exc)}, status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+
+        if result.status == AgentSession.Status.FAILED:
+            return Response(
+                {
+                    "detail": _friendly_error(result.error),
+                    "session_id": result.session_id,
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
             )
 
         body = {

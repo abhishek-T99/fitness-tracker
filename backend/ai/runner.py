@@ -39,6 +39,7 @@ class AgentResult:
     structured: Dict[str, Any] = field(default_factory=dict)
     tokens_in: int = 0
     tokens_out: int = 0
+    error: str = ""
 
 
 def _serialise_block(block: Any) -> Dict[str, Any]:
@@ -249,6 +250,7 @@ def run_agent(
         structured=structured,
         tokens_in=total_in,
         tokens_out=total_out,
+        error=session.error,
     )
 
 

@@ -154,6 +154,25 @@ class TestNutritionParseEndpoint:
         meal = Meal.objects.get(user=user)
         assert meal.items.first().food_id == egg.id
 
+    def test_agent_failure_surfaces_as_502_with_friendly_detail(
+        self, auth_client, scripted_client
+    ):
+        # Fake client that raises an Anthropic-style error mid-loop.
+        class BoomClient:
+            class _M:
+                def create(self, **_):
+                    raise RuntimeError(
+                        "BadRequestError: Your credit balance is too low"
+                    )
+
+            messages = _M()
+
+        ai_client.set_client_factory(lambda: BoomClient())
+        res = auth_client.post(PARSE_URL, {"text": "two eggs"}, format="json")
+        assert res.status_code == 502, res.data
+        assert "credit" in res.data["detail"].lower()
+        assert "session_id" in res.data
+
     def test_only_water_no_meal(self, auth_client, user, scripted_client):
         scripted_client([
             _Response(
