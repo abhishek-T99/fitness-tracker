@@ -8,18 +8,17 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from fitness_tracker import cache_keys
+
 from .models import Exercise
 from .serializers import ExerciseSerializer
 from .youtube import YouTubeError, fetch_tutorials
-
-LIST_CACHE_PREFIX = "exercises:list:"
-LIST_CACHE_TTL = 60 * 60 * 24  # 24h — invalidated on Exercise save.
 
 
 def _list_cache_key(request) -> str:
     raw = "&".join(f"{k}={v}" for k, v in sorted(request.query_params.items()))
     digest = hashlib.md5(raw.encode()).hexdigest()
-    return f"{LIST_CACHE_PREFIX}{digest}"
+    return f"{cache_keys.EXERCISE_LIST_VARIANT_PREFIX}{digest}"
 
 
 @extend_schema(tags=["Exercises"])
@@ -46,7 +45,7 @@ class ExerciseViewSet(viewsets.ReadOnlyModelViewSet):
         if cached is not None:
             return Response(cached)
         response = super().list(request, *args, **kwargs)
-        cache.set(key, response.data, LIST_CACHE_TTL)
+        cache.set(key, response.data, cache_keys.EXERCISE_LIST_VARIANT_TTL)
         return response
 
 
