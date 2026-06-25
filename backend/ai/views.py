@@ -16,18 +16,29 @@ from .serializers import (
 
 
 def _friendly_error(raw: str) -> str:
-    """Translate raw Anthropic SDK errors into a user-facing sentence."""
+    """Translate raw provider SDK errors into a user-facing sentence."""
     lower = raw.lower()
+    # Anthropic
     if "credit balance is too low" in lower:
         return (
-            "The site's AI account has run out of credit. Top it up at "
-            "console.anthropic.com/settings/billing to enable AI logging."
+            "The site's Anthropic account has run out of credit. Top it up at "
+            "console.anthropic.com/settings/billing or switch to the free Gemini "
+            "provider (set AI_PROVIDER=gemini)."
         )
-    if "rate_limit" in lower or "rate limit" in lower:
+    # Gemini (google-genai)
+    if "resource has been exhausted" in lower or "quota" in lower:
+        return (
+            "The AI service has hit its daily quota. Try again tomorrow or upgrade "
+            "the Gemini plan at aistudio.google.com."
+        )
+    if "api key not valid" in lower or "api_key_invalid" in lower:
+        return "The configured GEMINI_API_KEY is invalid. Generate a new one at aistudio.google.com."
+    # Generic
+    if "rate_limit" in lower or "rate limit" in lower or "429" in lower:
         return "The AI service is rate-limited right now. Try again in a minute."
     if "authentication" in lower or "invalid api key" in lower:
-        return "The AI service rejected the configured API key. Check ANTHROPIC_API_KEY."
-    if "overloaded" in lower:
+        return "The AI service rejected the configured API key. Check your AI_* env vars."
+    if "overloaded" in lower or "503" in lower:
         return "The AI service is overloaded. Try again in a moment."
     # Fallback — strip any class-name prefix the runner stored.
     return raw.split(": ", 1)[-1] if ": " in raw else raw

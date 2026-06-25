@@ -1,8 +1,17 @@
-"""Anthropic client wrapper.
+"""LLM client factory with multi-provider support.
 
-Centralises model selection, API key handling, and the "no key configured"
-degradation path so the runner stays unaware of either. A test fake can be
-injected via ``set_client_factory`` — see ``tests/test_ai_runner.py``.
+Two providers are supported out of the box:
+
+* ``gemini`` — Google's Gemini Flash via the ``google-genai`` SDK
+  (generous free tier). This is the default.
+* ``anthropic`` — Claude via the ``anthropic`` SDK (paid).
+
+The runner only ever sees an Anthropic-shaped ``client.messages.create(...)``
+surface. The Gemini adapter (``ai/providers/gemini.py``) translates Google's
+SDK into that shape so we don't need a provider-agnostic interface in the
+runner itself.
+
+A test fake can be injected via :func:`set_client_factory`.
 """
 from __future__ import annotations
 
@@ -13,11 +22,14 @@ from django.conf import settings
 
 
 class AIUnavailable(Exception):
-    """Raised when the Anthropic API key is not configured."""
+    """Raised when no provider can be used (missing key, unknown provider)."""
 
 
-# Sensible defaults — see CLAUDE.md / plan: Sonnet 4.6 for tool-loop features.
-DEFAULT_MODEL = "claude-sonnet-4-6"
+DEFAULT_PROVIDER = "gemini"
+DEFAULT_MODELS = {
+    "gemini": "gemini-2.0-flash",
+    "anthropic": "claude-sonnet-4-6",
+}
 
 
 _factory: Optional[Callable[[], Any]] = None
@@ -29,30 +41,59 @@ def set_client_factory(factory: Optional[Callable[[], Any]]) -> None:
     _factory = factory
 
 
-def get_client() -> Any:
-    """Return an Anthropic SDK client.
+def get_provider() -> str:
+    return (
+        getattr(settings, "AI_PROVIDER", "")
+        or os.getenv("AI_PROVIDER", "")
+        or DEFAULT_PROVIDER
+    ).lower()
 
-    Raises :class:`AIUnavailable` when no key is configured — feature views
-    translate this into a 503 with a clear message rather than 500-ing.
+
+def get_model() -> str:
+    explicit = getattr(settings, "AI_MODEL", "") or os.getenv("AI_MODEL", "")
+    if explicit:
+        return explicit
+    return DEFAULT_MODELS.get(get_provider(), DEFAULT_MODELS[DEFAULT_PROVIDER])
+
+
+def get_client() -> Any:
+    """Return a Messages-shaped client for the configured provider.
+
+    Raises :class:`AIUnavailable` when the provider's key is missing — the
+    feature views translate this into a 503 with a clear message rather
+    than 500-ing.
     """
     if _factory is not None:
         return _factory()
 
-    api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or os.getenv(
-        "ANTHROPIC_API_KEY", ""
-    )
-    if not api_key:
-        raise AIUnavailable(
-            "ANTHROPIC_API_KEY is not configured. Set it in the backend .env "
-            "to enable AI-assisted features."
+    provider = get_provider()
+
+    if provider == "gemini":
+        api_key = getattr(settings, "GEMINI_API_KEY", "") or os.getenv(
+            "GEMINI_API_KEY", ""
         )
+        if not api_key:
+            raise AIUnavailable(
+                "GEMINI_API_KEY is not configured. Set it in the backend .env. "
+                "Get a free key at https://aistudio.google.com/app/apikey."
+            )
+        from .providers.gemini import GeminiAdapter
 
-    # Imported lazily so the rest of the stack works even if `anthropic` isn't
-    # installed in the runtime image (the tests use a fake client).
-    import anthropic  # type: ignore
+        return GeminiAdapter(api_key=api_key)
 
-    return anthropic.Anthropic(api_key=api_key)
+    if provider == "anthropic":
+        api_key = getattr(settings, "ANTHROPIC_API_KEY", "") or os.getenv(
+            "ANTHROPIC_API_KEY", ""
+        )
+        if not api_key:
+            raise AIUnavailable(
+                "ANTHROPIC_API_KEY is not configured. Set it in the backend .env "
+                "or switch to a free provider with AI_PROVIDER=gemini."
+            )
+        import anthropic  # type: ignore
 
+        return anthropic.Anthropic(api_key=api_key)
 
-def get_model() -> str:
-    return getattr(settings, "AI_MODEL", DEFAULT_MODEL)
+    raise AIUnavailable(
+        f"Unknown AI provider: {provider!r}. Set AI_PROVIDER to 'gemini' or 'anthropic'."
+    )

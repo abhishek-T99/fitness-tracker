@@ -222,9 +222,11 @@ class TestRunnerErrorPaths:
             REGISTRY.tools.pop("_broken", None)
 
     def test_unavailable_when_no_api_key(self, user, settings, monkeypatch):
-        # Ensure no factory is set and no key is configured
+        # Ensure no factory is set and no key is configured for either provider
         ai_client.set_client_factory(None)
+        monkeypatch.setattr(settings, "GEMINI_API_KEY", "")
         monkeypatch.setattr(settings, "ANTHROPIC_API_KEY", "")
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
 
         from ai.client import AIUnavailable

@@ -31,6 +31,9 @@ django-jazzmin==3.0.1
 reportlab==4.2.5
 
 # AI (natural-language food logging, future agentic features)
+# google-genai is the default provider (free tier at aistudio.google.com).
+# anthropic stays installed so the same code can flip to Claude via AI_PROVIDER.
+google-genai==0.7.0
 anthropic==0.45.2
 
 # Testing
