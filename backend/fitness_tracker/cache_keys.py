@@ -6,6 +6,11 @@ Keeping them here means invalidation signals and read paths can't drift.
 EXERCISE_LIST = "exercises:catalog:v1"
 EXERCISE_LIST_TTL = 60 * 60 * 24  # 24h — static catalog, invalidated on Exercise save.
 
+# Per-querystring exercise list cache (used by the read-only ViewSet).
+# Each variant is keyed by an md5 of sorted query params.
+EXERCISE_LIST_VARIANT_PREFIX = "exercises:list:"
+EXERCISE_LIST_VARIANT_TTL = 60 * 60 * 24  # 24h — same invalidation as the catalog.
+
 ACHIEVEMENT_CATALOG = "achievements:catalog:v1"
 ACHIEVEMENT_CATALOG_TTL = 60 * 60 * 24
 
