@@ -530,6 +530,12 @@ FOODS = [
      "serving_size": 150, "serving_unit": "g",
      "calories":  90, "protein_g":  2.0, "carbs_g": 14.0, "fat_g":  3.0, "fiber_g": 2.5,
     },
+    {"name": "Farsi ko Munta (pumpkin shoots / tendrils curry)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories":  70, "protein_g":  3.5, "carbs_g":  8.0, "fat_g":  3.0, "fiber_g": 3.5,
+     # Young pumpkin vine shoots, leaves, and tendrils stir-fried with garlic and spices;
+     # seasonal monsoon vegetable rich in iron and fibre
+    },
     {"name": "Iskus ko Tarkari (chayote squash curry)",
      "serving_size": 150, "serving_unit": "g",
      "calories":  72, "protein_g":  1.5, "carbs_g": 11.0, "fat_g":  2.5, "fiber_g": 2.0,
