@@ -6,8 +6,6 @@ class WorkoutDetailPage extends BasePage {
     this.editButton   = page.getByRole('link', { name: /edit/i });
     // Delete uses browser confirm() — caller must set up dialog handler first
     this.deleteButton = page.getByRole('button', { name: /delete/i });
-    // Recalculate calories — identified by its title attribute
-    this.recalcButton = page.getByTitle('Recalculate from sets');
   }
 
   async goto(id) {

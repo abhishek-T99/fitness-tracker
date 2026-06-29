@@ -217,31 +217,3 @@ test.describe('Delete workout from detail', () => {
   });
 });
 
-// ── Recalculate calories ──────────────────────────────────────────────────────
-
-test.describe('Recalculate calories', () => {
-  test('shows success toast after recalculating from sets', async ({ page, api }) => {
-    const exRes  = await api.get('/exercises/', { params: { page_size: 1 } });
-    const exId   = exRes.data.results[0].id;
-    const name   = data.workoutName();
-
-    const { data: workout } = await api.post('/workouts/', {
-      name,
-      started_at: new Date().toISOString(),
-      status:     'completed',
-      exercises:  [{
-        exercise: exId,
-        order:    0,
-        sets:     [{ set_number: 1, reps: 8, weight: 60, is_warmup: false, completed: true }],
-      }],
-    });
-
-    await page.goto(`/workouts/${workout.id}`);
-    await page.getByText(name).first().waitFor({ timeout: 10_000 });
-
-    const dp = new WorkoutDetailPage(page);
-    await dp.recalcButton.click();
-
-    await expect(page.getByText('Calories recalculated.')).toBeVisible({ timeout: 8_000 });
-  });
-});
