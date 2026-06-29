@@ -93,6 +93,13 @@ test.describe('Notification bell', () => {
   test('clicking the bell opens the notifications panel', async ({ page }) => {
     await page.goto('/dashboard');
 
+    // Toast notifications (e.g. "Level Up!") can land over the bell and
+    // intercept the click. Strip any active toasts before the click so a
+    // real user-style click reaches the bell — mousedown + click is needed
+    // because the panel uses an outside-mousedown listener to auto-close.
+    await page.locator('[role="status"]').evaluateAll((els) => {
+      els.forEach((el) => el.remove());
+    });
     await page.getByRole('button', { name: 'Notifications' }).click();
 
     // Dropdown header
