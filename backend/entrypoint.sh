@@ -55,6 +55,9 @@ case "$ROLE" in
     python manage.py seed_exercises
     python manage.py seed_foods
     python manage.py seed_achievements
+    # Single-user deployment: server isn't always on, so beat misses fires.
+    # Queue any task whose last successful run is older than its period.
+    python manage.py run_overdue_tasks
     if [ "${DEBUG:-True}" = "True" ]; then
       exec python manage.py runserver 0.0.0.0:8000
     else
