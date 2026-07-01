@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
+import NutritionTabs from "../components/NutritionTabs.jsx";
 import { aiApi, foodsApi, mealsApi, waterApi } from "../api/endpoints.js";
 import { qk } from "../api/queryKeys.js";
 
@@ -41,10 +42,12 @@ export default function Nutrition() {
   const invalidateNutrition = () => {
     queryClient.invalidateQueries({ queryKey: qk.nutrition.meals() });
     queryClient.invalidateQueries({ queryKey: qk.nutrition.dailySummary() });
+    queryClient.invalidateQueries({ queryKey: qk.nutrition.rangeSummary() });
   };
   const invalidateWater = () => {
     queryClient.invalidateQueries({ queryKey: qk.nutrition.water() });
     queryClient.invalidateQueries({ queryKey: qk.nutrition.dailySummary() });
+    queryClient.invalidateQueries({ queryKey: qk.nutrition.rangeSummary() });
   };
 
   const removeMeal = useMutation({
@@ -126,6 +129,8 @@ export default function Nutrition() {
           </button>
         }
       />
+
+      <NutritionTabs />
 
       {/* AI quick-log */}
       <AiQuickLog

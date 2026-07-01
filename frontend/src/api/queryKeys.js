@@ -43,6 +43,9 @@ export const qk = {
     meals:        (date)   => date ? ["meals", date]         : ["meals"],
     water:        (date)   => date ? ["water", date]         : ["water"],
     dailySummary: (date)   => date ? ["dailyNutrition", date] : ["dailyNutrition"],
+    // Prefix "nutritionRange" (no args) invalidates every insights query at once,
+    // so mutations in Nutrition.jsx don't need to know the current filters.
+    rangeSummary: (params) => params ? ["nutritionRange", params] : ["nutritionRange"],
     foodSearch:   (search) => ["foodSearch", search],
     foodPicker:   (search) => ["foodPicker", search],
   },

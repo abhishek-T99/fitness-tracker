@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.db.models import Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer, OpenApiParameter
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -12,6 +12,7 @@ from fitness_tracker import cache_keys
 
 from .models import Food, Meal, WaterLog
 from .serializers import FoodSerializer, MealSerializer, WaterLogSerializer
+from .services import compute_range_summary, parse_range
 
 
 @extend_schema(tags=["Nutrition"])
@@ -60,6 +61,14 @@ class FoodViewSet(viewsets.ModelViewSet):
                 "calorie_goal": serializers.IntegerField(allow_null=True),
             },
         ),
+    ),
+    range_summary=extend_schema(
+        summary="Multi-day nutrition summary with trends and adherence",
+        parameters=[
+            OpenApiParameter(name="start", type=str, description="ISO 8601 start date (inclusive). Default: end - 29 days."),
+            OpenApiParameter(name="end",   type=str, description="ISO 8601 end date (inclusive). Default: today."),
+            OpenApiParameter(name="granularity", type=str, description="day | week | month. Default: day."),
+        ],
     ),
 )
 class MealViewSet(viewsets.ModelViewSet):
@@ -121,6 +130,35 @@ class MealViewSet(viewsets.ModelViewSet):
             "calorie_goal": getattr(request.user.profile, "daily_calorie_goal", None),
         }
         cache.set(key, payload, cache_keys.NUTRITION_SUMMARY_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"])
+    def range_summary(self, request):
+        """Trend + adherence summary across a date range.
+
+        Cache is keyed by the user's monotonic `nutrition_version`, so any
+        Meal / MealItem / WaterLog write bumps the version in signals.py and
+        every previously-cached range for that user becomes stale in one shot.
+        """
+        try:
+            req = parse_range(
+                request.query_params.get("start"),
+                request.query_params.get("end"),
+                request.query_params.get("granularity"),
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        version = cache.get_or_set(cache_keys.nutrition_version(request.user.id), 1, None)
+        key = cache_keys.nutrition_range_summary(
+            request.user.id, req.start.isoformat(), req.end.isoformat(), req.granularity, version
+        )
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        payload = compute_range_summary(request.user, req)
+        cache.set(key, payload, cache_keys.NUTRITION_RANGE_SUMMARY_TTL)
         return Response(payload)
 
 
