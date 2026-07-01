@@ -32,6 +32,24 @@ def nutrition_summary(user_id: int, date_iso: str) -> str:
 NUTRITION_SUMMARY_TTL = 60 * 2  # short — invalidated on meal/water writes too.
 
 
+def nutrition_version(user_id: int) -> str:
+    # Monotonic counter bumped on any Meal/MealItem/WaterLog write. Range-summary
+    # keys embed the current version so writes atomically invalidate every cached
+    # range without needing to scan or track individual keys.
+    return f"nutrition:ver:{user_id}"
+
+
+def nutrition_range_summary(
+    user_id: int, start_iso: str, end_iso: str, granularity: str, version: int
+) -> str:
+    return (
+        f"nutrition:range:{user_id}:{version}:{granularity}:{start_iso}:{end_iso}"
+    )
+
+
+NUTRITION_RANGE_SUMMARY_TTL = 60 * 10  # 10 min — versioned, so stale entries just age out.
+
+
 def streak(user_id: int) -> str:
     return f"streak:{user_id}"
 
