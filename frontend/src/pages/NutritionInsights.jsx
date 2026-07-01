@@ -148,16 +148,21 @@ function SummaryCards({ data }) {
 }
 
 function Stat({ icon, label, value, unit, detail }) {
+  // The theme inverts the slate scale in dark mode (index.css) — so
+  // text-slate-900 is the primary text token in both themes, and
+  // text-slate-500 is muted text in both. Don't add `dark:` overrides
+  // that swap those; you'll invert them a second time.
   return (
     <div className="card p-4">
-      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
         {icon}
         <span>{label}</span>
       </div>
-      <p className="text-xl font-bold mt-1">
-        {value} {unit && <span className="text-sm font-normal text-slate-400">{unit}</span>}
+      <p className="text-xl font-bold mt-1 text-slate-900">
+        {value}{" "}
+        {unit && <span className="text-sm font-normal text-slate-500">{unit}</span>}
       </p>
-      {detail && <p className="text-xs text-slate-400 mt-0.5">{detail}</p>}
+      {detail && <p className="text-xs text-slate-500 mt-0.5">{detail}</p>}
     </div>
   );
 }
@@ -207,13 +212,27 @@ function AdherencePanel({ adherence }) {
 }
 
 function AdherenceStat({ label, value, unit, highlight, icon }) {
+  // Palette note: slate-100 is "subtle fills / hovers" in both themes
+  // (see index.css). Using bg-slate-800/60 here previously produced a pale
+  // semi-transparent surface in dark mode because the scale is inverted.
   return (
-    <div className={`rounded-lg p-3 ${highlight ? "bg-brand-50 dark:bg-brand-500/10" : "bg-slate-50 dark:bg-slate-800/60"}`}>
-      <div className="flex items-center gap-1 text-xs text-slate-500">
+    <div
+      className={`rounded-lg p-3 border ${
+        highlight
+          ? "bg-brand-50 border-brand-200"
+          : "bg-slate-100 border-slate-200"
+      }`}
+    >
+      <div className="flex items-center gap-1 text-xs font-medium text-slate-600">
         {icon}{label}
       </div>
-      <p className={`text-lg font-bold mt-0.5 ${highlight ? "text-brand-700 dark:text-brand-300" : ""}`}>
-        {value} {unit && <span className="text-xs font-normal text-slate-400">{unit}</span>}
+      <p
+        className={`text-lg font-bold mt-0.5 ${
+          highlight ? "text-brand-700" : "text-slate-900"
+        }`}
+      >
+        {value}{" "}
+        {unit && <span className="text-xs font-normal text-slate-500">{unit}</span>}
       </p>
     </div>
   );
@@ -354,12 +373,15 @@ function TopFoodsCard({ foods }) {
       {foods.length === 0 ? (
         <EmptyChart message="No foods logged in this range." />
       ) : (
-        <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+        <ul className="divide-y divide-slate-200">
           {foods.map((f) => (
             <li key={f.food_id} className="flex items-center justify-between py-2 text-sm">
-              <span className="truncate pr-2">{f.name}</span>
-              <span className="text-slate-500 shrink-0">
-                {f.times_logged}× · <span className="font-medium text-slate-700 dark:text-slate-200">{f.total_calories} kcal</span>
+              <span className="truncate pr-2 text-slate-900">{f.name}</span>
+              <span className="text-slate-600 shrink-0">
+                {f.times_logged}× ·{" "}
+                <span className="font-semibold text-slate-900">
+                  {f.total_calories} kcal
+                </span>
               </span>
             </li>
           ))}
