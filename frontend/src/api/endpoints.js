@@ -75,6 +75,12 @@ export const mealsApi = {
     api
       .get("/nutrition/meals/daily_summary/", { params: { date } })
       .then((r) => r.data),
+  rangeSummary: ({ start, end, granularity } = {}) =>
+    api
+      .get("/nutrition/meals/range_summary/", {
+        params: { start, end, granularity },
+      })
+      .then((r) => r.data),
 };
 export const waterApi = {
   list: (params) => api.get("/nutrition/water/", { params }).then((r) => r.data),

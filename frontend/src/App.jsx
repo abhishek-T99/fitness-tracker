@@ -20,7 +20,8 @@ const WorkoutEditor  = lazy(() => import("./pages/WorkoutEditor.jsx"));
 const Exercises      = lazy(() => import("./pages/Exercises.jsx"));
 const Routines       = lazy(() => import("./pages/Routines.jsx"));
 const RoutineEditor  = lazy(() => import("./pages/RoutineEditor.jsx"));
-const Nutrition      = lazy(() => import("./pages/Nutrition.jsx"));
+const Nutrition           = lazy(() => import("./pages/Nutrition.jsx"));
+const NutritionInsights   = lazy(() => import("./pages/NutritionInsights.jsx"));
 const Measurements   = lazy(() => import("./pages/Measurements.jsx"));
 const Goals          = lazy(() => import("./pages/Goals.jsx"));
 const Social         = lazy(() => import("./pages/Social.jsx"));
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/routines/:id" element={<RoutineEditor />} />
 
             <Route path="/nutrition" element={<Nutrition />} />
+            <Route path="/nutrition/insights" element={<NutritionInsights />} />
             <Route path="/meal-plan" element={<MealPlan />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/measurements" element={<Measurements />} />

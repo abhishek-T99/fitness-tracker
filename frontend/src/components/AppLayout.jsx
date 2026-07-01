@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Apple,
   UtensilsCrossed,
+  BarChart3,
   TrendingUp,
   Ruler,
   Target,
@@ -39,8 +40,9 @@ const navItems = [
   { to: "/workouts",     label: "Workouts",         icon: Dumbbell },
   { to: "/routines",     label: "Routines",         icon: ListChecks },
   { to: "/exercises",    label: "Exercise Library", icon: CalendarDays },
-  { to: "/nutrition",    label: "Nutrition",        icon: Apple },
-  { to: "/meal-plan",   label: "Meal Plan",        icon: UtensilsCrossed },
+  { to: "/nutrition",           label: "Nutrition",         icon: Apple, end: true },
+  { to: "/nutrition/insights",  label: "Nutrition Insights", icon: BarChart3 },
+  { to: "/meal-plan",           label: "Meal Plan",         icon: UtensilsCrossed },
   { to: "/progress",    label: "Progress",         icon: TrendingUp },
   { to: "/measurements", label: "Measurements",     icon: Ruler },
   { to: "/goals",        label: "Goals",            icon: Target },
@@ -215,10 +217,11 @@ export default function AppLayout() {
 
         {/* Nav items */}
         <nav className="flex-1 overflow-y-auto overflow-x-visible py-4 space-y-0.5 px-2">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
+              end={end}
               title={collapsed ? label : undefined}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
