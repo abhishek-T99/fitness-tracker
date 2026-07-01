@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Droplets, Pencil, Sparkles, Send, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Droplets, Pencil, Sparkles, Send } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
 
 import PageHeader from "../components/PageHeader.jsx";
+import NutritionTabs from "../components/NutritionTabs.jsx";
 import { aiApi, foodsApi, mealsApi, waterApi } from "../api/endpoints.js";
 import { qk } from "../api/queryKeys.js";
 
@@ -124,16 +124,13 @@ export default function Nutrition() {
         title="Nutrition"
         subtitle="Track meals, calories, and macros"
         actions={
-          <>
-            <Link to="/nutrition/insights" className="btn-secondary">
-              <BarChart3 className="w-4 h-4" /> Insights
-            </Link>
-            <button onClick={() => setAdding(true)} className="btn-primary">
-              <Plus className="w-4 h-4" /> Log meal
-            </button>
-          </>
+          <button onClick={() => setAdding(true)} className="btn-primary">
+            <Plus className="w-4 h-4" /> Log meal
+          </button>
         }
       />
+
+      <NutritionTabs />
 
       {/* AI quick-log */}
       <AiQuickLog

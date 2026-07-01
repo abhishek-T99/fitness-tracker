@@ -15,6 +15,7 @@ import { format, parseISO } from "date-fns";
 import { Award, Flame, Target, TrendingDown, TrendingUp, Utensils } from "lucide-react";
 
 import PageHeader from "../components/PageHeader.jsx";
+import NutritionTabs from "../components/NutritionTabs.jsx";
 import { mealsApi } from "../api/endpoints.js";
 import { qk } from "../api/queryKeys.js";
 
@@ -56,9 +57,11 @@ export default function NutritionInsights() {
   return (
     <div>
       <PageHeader
-        title="Nutrition Insights"
+        title="Nutrition"
         subtitle="Overall trends, macro balance, and how consistently you're hitting your goal"
       />
+
+      <NutritionTabs />
 
       <RangeTabs value={rangeIdx} onChange={setRangeIdx} />
 
