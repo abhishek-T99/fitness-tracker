@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Target, Trash2, Check, Pencil, RotateCcw } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format, formatDistanceToNow, parseISO } from "date-fns";
 import toast from "react-hot-toast";
 
 import PageHeader from "../components/PageHeader.jsx";
@@ -190,6 +190,11 @@ export default function Goals() {
               {g.deadline && (
                 <p className="text-xs text-slate-500">
                   Deadline: {format(parseISO(g.deadline), "MMM d, yyyy")}
+                </p>
+              )}
+              {g.created_at && (
+                <p className="text-xs text-slate-400 mt-0.5" data-testid="goal-created-at">
+                  Created {formatDistanceToNow(parseISO(g.created_at), { addSuffix: true })}
                 </p>
               )}
               {g.status === "active" && (
