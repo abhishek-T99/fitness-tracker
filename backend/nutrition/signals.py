@@ -49,7 +49,18 @@ def on_meal_changed(sender, instance, created, **kwargs):
         try:
             from levels.services import award_xp, increment_challenge
             award_xp(instance.user, 10, "Logged a meal", "nutrition", instance.id)
-            increment_challenge(instance.user, "log_meals")
+            # Only count the first meal logged on a given day toward the challenge.
+            # The challenge tracks distinct days, not total log entries.
+            when = instance.consumed_at
+            if timezone.is_aware(when):
+                when = timezone.localtime(when)
+            log_date = when.date()
+            is_first_today = not Meal.objects.filter(
+                user=instance.user,
+                consumed_at__date=log_date,
+            ).exclude(pk=instance.pk).exists()
+            if is_first_today:
+                increment_challenge(instance.user, "log_meals")
         except Exception:
             pass
 
@@ -74,7 +85,18 @@ def on_water_changed(sender, instance, created, **kwargs):
         try:
             from levels.services import award_xp, increment_challenge
             award_xp(instance.user, 5, "Logged water intake", "nutrition", instance.id)
-            increment_challenge(instance.user, "log_water")
+            # Only count the first water log on a given day toward the challenge.
+            # The challenge tracks distinct days, not total log entries.
+            when = instance.logged_at
+            if timezone.is_aware(when):
+                when = timezone.localtime(when)
+            log_date = when.date()
+            is_first_today = not WaterLog.objects.filter(
+                user=instance.user,
+                logged_at__date=log_date,
+            ).exclude(pk=instance.pk).exists()
+            if is_first_today:
+                increment_challenge(instance.user, "log_water")
         except Exception:
             pass
 
