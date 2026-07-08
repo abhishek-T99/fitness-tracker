@@ -77,5 +77,37 @@ def body_composition(user_id: int, days: int) -> str:
     return f"progress:body_comp:{user_id}:{days}"
 
 
+def personal_records(user_id: int) -> str:
+    return f"progress:pr:{user_id}:all"
+
+
+def overload_streaks(user_id: int) -> str:
+    return f"progress:overload:{user_id}:all"
+
+
+def rpe_trend(user_id: int, days: int) -> str:
+    return f"progress:rpe:{user_id}:{days}"
+
+
+def duration_trend(user_id: int, weeks: int) -> str:
+    return f"progress:duration:{user_id}:{weeks}"
+
+
+def session_density(user_id: int, weeks: int) -> str:
+    return f"progress:density:{user_id}:{weeks}"
+
+
+def cardio_summary(user_id: int, days: int) -> str:
+    return f"progress:cardio:{user_id}:{days}"
+
+
+def dow_heatmap(user_id: int, weeks: int) -> str:
+    return f"progress:dow:{user_id}:{weeks}"
+
+
+def muscle_balance(user_id: int, weeks: int) -> str:
+    return f"progress:balance:{user_id}:{weeks}"
+
+
 PROGRESS_TTL = 60 * 5          # 5 min — same as workout_stats
 BODY_COMP_TTL = 60 * 2         # 2 min — same as nutrition_summary
