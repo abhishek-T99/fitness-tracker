@@ -58,7 +58,7 @@ const CHART_MARGIN = { top: 8, right: 16, left: 0, bottom: 0 };
 function ChartTooltipStyle({ active, payload, label, unit = "" }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 shadow-lg text-xs">
+    <div className="bg-surface border border-slate-200 rounded-lg px-3 py-2 shadow-lg text-xs">
       <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} style={{ color: p.color }}>
@@ -83,7 +83,7 @@ function Skeleton() {
       {Array.from({ length: 20 }).map((_, i) => (
         <div
           key={i}
-          className="flex-1 bg-slate-200 dark:bg-slate-700 rounded-t"
+          className="flex-1 bg-slate-200 rounded-t"
           style={{ height: `${20 + Math.random() * 70}%` }}
         />
       ))}
@@ -108,7 +108,7 @@ function DaysSelector({ value, onChange }) {
           className={`px-2.5 py-1 rounded text-xs font-medium transition-colors
             ${value === v
               ? "bg-brand-500 text-white"
-              : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
         >
           {label}
@@ -129,7 +129,7 @@ function WeeksSelector({ value, onChange, options = [4, 8, 12, 24] }) {
           className={`px-2.5 py-1 rounded text-xs font-medium transition-colors
             ${value === w
               ? "bg-brand-500 text-white"
-              : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
         >
           {w}w
@@ -382,7 +382,7 @@ function VolumeTab({ weeks, onWeeksChange }) {
                   if (!active || !payload?.length) return null;
                   const total = payload.reduce((s, p) => s + (p.value || 0), 0);
                   return (
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 shadow-lg text-xs max-w-48">
+                    <div className="bg-surface border border-slate-200 rounded-lg px-3 py-2 shadow-lg text-xs max-w-48">
                       <p className="font-semibold mb-1">{label}</p>
                       {payload.filter((p) => p.value).map((p) => (
                         <p key={p.dataKey} style={{ color: p.fill }}>
@@ -865,15 +865,15 @@ export default function Progress() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-6 overflow-x-auto">
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6 overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap px-3
               ${activeTab === id
-                ? "bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                ? "bg-white dark:bg-slate-200 text-brand-600 dark:text-brand-400 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
               }`}
           >
             <Icon className="w-4 h-4" />
