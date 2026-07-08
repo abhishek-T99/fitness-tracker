@@ -482,6 +482,11 @@ FOODS = [
      "calories": 182, "protein_g":  6.5, "carbs_g": 36.0, "fat_g":  2.0, "fiber_g": 5.0,
      # Staple of Sherpa and Tibetan communities; mixed with butter tea to form dough
     },
+    {"name": "Sattu (roasted chickpea flour)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 413, "protein_g": 22.0, "carbs_g": 65.0, "fat_g":  6.0, "fiber_g": 16.0, "sugar_g": 2.0,
+     # Dry-roasted Bengal gram flour; high-protein South Asian staple used in drinks, laddoos, and parathas
+    },
     {"name": "Tingmo (Tibetan steamed bread)",
      "serving_size": 80, "serving_unit": "g",
      "calories": 188, "protein_g":  6.0, "carbs_g": 38.0, "fat_g":  1.5, "fiber_g": 1.5,
@@ -1086,6 +1091,310 @@ FOODS = [
      "calories": 210, "protein_g":  5.5, "carbs_g": 36.0, "fat_g":  5.5, "fiber_g": 1.5,
      # Thin wheat vermicelli stir-fried with vegetables and egg; popular tiffin/snack
     },
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROTEINS — ADDITIONAL MEAT, FISH & PLANT
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Turkey Breast (cooked, sliced)",    "serving_size": 100, "serving_unit": "g",
+     "calories": 135, "protein_g": 30.0, "carbs_g":  0.0, "fat_g":  1.5},
+    {"name": "Bacon (pan-fried)",                 "serving_size":  15, "serving_unit": "g",
+     "calories":  54, "protein_g":  3.7, "carbs_g":  0.1, "fat_g":  4.5},
+    {"name": "Ham (deli-sliced)",                 "serving_size":  28, "serving_unit": "g",
+     "calories":  36, "protein_g":  5.5, "carbs_g":  0.5, "fat_g":  1.2},
+    {"name": "Sardines (canned in oil)",          "serving_size": 100, "serving_unit": "g",
+     "calories": 208, "protein_g": 24.6, "carbs_g":  0.0, "fat_g": 11.5},
+    {"name": "Mackerel (cooked)",                 "serving_size": 100, "serving_unit": "g",
+     "calories": 262, "protein_g": 23.9, "carbs_g":  0.0, "fat_g": 17.8},
+    {"name": "Seitan (wheat gluten)",             "serving_size": 100, "serving_unit": "g",
+     "calories": 370, "protein_g": 75.0, "carbs_g": 14.0, "fat_g":  1.9, "fiber_g": 0.6},
+    {"name": "Hemp Seeds",                        "serving_size":  30, "serving_unit": "g",
+     "calories": 166, "protein_g":  9.5, "carbs_g":  2.6, "fat_g": 14.6, "fiber_g": 1.2},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # DAIRY — ADDITIONAL + PLANT MILKS
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Butter (unsalted)",                 "serving_size":  14, "serving_unit": "g",
+     "calories": 102, "protein_g":  0.1, "carbs_g":  0.0, "fat_g": 11.5},
+    {"name": "Sour Cream (full-fat)",             "serving_size":  30, "serving_unit": "g",
+     "calories":  59, "protein_g":  0.7, "carbs_g":  1.3, "fat_g":  5.8, "sugar_g": 1.2},
+    {"name": "Cream Cheese (full-fat)",           "serving_size":  29, "serving_unit": "g",
+     "calories":  98, "protein_g":  1.7, "carbs_g":  1.6, "fat_g":  9.8, "sugar_g": 1.3},
+    {"name": "Feta Cheese",                       "serving_size":  28, "serving_unit": "g",
+     "calories":  75, "protein_g":  4.0, "carbs_g":  1.2, "fat_g":  6.0},
+    {"name": "Parmesan (grated)",                 "serving_size":  15, "serving_unit": "g",
+     "calories":  61, "protein_g":  5.3, "carbs_g":  0.5, "fat_g":  4.0},
+    {"name": "Oat Milk (unsweetened)",            "serving_size": 240, "serving_unit": "ml",
+     "calories":  90, "protein_g":  3.0, "carbs_g": 16.0, "fat_g":  1.5, "fiber_g": 2.0, "sugar_g": 7.0},
+    {"name": "Almond Milk (unsweetened)",         "serving_size": 240, "serving_unit": "ml",
+     "calories":  30, "protein_g":  1.0, "carbs_g":  1.0, "fat_g":  2.5},
+    {"name": "Soy Milk (unsweetened)",            "serving_size": 240, "serving_unit": "ml",
+     "calories":  80, "protein_g":  7.0, "carbs_g":  4.0, "fat_g":  4.0},
+    {"name": "Kefir (plain, low-fat)",            "serving_size": 240, "serving_unit": "ml",
+     "calories": 110, "protein_g": 11.0, "carbs_g": 12.0, "fat_g":  2.0, "sugar_g": 12.0},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CARBOHYDRATES — ADDITIONAL GRAINS & BREADS
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Bagel (plain)",                     "serving_size": 105, "serving_unit": "g",
+     "calories": 270, "protein_g": 10.5, "carbs_g": 53.0, "fat_g":  1.5, "fiber_g": 2.1},
+    {"name": "English Muffin",                    "serving_size":  57, "serving_unit": "g",
+     "calories": 134, "protein_g":  4.4, "carbs_g": 26.0, "fat_g":  1.0, "fiber_g": 1.5},
+    {"name": "Pita Bread (whole wheat)",          "serving_size":  64, "serving_unit": "g",
+     "calories": 165, "protein_g":  6.3, "carbs_g": 33.5, "fat_g":  1.8, "fiber_g": 4.7},
+    {"name": "Naan (plain)",                      "serving_size":  90, "serving_unit": "g",
+     "calories": 262, "protein_g":  8.5, "carbs_g": 45.0, "fat_g":  5.5, "fiber_g": 1.5},
+    {"name": "Couscous (cooked)",                 "serving_size": 100, "serving_unit": "g",
+     "calories": 112, "protein_g":  3.8, "carbs_g": 23.2, "fat_g":  0.2, "fiber_g": 1.4},
+    {"name": "Bulgur Wheat (cooked)",             "serving_size": 100, "serving_unit": "g",
+     "calories":  83, "protein_g":  3.1, "carbs_g": 18.6, "fat_g":  0.2, "fiber_g": 4.5},
+    {"name": "Barley (cooked)",                   "serving_size": 100, "serving_unit": "g",
+     "calories": 123, "protein_g":  2.3, "carbs_g": 28.2, "fat_g":  0.4, "fiber_g": 3.8},
+    {"name": "Buckwheat (cooked)",                "serving_size": 100, "serving_unit": "g",
+     "calories":  92, "protein_g":  3.4, "carbs_g": 19.9, "fat_g":  0.6, "fiber_g": 2.7},
+    {"name": "Flour Tortilla",                    "serving_size":  45, "serving_unit": "g",
+     "calories": 146, "protein_g":  3.9, "carbs_g": 25.8, "fat_g":  3.5, "fiber_g": 1.6},
+    {"name": "Polenta (cooked)",                  "serving_size": 100, "serving_unit": "g",
+     "calories":  70, "protein_g":  1.5, "carbs_g": 15.6, "fat_g":  0.3, "fiber_g": 0.9},
+    {"name": "Crackers (whole grain)",            "serving_size":  25, "serving_unit": "g",
+     "calories":  84, "protein_g":  2.5, "carbs_g": 17.0, "fat_g":  0.5, "fiber_g": 3.5},
+    {"name": "French Fries (oven-baked)",         "serving_size": 100, "serving_unit": "g",
+     "calories": 165, "protein_g":  2.5, "carbs_g": 28.0, "fat_g":  5.0, "fiber_g": 2.5},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FRUITS — ADDITIONAL
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Watermelon",                        "serving_size": 280, "serving_unit": "g",
+     "calories":  85, "protein_g":  1.7, "carbs_g": 21.3, "fat_g":  0.4, "fiber_g": 1.1, "sugar_g": 17.7},
+    {"name": "Kiwi",                              "serving_size":  76, "serving_unit": "g",
+     "calories":  46, "protein_g":  0.9, "carbs_g": 11.1, "fat_g":  0.4, "fiber_g": 2.3, "sugar_g": 6.8},
+    {"name": "Pear",                              "serving_size": 178, "serving_unit": "g",
+     "calories": 101, "protein_g":  0.6, "carbs_g": 27.1, "fat_g":  0.2, "fiber_g": 5.5, "sugar_g": 17.4},
+    {"name": "Peach",                             "serving_size": 150, "serving_unit": "g",
+     "calories":  63, "protein_g":  1.5, "carbs_g": 15.2, "fat_g":  0.4, "fiber_g": 2.3, "sugar_g": 13.2},
+    {"name": "Cherries (sweet)",                  "serving_size": 138, "serving_unit": "g",
+     "calories":  87, "protein_g":  1.5, "carbs_g": 22.1, "fat_g":  0.3, "fiber_g": 2.9, "sugar_g": 17.7},
+    {"name": "Raspberries",                       "serving_size": 123, "serving_unit": "g",
+     "calories":  64, "protein_g":  1.5, "carbs_g": 14.7, "fat_g":  0.8, "fiber_g": 8.0, "sugar_g": 5.4},
+    {"name": "Blackberries",                      "serving_size": 144, "serving_unit": "g",
+     "calories":  62, "protein_g":  2.0, "carbs_g": 13.8, "fat_g":  0.7, "fiber_g": 7.6, "sugar_g": 7.0},
+    {"name": "Pomegranate (arils)",               "serving_size":  87, "serving_unit": "g",
+     "calories":  72, "protein_g":  1.5, "carbs_g": 16.3, "fat_g":  1.0, "fiber_g": 3.5, "sugar_g": 11.9},
+    {"name": "Papaya",                            "serving_size": 145, "serving_unit": "g",
+     "calories":  62, "protein_g":  0.7, "carbs_g": 15.7, "fat_g":  0.4, "fiber_g": 2.5, "sugar_g": 11.3},
+    {"name": "Grapefruit",                        "serving_size": 230, "serving_unit": "g",
+     "calories":  96, "protein_g":  1.8, "carbs_g": 24.5, "fat_g":  0.3, "fiber_g": 3.7, "sugar_g": 20.6},
+    {"name": "Coconut (fresh flesh)",             "serving_size":  45, "serving_unit": "g",
+     "calories": 159, "protein_g":  1.5, "carbs_g":  6.8, "fat_g": 15.1, "fiber_g": 4.0, "sugar_g": 2.8},
+    {"name": "Fig (fresh)",                       "serving_size":  50, "serving_unit": "g",
+     "calories":  37, "protein_g":  0.4, "carbs_g":  9.6, "fat_g":  0.1, "fiber_g": 1.5, "sugar_g": 8.1},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # VEGETABLES — ADDITIONAL
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Brussels Sprouts (cooked)",         "serving_size": 100, "serving_unit": "g",
+     "calories":  43, "protein_g":  3.4, "carbs_g":  8.9, "fat_g":  0.3, "fiber_g": 3.8},
+    {"name": "Celery (raw)",                      "serving_size": 110, "serving_unit": "g",
+     "calories":  17, "protein_g":  0.8, "carbs_g":  3.2, "fat_g":  0.2, "fiber_g": 1.7},
+    {"name": "Onion (raw)",                       "serving_size": 110, "serving_unit": "g",
+     "calories":  46, "protein_g":  1.3, "carbs_g": 10.7, "fat_g":  0.1, "fiber_g": 2.0, "sugar_g": 5.9},
+    {"name": "Beetroot (cooked)",                 "serving_size": 100, "serving_unit": "g",
+     "calories":  44, "protein_g":  1.7, "carbs_g": 10.0, "fat_g":  0.2, "fiber_g": 2.0, "sugar_g": 8.0},
+    {"name": "Snow Peas / Snap Peas (raw)",       "serving_size": 100, "serving_unit": "g",
+     "calories":  42, "protein_g":  2.8, "carbs_g":  7.6, "fat_g":  0.2, "fiber_g": 2.6},
+    {"name": "Butternut Squash (cooked)",         "serving_size": 100, "serving_unit": "g",
+     "calories":  45, "protein_g":  1.0, "carbs_g": 11.7, "fat_g":  0.1, "fiber_g": 1.8, "sugar_g": 2.2},
+    {"name": "Sweet Corn (cooked kernels)",       "serving_size": 100, "serving_unit": "g",
+     "calories":  96, "protein_g":  3.4, "carbs_g": 21.0, "fat_g":  1.5, "fiber_g": 2.4, "sugar_g": 4.5},
+    {"name": "Arugula / Rocket (raw)",            "serving_size":  40, "serving_unit": "g",
+     "calories":  10, "protein_g":  1.0, "carbs_g":  1.5, "fat_g":  0.3, "fiber_g": 0.6},
+    {"name": "Bok Choy (cooked)",                 "serving_size": 100, "serving_unit": "g",
+     "calories":  13, "protein_g":  1.8, "carbs_g":  1.8, "fat_g":  0.2, "fiber_g": 1.2},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # FATS — ADDITIONAL NUTS & SEEDS
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Pistachios",                        "serving_size":  28, "serving_unit": "g",
+     "calories": 159, "protein_g":  5.7, "carbs_g":  7.7, "fat_g": 12.9, "fiber_g": 3.0},
+    {"name": "Pecans",                            "serving_size":  28, "serving_unit": "g",
+     "calories": 196, "protein_g":  2.6, "carbs_g":  3.9, "fat_g": 20.4, "fiber_g": 2.7},
+    {"name": "Macadamia Nuts",                    "serving_size":  28, "serving_unit": "g",
+     "calories": 204, "protein_g":  2.2, "carbs_g":  3.6, "fat_g": 21.6, "fiber_g": 2.4},
+    {"name": "Sunflower Seeds (roasted)",         "serving_size":  28, "serving_unit": "g",
+     "calories": 165, "protein_g":  5.5, "carbs_g":  6.8, "fat_g": 14.4, "fiber_g": 3.1},
+    {"name": "Pumpkin Seeds / Pepitas (roasted)", "serving_size":  28, "serving_unit": "g",
+     "calories": 163, "protein_g":  8.5, "carbs_g":  4.2, "fat_g": 14.0, "fiber_g": 1.8},
+    {"name": "Sesame Seeds",                      "serving_size":  15, "serving_unit": "g",
+     "calories":  86, "protein_g":  2.5, "carbs_g":  3.5, "fat_g":  7.3, "fiber_g": 1.8},
+    {"name": "Tahini",                            "serving_size":  15, "serving_unit": "g",
+     "calories":  89, "protein_g":  2.6, "carbs_g":  3.2, "fat_g":  8.0, "fiber_g": 1.4},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # CONDIMENTS & SAUCES — ADDITIONAL
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Ketchup",                           "serving_size":  17, "serving_unit": "g",
+     "calories":  20, "protein_g":  0.3, "carbs_g":  4.8, "fat_g":  0.0, "sugar_g": 4.1},
+    {"name": "Mustard (yellow)",                  "serving_size":   5, "serving_unit": "g",
+     "calories":   3, "protein_g":  0.2, "carbs_g":  0.3, "fat_g":  0.2},
+    {"name": "Mayonnaise (regular)",              "serving_size":  14, "serving_unit": "g",
+     "calories":  94, "protein_g":  0.1, "carbs_g":  0.1, "fat_g": 10.4},
+    {"name": "Barbecue Sauce",                    "serving_size":  32, "serving_unit": "g",
+     "calories":  50, "protein_g":  0.3, "carbs_g": 12.0, "fat_g":  0.0, "sugar_g": 9.0},
+    {"name": "Pesto (basil)",                     "serving_size":  30, "serving_unit": "g",
+     "calories": 155, "protein_g":  3.5, "carbs_g":  2.0, "fat_g": 15.5, "fiber_g": 0.5},
+    {"name": "Tomato Paste",                      "serving_size":  30, "serving_unit": "g",
+     "calories":  27, "protein_g":  1.4, "carbs_g":  6.3, "fat_g":  0.2, "fiber_g": 1.4},
+    {"name": "Fish Sauce",                        "serving_size":  18, "serving_unit": "ml",
+     "calories":  13, "protein_g":  1.3, "carbs_g":  1.3, "fat_g":  0.0},
+    {"name": "Oyster Sauce",                      "serving_size":  18, "serving_unit": "g",
+     "calories":  29, "protein_g":  0.4, "carbs_g":  6.0, "fat_g":  0.1, "sugar_g": 3.0},
+    {"name": "Balsamic Vinegar",                  "serving_size":  16, "serving_unit": "ml",
+     "calories":  14, "protein_g":  0.1, "carbs_g":  2.7, "fat_g":  0.0, "sugar_g": 2.4},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # BEVERAGES — ADDITIONAL
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Green Tea (brewed)",                "serving_size": 240, "serving_unit": "ml",
+     "calories":   2, "protein_g":  0.5, "carbs_g":  0.0, "fat_g":  0.0},
+    {"name": "Espresso (single shot)",            "serving_size":  30, "serving_unit": "ml",
+     "calories":   3, "protein_g":  0.1, "carbs_g":  0.0, "fat_g":  0.1},
+    {"name": "Oat Milk Latte (medium)",           "serving_size": 300, "serving_unit": "ml",
+     "calories": 150, "protein_g":  5.0, "carbs_g": 22.0, "fat_g":  5.0, "sugar_g": 12.0},
+    {"name": "Energy Drink (generic, 250ml)",     "serving_size": 250, "serving_unit": "ml",
+     "calories": 113, "protein_g":  0.0, "carbs_g": 28.0, "fat_g":  0.0, "sugar_g": 27.0},
+    {"name": "Protein Shake (whey + milk, 300ml)","serving_size": 300, "serving_unit": "ml",
+     "calories": 210, "protein_g": 27.0, "carbs_g": 17.0, "fat_g":  4.0, "sugar_g": 12.0},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # COMMON COOKED MEALS
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Scrambled Eggs (2 large, butter)",  "serving_size": 110, "serving_unit": "g",
+     "calories": 182, "protein_g": 12.5, "carbs_g":  1.5, "fat_g": 14.0},
+    {"name": "Omelette (2 eggs, plain)",          "serving_size": 100, "serving_unit": "g",
+     "calories": 154, "protein_g": 11.5, "carbs_g":  0.6, "fat_g": 11.8},
+    {"name": "Pancake (plain, 1 medium)",         "serving_size":  38, "serving_unit": "g",
+     "calories":  74, "protein_g":  2.0, "carbs_g": 14.0, "fat_g":  1.4, "sugar_g": 2.0},
+    {"name": "Pizza Slice (cheese, generic)",     "serving_size": 107, "serving_unit": "g",
+     "calories": 272, "protein_g": 12.3, "carbs_g": 33.6, "fat_g":  9.8, "fiber_g": 2.3},
+    {"name": "Chicken Sandwich (plain)",          "serving_size": 200, "serving_unit": "g",
+     "calories": 395, "protein_g": 29.0, "carbs_g": 42.0, "fat_g": 13.0, "fiber_g": 1.5},
+    {"name": "Caesar Salad (with dressing)",      "serving_size": 150, "serving_unit": "g",
+     "calories": 177, "protein_g":  6.0, "carbs_g":  7.5, "fat_g": 14.3, "fiber_g": 2.3},
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SOUTH ASIAN — FLOURS, GRAINS & STAPLES
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Besan (raw chickpea flour)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 387, "protein_g": 22.0, "carbs_g": 58.0, "fat_g":  6.0, "fiber_g": 10.0,
+     # Unroasted chickpea flour; used in pakoda batter, kadhi, and sweets — distinct from sattu
+    },
+    {"name": "Suji / Semolina (raw)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 360, "protein_g": 12.7, "carbs_g": 73.0, "fat_g":  1.1, "fiber_g": 3.9,
+     # Coarse wheat flour; base for upma, halwa, and rava dosa
+    },
+    {"name": "Sabudana / Sago (dry)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 352, "protein_g":  0.2, "carbs_g": 86.4, "fat_g":  0.2, "fiber_g": 0.9,
+     # Tapioca pearls; eaten as khichdi or papad; popular during Hindu fasting
+    },
+    {"name": "Sabudana Khichdi (cooked)",
+     "serving_size": 150, "serving_unit": "g",
+     "calories": 290, "protein_g":  5.0, "carbs_g": 48.0, "fat_g":  8.0, "fiber_g": 1.5,
+     # Soaked sago stir-fried with peanuts, potato, and cumin; popular fasting meal
+    },
+    {"name": "Upma (semolina porridge, cooked)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 215, "protein_g":  5.5, "carbs_g": 35.0, "fat_g":  6.5, "fiber_g": 2.5,
+     # Suji cooked with mustard seeds, curry leaves, onion, and vegetables
+    },
+
+    # ── South Indian Breakfasts ───────────────────────────────────────────────
+    {"name": "Idli (steamed rice cake, 2 pieces)",
+     "serving_size": 80, "serving_unit": "g",
+     "calories": 103, "protein_g":  3.5, "carbs_g": 20.5, "fat_g":  0.4, "fiber_g": 1.0,
+     # Fermented rice and urad dal batter steamed in moulds; very easy to digest
+    },
+    {"name": "Dosa (plain, 1 piece)",
+     "serving_size": 90, "serving_unit": "g",
+     "calories": 168, "protein_g":  4.5, "carbs_g": 30.0, "fat_g":  3.5, "fiber_g": 1.5,
+     # Fermented rice-lentil crepe cooked on a hot griddle with oil
+    },
+
+    # ── South Asian Dairy & Sweets ────────────────────────────────────────────
+    {"name": "Mawa / Khoya (reduced milk solids)",
+     "serving_size": 50, "serving_unit": "g",
+     "calories": 165, "protein_g":  7.5, "carbs_g": 13.0, "fat_g":  9.5, "sugar_g": 13.0,
+     # Milk simmered until almost all water evaporates; base for barfi, gulab jamun, halwa
+    },
+    {"name": "Laddoo (besan / motichoor)",
+     "serving_size": 40, "serving_unit": "g",
+     "calories": 195, "protein_g":  4.5, "carbs_g": 25.0, "fat_g":  9.0, "fiber_g": 1.0, "sugar_g": 18.0,
+     # Round sweet ball made from roasted chickpea flour, ghee, and sugar
+    },
+    {"name": "Gajar ka Halwa (carrot halwa)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 220, "protein_g":  4.5, "carbs_g": 30.0, "fat_g":  9.5, "fiber_g": 2.0, "sugar_g": 24.0,
+     # Slow-cooked grated carrots with milk, ghee, and sugar; popular winter dessert
+    },
+    {"name": "Raita (yogurt with cucumber)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories":  50, "protein_g":  2.8, "carbs_g":  4.5, "fat_g":  2.2, "fiber_g": 0.3,
+     # Chilled yogurt dip with grated cucumber, roasted cumin, and coriander
+    },
+
+    # ── South Asian Mains ─────────────────────────────────────────────────────
+    {"name": "Biryani (chicken, cooked)",
+     "serving_size": 250, "serving_unit": "g",
+     "calories": 420, "protein_g": 28.0, "carbs_g": 52.0, "fat_g": 10.0, "fiber_g": 2.5,
+     # Long-grain rice layered with spiced chicken and aromatics; one-pot festive dish
+    },
+    {"name": "Khichdi (rice and lentil porridge, cooked)",
+     "serving_size": 200, "serving_unit": "g",
+     "calories": 230, "protein_g":  9.5, "carbs_g": 40.0, "fat_g":  4.0, "fiber_g": 3.5,
+     # Soft-cooked rice and moong dal with turmeric and ghee; comfort food and sick-day staple
+    },
+    {"name": "Chicken Tikka (grilled)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 195, "protein_g": 28.0, "carbs_g":  3.5, "fat_g":  7.5, "fiber_g": 0.5,
+     # Boneless chicken marinated in spiced yogurt and grilled in a tandoor
+    },
+    {"name": "Paneer Tikka (grilled)",
+     "serving_size": 100, "serving_unit": "g",
+     "calories": 248, "protein_g": 13.5, "carbs_g":  5.0, "fat_g": 19.5, "fiber_g": 0.5,
+     # Paneer cubes marinated in spiced yogurt and grilled; popular vegetarian starter
+    },
+
+    # ── Nepali Sweets ─────────────────────────────────────────────────────────
+    {"name": "Thekuwa (Terai sesame-jaggery sweet)",
+     "serving_size": 30, "serving_unit": "g",
+     "calories": 138, "protein_g":  2.5, "carbs_g": 20.0, "fat_g":  5.5, "fiber_g": 1.5, "sugar_g": 12.0,
+     # Wheat flour biscuit sweetened with jaggery and studded with sesame; Chhath Puja staple
+    },
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # LEMONADE & LEMON DRINKS
+    # ══════════════════════════════════════════════════════════════════════════
+    {"name": "Lemonade (homemade, sweetened)",    "serving_size": 240, "serving_unit": "ml",
+     "calories": 100, "protein_g":  0.2, "carbs_g": 26.0, "fat_g":  0.0, "sugar_g": 25.0},
+    {"name": "Lemonade (store-bought)",           "serving_size": 240, "serving_unit": "ml",
+     "calories": 110, "protein_g":  0.0, "carbs_g": 28.0, "fat_g":  0.0, "sugar_g": 27.0},
+    {"name": "Pink Lemonade",                     "serving_size": 240, "serving_unit": "ml",
+     "calories": 110, "protein_g":  0.2, "carbs_g": 28.0, "fat_g":  0.0, "sugar_g": 27.0},
+    {"name": "Sparkling Lemonade",                "serving_size": 240, "serving_unit": "ml",
+     "calories":  95, "protein_g":  0.0, "carbs_g": 24.0, "fat_g":  0.0, "sugar_g": 23.0},
+    {"name": "Mint Lemonade",                     "serving_size": 240, "serving_unit": "ml",
+     "calories": 100, "protein_g":  0.2, "carbs_g": 26.0, "fat_g":  0.0, "sugar_g": 25.0},
+    {"name": "Ginger Lemonade",                   "serving_size": 240, "serving_unit": "ml",
+     "calories": 105, "protein_g":  0.2, "carbs_g": 27.0, "fat_g":  0.0, "sugar_g": 26.0},
+    {"name": "Honey Lemon Water",                 "serving_size": 240, "serving_unit": "ml",
+     "calories":  65, "protein_g":  0.1, "carbs_g": 18.0, "fat_g":  0.0, "sugar_g": 17.0},
+    {"name": "Nimbu Pani (fresh lime water, sweetened)", "serving_size": 240, "serving_unit": "ml",
+     "calories":  60, "protein_g":  0.2, "carbs_g": 16.0, "fat_g":  0.0, "sugar_g": 15.0,
+     # Still (non-carbonated) Indian fresh lime juice with sugar and salt; everyday summer drink
+    },
+    {"name": "Lemon Iced Tea (sweetened)",        "serving_size": 240, "serving_unit": "ml",
+     "calories":  90, "protein_g":  0.0, "carbs_g": 22.0, "fat_g":  0.0, "sugar_g": 21.0},
 ]
 
 
