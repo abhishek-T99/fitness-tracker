@@ -182,6 +182,22 @@ export const progressApi = {
     api.get("/workouts/activity-heatmap/", { params: { days } }).then((r) => r.data),
   bodyComposition: (days = 90) =>
     api.get("/measurements/body-composition/", { params: { days } }).then((r) => r.data),
+  personalRecords: () =>
+    api.get("/workouts/personal-records/").then((r) => r.data),
+  overloadStreaks: () =>
+    api.get("/workouts/overload-streaks/").then((r) => r.data),
+  rpeTrend: (days = 90) =>
+    api.get("/workouts/rpe-trend/", { params: { days } }).then((r) => r.data),
+  durationTrend: (weeks = 12) =>
+    api.get("/workouts/duration-trend/", { params: { weeks } }).then((r) => r.data),
+  sessionDensity: (weeks = 12) =>
+    api.get("/workouts/session-density/", { params: { weeks } }).then((r) => r.data),
+  cardioSummary: (days = 90) =>
+    api.get("/workouts/cardio-summary/", { params: { days } }).then((r) => r.data),
+  dowHeatmap: (weeks = 12) =>
+    api.get("/workouts/dow-heatmap/", { params: { weeks } }).then((r) => r.data),
+  muscleBalance: (weeks = 8) =>
+    api.get("/workouts/muscle-balance/", { params: { weeks } }).then((r) => r.data),
 };
 
 // Integrations

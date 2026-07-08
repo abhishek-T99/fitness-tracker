@@ -1,9 +1,9 @@
 from collections import defaultdict
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.core.cache import cache
-from django.db.models import Count, ExpressionWrapper, F, FloatField, Sum
-from django.db.models.functions import TruncDate, TruncWeek
+from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q, Sum
+from django.db.models.functions import ExtractIsoWeekDay, TruncDate, TruncWeek
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view, inline_serializer
 from rest_framework import permissions, serializers, status, viewsets
@@ -321,6 +321,520 @@ class WorkoutViewSet(viewsets.ModelViewSet):
             }
             for r in workout_rows
         ]
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    # ── New insight endpoints ──────────────────────────────────────────────────
+
+    @action(detail=False, methods=["get"], url_path="personal-records")
+    def personal_records(self, request):
+        """
+        All-time PRs (estimated 1RM, max weight, max reps) per exercise the user
+        has trained in the last 730 days, sorted by estimated 1RM descending.
+        Includes a flag when any PR was set within the last 30 days.
+        """
+        key = cache_keys.personal_records(request.user.id)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(days=730)
+        thirty_days_ago = timezone.now().date() - timedelta(days=30)
+
+        sets = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__gte=since,
+                is_warmup=False,
+                completed=True,
+                reps__gt=0,
+                weight__isnull=False,
+            )
+            .annotate(
+                session_date=TruncDate("workout_exercise__workout__started_at"),
+                ex_id=F("workout_exercise__exercise_id"),
+                ex_name=F("workout_exercise__exercise__name"),
+                ex_muscle=F("workout_exercise__exercise__primary_muscle"),
+            )
+            .values("session_date", "ex_id", "ex_name", "ex_muscle", "reps", "weight")
+            .order_by("session_date")
+        )
+
+        by_exercise = {}
+        for s in sets:
+            w = float(s["weight"])
+            r = int(s["reps"])
+            d_iso = s["session_date"].isoformat()
+            ex_id = s["ex_id"]
+            one_rm = round(w * (1 + r / 30), 1)
+
+            if ex_id not in by_exercise:
+                by_exercise[ex_id] = {
+                    "exercise_id": ex_id,
+                    "exercise_name": s["ex_name"],
+                    "primary_muscle": s["ex_muscle"],
+                    "pr_1rm": 0.0, "pr_1rm_date": None,
+                    "pr_weight": 0.0, "pr_weight_date": None,
+                    "pr_reps": 0, "pr_reps_date": None,
+                }
+
+            entry = by_exercise[ex_id]
+            if one_rm > entry["pr_1rm"]:
+                entry["pr_1rm"] = one_rm
+                entry["pr_1rm_date"] = d_iso
+            if w > entry["pr_weight"]:
+                entry["pr_weight"] = w
+                entry["pr_weight_date"] = d_iso
+            if r > entry["pr_reps"]:
+                entry["pr_reps"] = r
+                entry["pr_reps_date"] = d_iso
+
+        for entry in by_exercise.values():
+            entry["has_recent_pr"] = any(
+                entry[field] and date.fromisoformat(entry[field]) >= thirty_days_ago
+                for field in ("pr_1rm_date", "pr_weight_date", "pr_reps_date")
+            )
+
+        payload = sorted(by_exercise.values(), key=lambda x: x["pr_1rm"], reverse=True)
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="overload-streaks")
+    def overload_streaks(self, request):
+        """
+        For each exercise trained in the last 365 days, counts how many consecutive
+        sessions (from most recent backwards) showed a higher estimated 1RM than the
+        previous session.  Only exercises with an active streak (≥1 improvement) are
+        returned, sorted by streak length descending.
+        """
+        key = cache_keys.overload_streaks(request.user.id)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(days=365)
+
+        sets = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__gte=since,
+                is_warmup=False,
+                completed=True,
+                reps__gt=0,
+                weight__isnull=False,
+            )
+            .annotate(
+                session_date=TruncDate("workout_exercise__workout__started_at"),
+                ex_id=F("workout_exercise__exercise_id"),
+                ex_name=F("workout_exercise__exercise__name"),
+            )
+            .values("session_date", "ex_id", "ex_name", "reps", "weight")
+            .order_by("session_date")
+        )
+
+        # Best 1RM per exercise per session date
+        by_exercise = {}
+        for s in sets:
+            ex_id = s["ex_id"]
+            d_iso = s["session_date"].isoformat()
+            orm = round(float(s["weight"]) * (1 + int(s["reps"]) / 30), 1)
+
+            if ex_id not in by_exercise:
+                by_exercise[ex_id] = {"name": s["ex_name"], "sessions": {}}
+
+            existing = by_exercise[ex_id]["sessions"].get(d_iso, 0.0)
+            by_exercise[ex_id]["sessions"][d_iso] = max(existing, orm)
+
+        result = []
+        for ex_id, data in by_exercise.items():
+            sessions = sorted(data["sessions"].items(), reverse=True)  # most recent first
+            if len(sessions) < 2:
+                continue
+
+            streak = 0
+            streak_since = None
+            for i in range(len(sessions) - 1):
+                curr_orm = sessions[i][1]
+                prev_orm = sessions[i + 1][1]
+                if curr_orm > prev_orm:
+                    streak += 1
+                    streak_since = sessions[i + 1][0]
+                else:
+                    break
+
+            if streak > 0:
+                result.append({
+                    "exercise_id": ex_id,
+                    "exercise_name": data["name"],
+                    "current_streak": streak,
+                    "streak_since": streak_since,
+                    "last_session_date": sessions[0][0],
+                    "last_1rm": sessions[0][1],
+                })
+
+        payload = sorted(result, key=lambda x: x["current_streak"], reverse=True)
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="rpe-trend")
+    def rpe_trend(self, request):
+        """Weekly average RPE (perceived exertion) trend from workout-level RPE ratings."""
+        try:
+            days = min(int(request.query_params.get("days", 90)), 365)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid days parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.rpe_trend(request.user.id, days)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(days=days)
+        rows = (
+            Workout.objects
+            .filter(
+                user=request.user,
+                status=Workout.Status.COMPLETED,
+                started_at__gte=since,
+                perceived_exertion__isnull=False,
+            )
+            .annotate(week=TruncWeek("started_at"))
+            .values("week")
+            .annotate(avg_rpe=Avg("perceived_exertion"), workout_count=Count("id"))
+            .order_by("week")
+        )
+
+        payload = [
+            {
+                "week_start": r["week"].date().isoformat(),
+                "avg_rpe": round(float(r["avg_rpe"]), 1),
+                "workout_count": r["workout_count"],
+            }
+            for r in rows
+        ]
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="duration-trend")
+    def duration_trend(self, request):
+        """Weekly average and total session duration trend."""
+        try:
+            weeks = min(int(request.query_params.get("weeks", 12)), 52)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid weeks parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.duration_trend(request.user.id, weeks)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(weeks=weeks)
+        rows = (
+            Workout.objects
+            .filter(
+                user=request.user,
+                status=Workout.Status.COMPLETED,
+                started_at__gte=since,
+                duration_min__isnull=False,
+            )
+            .annotate(week=TruncWeek("started_at"))
+            .values("week")
+            .annotate(
+                avg_duration_min=Avg("duration_min"),
+                total_duration_min=Sum("duration_min"),
+                workout_count=Count("id"),
+            )
+            .order_by("week")
+        )
+
+        payload = [
+            {
+                "week_start": r["week"].date().isoformat(),
+                "avg_duration_min": round(float(r["avg_duration_min"]), 1),
+                "total_duration_min": r["total_duration_min"] or 0,
+                "workout_count": r["workout_count"],
+            }
+            for r in rows
+        ]
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="session-density")
+    def session_density(self, request):
+        """
+        Weekly workout density: total volume (kg) divided by total duration (min).
+        Weeks where no workout has a duration_min value are excluded.
+        """
+        try:
+            weeks = min(int(request.query_params.get("weeks", 12)), 52)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid weeks parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.session_density(request.user.id, weeks)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(weeks=weeks)
+
+        volume_rows = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__gte=since,
+                is_warmup=False,
+                completed=True,
+                weight__gt=0,
+                reps__gt=0,
+            )
+            .annotate(week=TruncWeek("workout_exercise__workout__started_at"))
+            .values("week")
+            .annotate(
+                total_volume=Sum(ExpressionWrapper(F("weight") * F("reps"), output_field=FloatField()))
+            )
+        )
+        volume_map = {r["week"]: float(r["total_volume"]) for r in volume_rows}
+
+        duration_rows = (
+            Workout.objects
+            .filter(
+                user=request.user,
+                status=Workout.Status.COMPLETED,
+                started_at__gte=since,
+                duration_min__isnull=False,
+            )
+            .annotate(week=TruncWeek("started_at"))
+            .values("week")
+            .annotate(total_duration=Sum("duration_min"))
+            .order_by("week")
+        )
+
+        payload = []
+        for r in duration_rows:
+            week = r["week"]
+            total_vol = volume_map.get(week, 0.0)
+            total_dur = r["total_duration"] or 0
+            density = round(total_vol / total_dur, 1) if total_dur > 0 else 0.0
+            payload.append({
+                "week_start": week.date().isoformat(),
+                "density_kg_per_min": density,
+                "total_volume_kg": round(total_vol, 1),
+                "total_duration_min": total_dur,
+            })
+
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="cardio-summary")
+    def cardio_summary(self, request):
+        """
+        Cardio-specific summary: total distance, session count, avg heart rate,
+        plus weekly distance and HR trend.  Includes workouts where distance_km > 0
+        or avg_hr_bpm is recorded.
+        """
+        try:
+            days = min(int(request.query_params.get("days", 90)), 365)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid days parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.cardio_summary(request.user.id, days)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(days=days)
+        cardio_qs = Workout.objects.filter(
+            user=request.user,
+            status=Workout.Status.COMPLETED,
+            started_at__gte=since,
+        ).filter(Q(distance_km__gt=0) | Q(avg_hr_bpm__isnull=False))
+
+        agg = cardio_qs.aggregate(
+            total_distance=Sum("distance_km"),
+            total_sessions=Count("id"),
+            avg_hr=Avg("avg_hr_bpm"),
+        )
+
+        weekly_distance = list(
+            cardio_qs
+            .filter(distance_km__gt=0)
+            .annotate(week=TruncWeek("started_at"))
+            .values("week")
+            .annotate(distance_km=Sum("distance_km"), session_count=Count("id"))
+            .order_by("week")
+            .values_list("week", "distance_km", "session_count")
+        )
+
+        hr_trend = list(
+            cardio_qs
+            .filter(avg_hr_bpm__isnull=False)
+            .annotate(week=TruncWeek("started_at"))
+            .values("week")
+            .annotate(avg_hr_bpm=Avg("avg_hr_bpm"))
+            .order_by("week")
+            .values_list("week", "avg_hr_bpm")
+        )
+
+        avg_hr = agg["avg_hr"]
+        payload = {
+            "total_distance_km": round(float(agg["total_distance"] or 0), 1),
+            "total_sessions": agg["total_sessions"],
+            "avg_hr_bpm": round(float(avg_hr), 0) if avg_hr is not None else None,
+            "weekly_distance": [
+                {
+                    "week_start": week.date().isoformat(),
+                    "distance_km": round(float(dist), 1),
+                    "session_count": cnt,
+                }
+                for week, dist, cnt in weekly_distance
+            ],
+            "hr_trend": [
+                {
+                    "week_start": week.date().isoformat(),
+                    "avg_hr_bpm": round(float(hr), 0),
+                }
+                for week, hr in hr_trend
+            ],
+        }
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="dow-heatmap")
+    def dow_heatmap(self, request):
+        """
+        Workout count and average volume per ISO day of week (1=Mon … 7=Sun).
+        Always returns all 7 days so the frontend can render a complete grid.
+        """
+        try:
+            weeks = min(int(request.query_params.get("weeks", 12)), 52)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid weeks parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.dow_heatmap(request.user.id, weeks)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(weeks=weeks)
+
+        workout_rows = (
+            Workout.objects
+            .filter(user=request.user, status=Workout.Status.COMPLETED, started_at__gte=since)
+            .annotate(dow=ExtractIsoWeekDay("started_at"))
+            .values("dow")
+            .annotate(workout_count=Count("id"))
+        )
+        count_map = {r["dow"]: r["workout_count"] for r in workout_rows}
+
+        volume_rows = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__gte=since,
+                is_warmup=False,
+                completed=True,
+                weight__gt=0,
+                reps__gt=0,
+            )
+            .annotate(dow=ExtractIsoWeekDay("workout_exercise__workout__started_at"))
+            .values("dow")
+            .annotate(
+                total_volume=Sum(ExpressionWrapper(F("weight") * F("reps"), output_field=FloatField()))
+            )
+        )
+        volume_map = {r["dow"]: float(r["total_volume"]) for r in volume_rows}
+
+        DAY_NAMES = {
+            1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thursday",
+            5: "Friday", 6: "Saturday", 7: "Sunday",
+        }
+
+        payload = []
+        for dow in range(1, 8):
+            wc = count_map.get(dow, 0)
+            vol = volume_map.get(dow, 0.0)
+            payload.append({
+                "day_of_week": dow,
+                "day_name": DAY_NAMES[dow],
+                "workout_count": wc,
+                "total_volume_kg": round(vol, 1),
+                "avg_volume_kg": round(vol / wc, 1) if wc > 0 else 0.0,
+            })
+
+        cache.set(key, payload, cache_keys.PROGRESS_TTL)
+        return Response(payload)
+
+    @action(detail=False, methods=["get"], url_path="muscle-balance")
+    def muscle_balance(self, request):
+        """
+        Push/pull and upper/lower volume ratios plus per-muscle volume share,
+        computed from weighted working sets in the last N weeks.
+        """
+        try:
+            weeks = min(int(request.query_params.get("weeks", 8)), 52)
+        except (TypeError, ValueError):
+            return Response({"detail": "Invalid weeks parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        key = cache_keys.muscle_balance(request.user.id, weeks)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+
+        since = timezone.now() - timedelta(weeks=weeks)
+        rows = (
+            ExerciseSet.objects
+            .filter(
+                workout_exercise__workout__user=request.user,
+                workout_exercise__workout__status=Workout.Status.COMPLETED,
+                workout_exercise__workout__started_at__gte=since,
+                is_warmup=False,
+                completed=True,
+                weight__gt=0,
+                reps__gt=0,
+            )
+            .annotate(muscle=F("workout_exercise__exercise__primary_muscle"))
+            .values("muscle")
+            .annotate(
+                volume_kg=Sum(ExpressionWrapper(F("weight") * F("reps"), output_field=FloatField()))
+            )
+        )
+
+        PUSH_MUSCLES = {"chest", "shoulders", "triceps"}
+        PULL_MUSCLES = {"back", "biceps", "forearms"}
+        UPPER_MUSCLES = {"chest", "back", "shoulders", "biceps", "triceps", "forearms"}
+        LOWER_MUSCLES = {"quads", "hamstrings", "glutes", "calves"}
+
+        muscle_volumes = {r["muscle"]: round(float(r["volume_kg"]), 1) for r in rows}
+        total_volume = sum(muscle_volumes.values())
+
+        push_vol = sum(muscle_volumes.get(m, 0.0) for m in PUSH_MUSCLES)
+        pull_vol = sum(muscle_volumes.get(m, 0.0) for m in PULL_MUSCLES)
+        upper_vol = sum(muscle_volumes.get(m, 0.0) for m in UPPER_MUSCLES)
+        lower_vol = sum(muscle_volumes.get(m, 0.0) for m in LOWER_MUSCLES)
+
+        payload = {
+            "push_pull_ratio": round(push_vol / pull_vol, 2) if pull_vol > 0 else None,
+            "upper_lower_ratio": round(upper_vol / lower_vol, 2) if lower_vol > 0 else None,
+            "push_volume_kg": round(push_vol, 1),
+            "pull_volume_kg": round(pull_vol, 1),
+            "upper_volume_kg": round(upper_vol, 1),
+            "lower_volume_kg": round(lower_vol, 1),
+            "total_volume_kg": round(total_volume, 1),
+            "muscle_shares": [
+                {
+                    "muscle": muscle,
+                    "volume_kg": vol,
+                    "share_pct": round(vol / total_volume * 100, 1) if total_volume > 0 else 0.0,
+                }
+                for muscle, vol in sorted(muscle_volumes.items(), key=lambda x: x[1], reverse=True)
+            ],
+        }
         cache.set(key, payload, cache_keys.PROGRESS_TTL)
         return Response(payload)
 
