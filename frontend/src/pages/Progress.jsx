@@ -7,6 +7,13 @@
  *  5. Sessions  — RPE trend, duration trend, density, DOW heatmap, cardio summary
  *
  * Plus a GitHub-style workout calendar heatmap at the top of the page.
+ *
+ * Dark-mode colour contract (see index.css):
+ *   The `slate` scale is INVERTED in dark mode — slate-50…400 are dark fills/borders,
+ *   slate-500…900 are light text colours.  Never use dark:bg-slate-700+ (resolves to
+ *   near-white fills) or dark:text-slate-300- (resolves to near-black text).
+ *   Use bg-surface for card-like floating elements; omit dark: overrides for
+ *   any slate class that already adapts correctly via the CSS-variable remap.
  */
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -55,11 +62,12 @@ const MUSCLE_LABELS = {
 // ── Shared chart styles ───────────────────────────────────────────────────────
 const CHART_MARGIN = { top: 8, right: 16, left: 0, bottom: 0 };
 
+// bg-surface: white in light (#fff), card-dark in dark (#111B2E) — no dark: override needed.
 function ChartTooltipStyle({ active, payload, label, unit = "" }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-surface border border-slate-200 rounded-lg px-3 py-2 shadow-lg text-xs">
-      <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1">{label}</p>
+      <p className="font-semibold text-slate-700 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} style={{ color: p.color }}>
           {p.name}: {typeof p.value === "number" ? p.value.toFixed(1) : p.value}{unit}
@@ -256,7 +264,7 @@ function StrengthTab({ days, onDaysChange }) {
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
                 ${selectedEx?.id === e.id
                   ? "bg-brand-500 text-white border-brand-500"
-                  : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-brand-400"
+                  : "bg-surface border-slate-200 text-slate-700 hover:border-brand-400"
                 }`}
             >
               {e.name}
@@ -327,7 +335,7 @@ function VolumeTab({ weeks, onWeeksChange }) {
     }));
   }, [balance]);
 
-  const pushPullRatio = balance.push_pull_ratio;
+  const pushPullRatio  = balance.push_pull_ratio;
   const upperLowerRatio = balance.upper_lower_ratio;
 
   function RatioBar({ label, value, idealMin = 0.8, idealMax = 1.2 }) {
@@ -341,7 +349,7 @@ function VolumeTab({ weeks, onWeeksChange }) {
     return (
       <div>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
+          <span className="text-sm text-slate-600">{label}</span>
           <span className={`text-sm font-bold tabular-nums ${isBalanced ? "text-emerald-500" : "text-amber-500"}`}>
             {value.toFixed(2)}
             <span className="text-xs font-normal text-slate-400 ml-1">
@@ -349,7 +357,8 @@ function VolumeTab({ weeks, onWeeksChange }) {
             </span>
           </span>
         </div>
-        <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+        {/* bg-slate-100: light grey in light (#F1F5F9), dark navy in dark (#1E2A42) */}
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${isBalanced ? "bg-emerald-400" : "bg-amber-400"}`}
             style={{ width: `${Math.min(value / 2, 1) * 100}%` }}
@@ -389,7 +398,7 @@ function VolumeTab({ weeks, onWeeksChange }) {
                           {MUSCLE_LABELS[p.dataKey] || p.dataKey}: {Math.round(p.value).toLocaleString()} kg
                         </p>
                       ))}
-                      <p className="border-t border-slate-100 dark:border-slate-700 mt-1 pt-1 font-medium text-slate-600 dark:text-slate-300">
+                      <p className="border-t border-slate-200 mt-1 pt-1 font-medium text-slate-600">
                         Total: {Math.round(total).toLocaleString()} kg
                       </p>
                     </div>
@@ -422,6 +431,7 @@ function VolumeTab({ weeks, onWeeksChange }) {
               <RatioBar label="Push / Pull" value={pushPullRatio} idealMin={0.8} idealMax={1.2} />
               <RatioBar label="Upper / Lower" value={upperLowerRatio} idealMin={1.0} idealMax={2.5} />
 
+              {/* bg-slate-100: subtle fill (#F1F5F9 light / #1E2A42 dark) */}
               <div className="grid grid-cols-2 gap-3 pt-2">
                 {[
                   { label: "Push", value: balance.push_volume_kg, color: "#3b82f6" },
@@ -429,11 +439,11 @@ function VolumeTab({ weeks, onWeeksChange }) {
                   { label: "Upper", value: balance.upper_volume_kg, color: "#f59e0b" },
                   { label: "Lower", value: balance.lower_volume_kg, color: "#8b5cf6" },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+                  <div key={label} className="bg-slate-100 rounded-lg p-3">
                     <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color }}>
                       {label}
                     </p>
-                    <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-slate-100">
+                    <p className="text-lg font-bold tabular-nums text-slate-900">
                       {Math.round(value || 0).toLocaleString()}
                       <span className="text-xs font-normal text-slate-400 ml-1">kg</span>
                     </p>
@@ -489,7 +499,8 @@ function RecordsTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                {/* text-slate-400: muted (#94a3b8 light / #7C8BA5 dark) — no dark: override needed */}
+                <tr className="text-left text-slate-400 text-xs uppercase tracking-wider border-b border-slate-200">
                   <th className="pb-2.5 font-medium">Exercise</th>
                   <th className="pb-2.5 font-medium">Muscle</th>
                   <th className="pb-2.5 font-medium text-right">Est. 1RM</th>
@@ -498,10 +509,12 @@ function RecordsTab() {
                   <th className="pb-2.5 font-medium"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+              {/* divide-slate-200: #E2E8F0 light / #26344E dark — visible in both modes */}
+              <tbody className="divide-y divide-slate-200">
                 {prs.map((pr) => (
-                  <tr key={pr.exercise_id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="py-2.5 font-medium text-slate-800 dark:text-slate-200 pr-4">{pr.exercise_name}</td>
+                  <tr key={pr.exercise_id} className="group hover:bg-slate-100 transition-colors">
+                    {/* text-slate-800: #1E293B light / #DEE6F3 dark — main body text in both modes */}
+                    <td className="py-2.5 font-medium text-slate-800 pr-4">{pr.exercise_name}</td>
                     <td className="py-2.5 pr-4">
                       <span
                         className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide text-white"
@@ -510,13 +523,14 @@ function RecordsTab() {
                         {MUSCLE_LABELS[pr.primary_muscle] || pr.primary_muscle}
                       </span>
                     </td>
-                    <td className="py-2.5 text-right font-mono font-semibold text-slate-700 dark:text-slate-300">
+                    {/* text-slate-700: label colour — #334155 light / #CBD5E8 dark */}
+                    <td className="py-2.5 text-right font-mono font-semibold text-slate-700">
                       {pr.pr_1rm.toFixed(1)} <span className="text-slate-400 text-xs">kg</span>
                     </td>
-                    <td className="py-2.5 text-right font-mono text-slate-600 dark:text-slate-400">
+                    <td className="py-2.5 text-right font-mono text-slate-600">
                       {pr.pr_weight.toFixed(1)} <span className="text-slate-400 text-xs">kg</span>
                     </td>
-                    <td className="py-2.5 text-right font-mono text-slate-600 dark:text-slate-400">
+                    <td className="py-2.5 text-right font-mono text-slate-600">
                       {pr.pr_reps}
                     </td>
                     <td className="py-2.5 pl-4">
@@ -548,9 +562,10 @@ function RecordsTab() {
         ) : (
           <div className="space-y-3">
             {streaks.map((s) => (
-              <div key={s.exercise_id} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800 last:border-0">
+              // border-slate-200: #E2E8F0 light / #26344E dark — clean separator
+              <div key={s.exercise_id} className="flex items-center justify-between py-2 border-b border-slate-200 last:border-0">
                 <div className="min-w-0">
-                  <p className="font-medium text-sm text-slate-800 dark:text-slate-200 truncate">{s.exercise_name}</p>
+                  <p className="font-medium text-sm text-slate-800 truncate">{s.exercise_name}</p>
                   <p className="text-xs text-slate-400 mt-0.5">
                     Since {format(parseISO(s.streak_since), "MMM d, yyyy")} &middot; last session {format(parseISO(s.last_session_date), "MMM d")}
                   </p>
@@ -701,10 +716,13 @@ function SessionsTab({ days, onDaysChange, weeks, onWeeksChange }) {
                 <div key={d.day_of_week} className="text-center">
                   <p className="text-[10px] font-semibold text-slate-400 mb-2">{d.day_name.slice(0, 3)}</p>
                   <div
-                    className="mx-auto w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
+                    className={`mx-auto w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-colors ${
+                      intensity === 0 ? "text-slate-400" : "text-blue-500"
+                    }`}
                     style={{
-                      backgroundColor: intensity > 0 ? `rgba(59,130,246,${0.15 + intensity * 0.7})` : undefined,
-                      color: intensity > 0.5 ? "#1d4ed8" : "#94a3b8",
+                      backgroundColor: intensity > 0
+                        ? `rgba(59,130,246,${0.12 + intensity * 0.6})`
+                        : undefined,
                     }}
                     title={`${d.workout_count} sessions · avg ${d.avg_volume_kg.toLocaleString()} kg`}
                   >
@@ -733,15 +751,17 @@ function SessionsTab({ days, onDaysChange, weeks, onWeeksChange }) {
           <EmptyChart message="Log distance or heart rate on workouts to track cardio" />
         ) : (
           <div className="space-y-5">
+            {/* bg-slate-100: subtle fill (#F1F5F9 light / #1E2A42 dark) */}
             <div className="grid grid-cols-3 gap-4">
               {[
-                { icon: MapPin, label: "Total Distance", value: `${(cardio.total_distance_km || 0).toFixed(1)} km`, color: "#3b82f6" },
-                { icon: Activity, label: "Sessions", value: cardio.total_sessions, color: "#10b981" },
-                { icon: Heart, label: "Avg Heart Rate", value: cardio.avg_hr_bpm != null ? `${cardio.avg_hr_bpm} bpm` : "—", color: "#ef4444" },
+                { icon: MapPin,   label: "Total Distance", value: `${(cardio.total_distance_km || 0).toFixed(1)} km`, color: "#3b82f6" },
+                { icon: Activity, label: "Sessions",       value: cardio.total_sessions,                              color: "#10b981" },
+                { icon: Heart,    label: "Avg Heart Rate", value: cardio.avg_hr_bpm != null ? `${cardio.avg_hr_bpm} bpm` : "—", color: "#ef4444" },
               ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 text-center">
+                <div key={label} className="bg-slate-100 rounded-xl p-4 text-center">
                   <Icon className="w-5 h-5 mx-auto mb-2" style={{ color }} />
-                  <p className="text-xl font-bold tabular-nums text-slate-900 dark:text-slate-100">{value}</p>
+                  {/* text-slate-900: #0F172A light / #E6EDF7 dark — heading weight */}
+                  <p className="text-xl font-bold tabular-nums text-slate-900">{value}</p>
                   <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wide font-medium">{label}</p>
                 </div>
               ))}
@@ -789,13 +809,15 @@ function CalendarStatsSidebar({ streak = {}, heatmapData = [] }) {
   ];
 
   return (
-    <div className="shrink-0 w-44 pl-6 ml-2 border-l border-slate-100 dark:border-slate-700 flex flex-col justify-center gap-5">
+    // border-slate-200: #E2E8F0 light / #26344E dark — visible separator in both modes
+    <div className="shrink-0 w-44 pl-6 ml-2 border-l border-slate-200 flex flex-col justify-center gap-5">
       {stats.map(({ label, value, unit }) => (
         <div key={label}>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1 leading-none">
             {label}
           </p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-none tabular-nums">
+          {/* text-slate-900: #0F172A light / #E6EDF7 dark — heading colour */}
+          <p className="text-2xl font-bold text-slate-900 leading-none tabular-nums">
             {value}
             {unit && <span className="text-xs font-normal text-slate-400 ml-1">{unit}</span>}
           </p>
@@ -851,7 +873,8 @@ export default function Progress() {
 
       {/* Calendar heatmap + stats */}
       <div className="card p-5 mb-6">
-        <h3 className="font-semibold mb-4 text-sm text-slate-700 dark:text-slate-300">Workout Activity</h3>
+        {/* text-slate-700: #334155 light / #CBD5E8 dark — correct label colour, no dark: needed */}
+        <h3 className="font-semibold mb-4 text-sm text-slate-700">Workout Activity</h3>
         <div className="flex items-start">
           <div className="flex-1 min-w-0 overflow-x-auto">
             <WorkoutCalendar
@@ -864,7 +887,7 @@ export default function Progress() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — bg-slate-100: #F1F5F9 light / #1E2A42 dark */}
       <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-6 overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
